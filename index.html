@@ -1458,6 +1458,19 @@ let driverOmega = 2 * Math.PI * 0.35; // rad/s (προσωρινό, Phase 3 θα
 let driverDx  = 0;   // τρέχον translateX του slider (px, στο ίδιο σύστημα με το placement)
 let driverDx0 = 0;   // translateX στην αρχική στάση (για σωστό κούμπωμα)
 
+// =========================
+// Driven oscillator (Phase 3)
+// u = x - y (relative displacement)
+// =========================
+let driveU = 0;        // px
+let driveUd = 0;       // px/s
+let driveInited = false;
+let basePrevX = null;  // px
+let basePrevV = 0;     // px/s
+// damping coefficient beta (1/s). Προσωρινό: θα γίνει slider αργότερα.
+let driveBeta = 0.25;
+
+
 function applyDriverTransform(){
   if(!drvWheel || !drvPin || !drvSlider) return;
 
@@ -3467,6 +3480,15 @@ function resetShow(){
   obsStartPlaybackOffset=0;
   lastSampleObsTime=-Infinity;
   measureRowIdx=0;
+  // --- Driver + driven oscillator reset ---
+  driverTheta = DRIVER_THETA0;
+  driverDx = 0;
+  driverDx0 = 0;
+  driveU = 0;
+  driveUd = 0;
+  driveInited = false;
+  basePrevX = null;
+  basePrevV = 0;
   BOOK_SAMPLES = [];
   setMode('run');
   // κρατάμε το ξεκλείδωμα βιβλίου αν έχει γίνει στο παρελθόν
@@ -3682,11 +3704,48 @@ function animate(now){
   const cx =centerX();
   const stageH=stage.clientHeight;
 
-  const hookX=cx+A_px*Math.sin(omega*playbackTime);
+  // --- Phase 3: driven oscillator with base excitation ---
+  // Base (support) position is the left spring anchor (attached to slider)
+  const baseX = axx; // px
+  // Numerical derivatives for base motion
+  let baseV = 0;
+  let baseA = 0;
+  if(dt > 0){
+    if(basePrevX === null){
+      basePrevX = baseX;
+      basePrevV = 0;
+    }
+    baseV = (baseX - basePrevX) / dt;
+    baseA = (baseV - basePrevV) / dt;
+  }
+
+  // Natural angular frequency (rad/s) of the oscillator
+  const omega0 = omega;
+
+  // Initialize so we don't "jump" when switching from the old SHM demo
+  if(!driveInited){
+    const x0 = cx + A_px*Math.sin(omega*playbackTime);
+    const v0 = A_px*omega*Math.cos(omega*playbackTime);
+    driveU = x0 - baseX;
+    driveUd = v0 - baseV;
+    driveInited = true;
+  }
+
+  // Integrate u¨ + 2β u˙ + ω0² u = - y¨
+  if(dt > 0){
+    const uDD = -2*driveBeta*driveUd - (omega0*omega0)*driveU - baseA;
+    driveUd += uDD * dt;
+    driveU  += driveUd * dt;
+
+    basePrevX = baseX;
+    basePrevV = baseV;
+  }
+
+  const hookX = baseX + driveU;
 
   const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const dist=hookX-axx;
-  const scale=dist/baseL;
+  const scale=Math.max(0.001, dist/baseL);
   springEl.style.left=axx+'px';
   springEl.style.transform='scaleX('+scale+')';
 
