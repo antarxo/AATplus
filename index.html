@@ -1363,31 +1363,31 @@ function centerX(){ return stage.clientWidth * 0.5; }
 function updateDriverPlacement(){
   if(!driverMech || !drvSlider || !stage) return;
 
-  const stageH = stage.clientHeight || 0;
-
-  // Αν το spring είναι display:none, offsetHeight θα είναι 0. Χρησιμοποιούμε measured natural height.
-  const springBottom = (springEl ? (parseFloat(getComputedStyle(springEl).bottom) || 0) : 0);
-  const sH = (springEl && springEl.offsetHeight) ? springEl.offsetHeight : (springNaturalHeight || 96);
+  // Θέλουμε το σύστημα να "πατάει" στη σκηνή: αναφορά από ΚΑΤΩ, όχι από πάνω.
+  // Έτσι όταν μικραίνουμε/μεγαλώνουμε (CSS width), δεν χάνει την επαφή με το πάτωμα.
+  const floorEl = document.querySelector('.floor');
+  const floorBottom = floorEl ? (parseFloat(getComputedStyle(floorEl).bottom) || 0) : 0;
 
   const targetX = anchorX();
-  const targetY = stageH - springBottom - (sH/2);
 
   const w = drvSlider.offsetWidth  || 1;
   const h = drvSlider.offsetHeight || 1;
 
-  // Προσεγγιστικό σημείο “μάτι” της πρόσδεσης στο slider (σε ποσοστά του PNG).
-  // Ραφινάρεται εύκολα αργότερα αν χρειαστεί 1–2 px.
+  // Προσεγγιστικό σημείο πρόσδεσης στο slider (σε ποσοστά του PNG)
   const attachX = w * 0.87;
-  const attachY = h * 0.41;
 
+  // Οριζόντια: κουμπώνει στο anchorX.
   const ox = targetX - attachX;
-  const oy = targetY - attachY;
 
-  // Όλα τα assets έχουν ίδιο canvas (196×306), άρα overlay στο ίδιο origin.
+  // Κατακόρυφα: πατάει στο πάτωμα (ίδιο bottom για όλα τα overlay PNG).
+  // Αν χρειαστεί micro-tune (1–6px), το κάνουμε εδώ.
+  const rigBottom = Math.max(0, floorBottom);
+
   const imgs = [drvTable, drvWheel, drvSlider, drvPin].filter(Boolean);
   imgs.forEach(img=>{
-    img.style.left = ox + 'px';
-    img.style.top  = oy + 'px';
+    img.style.left   = ox + 'px';
+    img.style.bottom = rigBottom + 'px';
+    img.style.top    = 'auto';
   });
 }
 
