@@ -1381,7 +1381,7 @@ function updateDriverPlacement(){
 
   // Κατακόρυφα: πατάει στο πάτωμα (ίδιο bottom για όλα τα overlay PNG).
   // Αν χρειαστεί micro-tune (1–6px), το κάνουμε εδώ.
-  const rigBottom = Math.max(0, floorBottom);
+  const rigBottom = Math.max(-100, floorBottom);
 
   const imgs = [drvTable, drvWheel, drvSlider, drvPin].filter(Boolean);
   imgs.forEach(img=>{
