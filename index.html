@@ -1379,7 +1379,7 @@ function updateDriverPlacement(){
   // Οριζόντια: κουμπώνει στο anchorX.
   // ΣΗΜΕΙΩΣΗ: μεταφέρουμε ΟΛΟ τον μηχανισμό δεξιότερα κατά 80% του πλάτους του.
   // Αυτή η μετατόπιση (shiftPx) θα πρέπει να την ακολουθήσουν και άλλα αντικείμενα της σκηνής.
-  const DRIVER_SHIFT_FACTOR = 0.80;
+  const DRIVER_SHIFT_FACTOR = 0.70;
   const shiftPx = w * DRIVER_SHIFT_FACTOR;
   const ox = targetX - attachX - 13 + shiftPx;
 
@@ -1394,6 +1394,42 @@ function updateDriverPlacement(){
     img.style.top    = 'auto';
   });
 }
+/* =========================
+   Driver (Scotch yoke) motion — Phase 1
+   - wheel & pin rotate
+   - slider translates: x = r·cos(theta)
+   NOTE: Το οριζόντιο shift (DRIVER_SHIFT_FACTOR) που εφαρμόζεται στο placement
+         πρέπει να ακολουθηθεί αργότερα και από άλλα αντικείμενα της σκηνής.
+   ========================= */
+let driverTheta = Math.PI/2;          // ξεκινάμε στο κέντρο (cos=0) για να "κουμπώνει"
+let driverOmega = 2 * Math.PI * 0.35; // rad/s (προσωρινό, Phase 3 θα γίνει slider)
+
+function applyDriverTransform(){
+  if(!drvWheel || !drvPin || !drvSlider) return;
+
+  // Κέντρο τροχού πάνω στο κοινό canvas (196x306) — από τις διαστάσεις/σχέδιο των PNG
+  const W = 196, H = 306;
+  const wheelCX = 107, wheelCY = 53;  // px μέσα στο PNG
+  const originX = (wheelCX / W) * 100;
+  const originY = (wheelCY / H) * 100;
+
+  // Θέλουμε wheel+pin να περιστρέφονται γύρω από το ίδιο pivot
+  drvWheel.style.transformOrigin = originX.toFixed(2) + '% ' + originY.toFixed(2) + '%';
+  drvPin.style.transformOrigin   = originX.toFixed(2) + '% ' + originY.toFixed(2) + '%';
+
+  // Eccentric radius (στο PNG, θ=0 pin δεξιά): περίπου 31.5px (θα κλιμακωθεί)
+  const scale = (drvSlider.offsetWidth || W) / W;
+  const r = 31.5 * scale;
+
+  // Slider motion (Scotch yoke): x = r·cos(theta)
+  const dx = r * Math.cos(driverTheta);
+
+  // Εφαρμογή transforms (pin πάνω από slider παραμένει λόγω z-index)
+  drvWheel.style.transform  = 'rotate(' + driverTheta + 'rad)';
+  drvPin.style.transform    = 'rotate(' + driverTheta + 'rad)';
+  drvSlider.style.transform = 'translateX(' + dx.toFixed(2) + 'px)';
+}
+
 
 function updateRuler(){
   const baseLeft = stage.clientWidth * 0.18;
@@ -3553,6 +3589,11 @@ function animate(now){
 
   updateRuler();
   updateDriverPlacement();
+
+  // Driver motion (παγώνει στο pause)
+  driverTheta += driverOmega * dt;
+  if(driverTheta > Math.PI*2) driverTheta -= Math.PI*2;
+  applyDriverTransform();
 
   const tPhys=(now-t0)/1000;
   if(!obsStarted){
