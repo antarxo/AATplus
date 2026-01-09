@@ -1355,6 +1355,20 @@ function setAudienceLights(on){
 
 function anchorX(){ return stage.clientWidth * 0.18; }
 
+/* --- Phase 2: spring attaches to the moving slider (driver) ---
+   Το αριστερό άκρο του spring δεν είναι πια σταθερό στο anchorX.
+   Παίρνει τη θέση από το "σημείο πρόσδεσης" πάνω στο slider.
+   (Το placement του μηχανισμού εξακολουθεί να κουμπώνει στο anchorX όπως πριν.)
+*/
+function springAnchorX(){
+  if(!drvSlider || !stage) return anchorX();
+  const sRect = drvSlider.getBoundingClientRect();
+  const stRect = stage.getBoundingClientRect();
+  const attachX = (sRect.width || 0) * 0.87; // ίδιο ratio με το updateDriverPlacement()
+  return (sRect.left - stRect.left) + attachX;
+}
+
+
 // --- Driver/Ruler κοινή μετατόπιση (σημείωση: θα την ακολουθήσουν και άλλα αντικείμενα της σκηνής) ---
 const DRIVER_SHIFT_FACTOR = 0.50;   // << μετατόπιση μηχανισμού: 50% του πλάτους του (δεξιά)
 const DRIVER_SHIFT_REF    = 0.60;   // αναφορά (παλιό calibration) για μετατόπιση του άξονα/χάρακα
@@ -3658,7 +3672,7 @@ function animate(now){
   ensureActorFloorBottom();
   const bottomPx=actorFloorBottomPx ?? 0;
 
-  const axx=anchorX();
+  const axx=springAnchorX();
   const cx =centerX();
   const stageH=stage.clientHeight;
 
