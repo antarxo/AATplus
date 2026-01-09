@@ -1361,12 +1361,14 @@ function anchorX(){ return stage.clientWidth * 0.18; }
    (Το placement του μηχανισμού εξακολουθεί να κουμπώνει στο anchorX όπως πριν.)
 */
 function springAnchorX(){
-  if(!drvSlider || !stage) return anchorX();
-  const sRect = drvSlider.getBoundingClientRect();
-  const stRect = stage.getBoundingClientRect();
-  const attachX = (sRect.width || 0) * 0.87; // ίδιο ratio με το updateDriverPlacement()
-  return (sRect.left - stRect.left) + attachX;
+  // ΣΗΜΑΝΤΙΚΟ: Δεν χρησιμοποιούμε getBoundingClientRect εδώ, γιατί η σκηνή μπορεί να είναι scaled/translated
+  // και τότε οι screen-coordinates δεν ταιριάζουν με τα CSS px που χρησιμοποιούμε για left/bottom.
+  // Θέλουμε το άκρο του ελατηρίου να συμπίπτει με το σημείο πρόσδεσης του slider:
+  // x_attach = anchorX() + shiftPx + (dx - dx0)
+  const base = anchorX() + driverShiftPx();
+  return base + (driverDx - driverDx0);
 }
+
 
 
 // --- Driver/Ruler κοινή μετατόπιση (σημείωση: θα την ακολουθήσουν και άλλα αντικείμενα της σκηνής) ---
@@ -1428,6 +1430,7 @@ function updateDriverPlacement(){
   const THETA0 = Math.PI/2; // πρέπει να ταιριάζει με DRIVER_THETA0
   const pinX0 = wheelCX + e0 * Math.cos(phi0 + THETA0);
   const dx0 = (pinX0 - slotCX) * scale;
+  driverDx0 = dx0;
 
   const ox = targetX - attachX - 13 + shiftPx - dx0;
 
@@ -1452,6 +1455,8 @@ function updateDriverPlacement(){
 const DRIVER_THETA0 = Math.PI/2;
 let driverTheta = DRIVER_THETA0;          // ξεκινάμε στο κέντρο (cos=0) για να "κουμπώνει"
 let driverOmega = 2 * Math.PI * 0.35; // rad/s (προσωρινό, Phase 3 θα γίνει slider)
+let driverDx  = 0;   // τρέχον translateX του slider (px, στο ίδιο σύστημα με το placement)
+let driverDx0 = 0;   // translateX στην αρχική στάση (για σωστό κούμπωμα)
 
 function applyDriverTransform(){
   if(!drvWheel || !drvPin || !drvSlider) return;
@@ -1489,6 +1494,7 @@ function applyDriverTransform(){
   const slotCX = 138.5; // κέντρο σχισμής slider.png (σε px του canvas)
   const pinX = wheelCX + e0 * Math.cos(phi0 + driverTheta);
   const dx = (pinX - slotCX) * scale;
+  driverDx = dx;
 
   // Εφαρμογή transforms (pin πάνω από slider παραμένει λόγω z-index).
   drvWheel.style.transform  = 'rotate(' + driverTheta + 'rad)';
