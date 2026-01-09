@@ -278,6 +278,40 @@ function num(v,fallback=0){
   opacity:0;
 }
 
+
+/* =========================
+   Driver sliders (Phase 3)
+   ========================= */
+.drive-controls{
+  position:absolute;
+  bottom:56px;           /* πάνω από το κάτω control bar */
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.70);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;
+  padding:6px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  z-index:2000;
+  color:#fff;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size:12px;
+}
+.drive-controls .dc-row{ display:flex; align-items:center; gap:8px; }
+.drive-controls .dc-lbl{ width:14px; font-weight:800; }
+.drive-controls .dc-val{
+  width:74px;
+  text-align:right;
+  opacity:.9;
+  font-variant-numeric: tabular-nums;
+}
+.drive-controls input[type="range"]{ width:150px; }
+
+/* κρύβεται στο intro veil όπως τα άλλα UI */
+body.intro-open #driveCtrl{ visibility:hidden !important; }
+
 </style>
 
 </head>
@@ -398,7 +432,21 @@ function num(v,fallback=0){
     <button id="btnBook"  title="Διαθέσιμο μετά το τέλος της Πράξης 1" disabled>📖</button>
   </div>
 
-  <div class="startbreak" id="startBreak">
+  
+  <div class="drive-controls" id="driveCtrl" aria-label="ρυθμίσεις διεγέρτη">
+    <div class="dc-row">
+      <span class="dc-lbl">f</span>
+      <input id="driveFreq" type="range" min="0.05" max="2.00" step="0.01" value="0.35" />
+      <span class="dc-val" id="driveFreqVal">0.35 Hz</span>
+    </div>
+    <div class="dc-row">
+      <span class="dc-lbl">b</span>
+      <input id="driveBeta" type="range" min="0.00" max="2.00" step="0.01" value="0.25" />
+      <span class="dc-val" id="driveBetaVal">0.25 1/s</span>
+    </div>
+  </div>
+
+<div class="startbreak" id="startBreak">
     <div class="box">
       <h3 id="startBreakTitle">Έναρξη Παράστασης</h3>
       <p  id="startBreakMsg">Ενας θεατής ας κάνει κλικ στην Έναρξη</p>
@@ -1476,6 +1524,42 @@ let basePrevV = 0;     // px/s
 let baseRefX  = null;  // px  (y0)
 // damping coefficient beta (1/s). Προσωρινό: θα γίνει slider αργότερα.
 let driveBeta = 0.25;
+
+// --- Driver sliders hookup (f, b) ---
+const elDriveFreq    = document.getElementById('driveFreq');
+const elDriveBeta    = document.getElementById('driveBeta');
+const elDriveFreqVal = document.getElementById('driveFreqVal');
+const elDriveBetaVal = document.getElementById('driveBetaVal');
+
+function syncDriveUI(){
+  if(elDriveFreq){
+    const hz = Math.max(0.01, driverOmega / (2*Math.PI));
+    elDriveFreq.value = hz.toFixed(2);
+    if(elDriveFreqVal) elDriveFreqVal.textContent = `${hz.toFixed(2)} Hz`;
+  }
+  if(elDriveBeta){
+    elDriveBeta.value = Math.max(0, driveBeta).toFixed(2);
+    if(elDriveBetaVal) elDriveBetaVal.textContent = `${Math.max(0, driveBeta).toFixed(2)} 1/s`;
+  }
+}
+
+if(elDriveFreq){
+  elDriveFreq.addEventListener('input', () => {
+    const hz = Math.max(0.01, parseFloat(elDriveFreq.value) || 0.35);
+    driverOmega = 2 * Math.PI * hz;
+    if(elDriveFreqVal) elDriveFreqVal.textContent = `${hz.toFixed(2)} Hz`;
+  });
+}
+if(elDriveBeta){
+  elDriveBeta.addEventListener('input', () => {
+    driveBeta = Math.max(0, parseFloat(elDriveBeta.value) || 0.0);
+    if(elDriveBetaVal) elDriveBetaVal.textContent = `${driveBeta.toFixed(2)} 1/s`;
+  });
+}
+
+// αρχικοποίηση UI από τις τρέχουσες τιμές
+syncDriveUI();
+
 
 
 function applyDriverTransform(){
