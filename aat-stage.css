@@ -117,7 +117,7 @@ body{
 .driver-mech img{
   position:absolute;
   /* default κλίμακα (ρυθμίζεται εύκολα αργότερα) */
-  width:240px;
+  width:227px;  /* ↓ ~20px μικρότερο ύψος */
   height:auto;
   pointer-events:none;
   user-select:none;
