@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Πρόγραμμα Παράστασης · Α.Α.Τ.</title>
+  <style>
+    :root{
+      color-scheme: dark;
+      --paper: rgba(248,247,242,.96);
+      --paper-brd: rgba(0,0,0,.18);
+      --ink: rgba(18,18,18,.95);
+      --muted: rgba(18,18,18,.70);
+      --shadow: 0 18px 70px rgba(0,0,0,.55);
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background: transparent;
+      display:grid;
+      place-items:center;
+      font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    .wrap{
+      width:min(1040px, 94vw);
+      height:min(92vh, 860px);
+      display:grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+      padding: 16px;
+      box-sizing:border-box;
+    }
+    .banner{
+      display:grid;
+      place-items:center;
+    }
+    .banner img{
+      width:min(1000px, 152vw);
+      max-width:100%;
+      height:auto;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.45);
+      background: rgba(255,255,255,.04);
+    }
+    .leaflet{
+      width:min(1000px, 92vw);
+      margin:0 auto;
+      background: var(--paper);
+      border: 1px solid var(--paper-brd);
+      border-radius: 12px;
+      box-shadow: 0 12px 50px rgba(0,0,0,.25);
+      overflow:auto;
+      padding: 16px 18px 18px;
+      box-sizing:border-box;
+      color: var(--ink);
+    }
+    .leaflet .meta{
+      font: 13px/1.35 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--muted);
+      margin: 0 0 10px;
+    }
+    .leaflet .content{
+      font: 15.5px/1.7 ui-serif, Georgia, "Times New Roman", serif;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      white-space: normal;
+    }
+    .leaflet p{
+      margin: 0 0 10px;
+    }
+    .leaflet hr{
+      border: 0;
+      border-top: 1px dashed rgba(0,0,0,.25);
+      margin: 14px 0;
+    }
+    .leaflet ul{
+      margin: 6px 0 10px 22px;
+      padding: 0;
+    }
+    .leaflet li{
+      margin: 2px 0;
+    }
+    .leaflet .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  
+
+    /* --- BG from posterSrc (v5) --- */
+    #introBg{
+      position:fixed;
+      inset:-40px;
+      background-color:#000;
+      background-image: none;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(18px) saturate(1.12);
+      transform: scale(1.08);
+      opacity: .9;
+      z-index: 0;
+      pointer-events:none;
+    }
+    #introBgOverlay{
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 25%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.85) 70%),
+        linear-gradient(180deg, rgba(0,0,0,.20) 0%, rgba(0,0,0,.88) 100%);
+      z-index: 1;
+      pointer-events:none;
+    }
+    #introBgBadge{
+      position:fixed;
+      right:10px;
+      bottom:10px;
+      padding:6px 10px;
+      font: 12px/1.2 system-ui, -apple-system, Segoe UI, Arial;
+      color:#fff;
+      background: rgba(0,0,0,.45);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      z-index: 3;
+      pointer-events:none;
+      opacity:.85;
+    }
+    /* Keep content above overlay */
+    .wrap{ position:relative; z-index: 2; }
+    body{ margin:0; background:#000; }
+
+
+    .lang-switch{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      align-items:center;
+      margin:0 0 10px;
+      flex-wrap:wrap;
+    }
+    .lang-btn{
+      appearance:none;
+      border:1px solid rgba(0,0,0,.22);
+      background: rgba(255,255,255,.78);
+      color: rgba(18,18,18,.95);
+      border-radius:999px;
+      padding:7px 12px;
+      font-size:.92rem;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.10);
+    }
+    .lang-btn:hover{ background: rgba(255,255,255,.92); }
+    .lang-btn.active{
+      border-color: rgba(0,0,0,.45);
+      box-shadow: 0 14px 30px rgba(0,0,0,.14);
+    }
+
+</style>
+</head>
+<body>
+  <div id="introBg" aria-hidden="true"></div>
+  <div id="introBgOverlay" aria-hidden="true"></div>
+  <div id="introBgBadge" aria-hidden="true">BG v5</div>
+  <div class="wrap" role="document" aria-label="Πρόγραμμα παράστασης Α.Α.Τ.">
+    <div class="banner">
+      <img id="poster" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Πρόγραμμα παράστασης Α.Α.Τ." />
+    </div>
+
+    <div class="leaflet">
+      <div id="langSwitch" class="lang-switch" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="gr">Ελληνικά</button>
+        <button type="button" class="lang-btn" data-lang="en">English</button>
+      </div>
+      <div class="meta" id="metaLabel">Πρόγραμμα παράστασης</div>
+      <div class="content" id="leafletContent" aria-label="Κείμενο προγράμματος"></div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  function esc(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function buildHtmlFromText(raw){
+    // Στόχος: καλύτερη τυπογραφία χωρίς να "πειράξουμε" το κείμενο.
+    // Μετατρέπουμε κενές γραμμές -> παραγράφους.
+    // Ειδικές γραμμές-δείκτες bullets (•//o) -> λίστες.
+    const lines = raw.split(/\r?\n/);
+    const out = [];
+    let p = [];
+    let ul = null;
+    let ul2 = null;
+    let lastLiOpen = false;
+    let expectBullet = 0; // 0 none, 1 top, 2 sub
+
+    function flushParagraph(){
+      if (!p.length) return;
+      const txt = p.join(' ').replace(/\s+/g,' ').trim();
+      if (txt) out.push('<p>' + esc(txt) + '</p>');
+      p = [];
+    }
+    function closeLists(){
+      if (ul2){ out.push('</ul>'); ul2=null; }
+      if (ul){ out.push('</ul>'); ul=null; }
+      lastLiOpen = false;
+      expectBullet = 0;
+    }
+    function ensureUl(){
+      if (!ul){ flushParagraph(); ul=true; out.push('<ul>'); }
+    }
+    function ensureUl2(){
+      if (!ul2){
+        // υπολίστα μέσα στο τελευταίο li
+        if (!lastLiOpen){
+          ensureUl();
+          out.push('<li>' + esc('') );
+          lastLiOpen = true;
+        }
+        out.push('<ul>');
+        ul2 = true;
+      }
+    }
+    function closeLiIfOpen(){
+      if (lastLiOpen){
+        out.push('</li>');
+        lastLiOpen = false;
+      }
+    }
+
+    const BUL1 = new Set(['•','','\uf0b7']);
+    const BUL2 = new Set(['o','ο']); // σε περίπτωση που βγει ελληνικό ο
+
+    for (let i=0;i<lines.length;i++){
+      const rawLine = lines[i];
+      const line = rawLine.trim();
+
+      if (!line){
+        // κενή γραμμή: κλείνουμε paragraph ή λίστα-γραμμή, αφήνουμε ανάσα
+        flushParagraph();
+        // δεν κλείνουμε οπωσδήποτε λίστες, γιατί στο raw μπορεί να έχει κενές ανάμεσα σε bullets
+        continue;
+      }
+
+      if (BUL1.has(line)){
+        // νέο top-level bullet ξεκινά
+        flushParagraph();
+        ensureUl();
+        // κλείσε τυχόν υπολίστα και li
+        if (ul2){ out.push('</ul>'); ul2=null; }
+        closeLiIfOpen();
+        expectBullet = 1;
+        continue;
+      }
+
+      if (BUL2.has(line)){
+        flushParagraph();
+        ensureUl();
+        // sub bullet
+        ensureUl2();
+        closeLiIfOpen();
+        expectBullet = 2;
+        continue;
+      }
+
+      // Κανονικό κείμενο
+      if (expectBullet === 1){
+        ensureUl();
+        out.push('<li>' + esc(rawLine.trim()));
+        lastLiOpen = true;
+        expectBullet = 0;
+        continue;
+      }
+      if (expectBullet === 2){
+        ensureUl2();
+        out.push('<li>' + esc(rawLine.trim()) + '</li>');
+        expectBullet = 0;
+        continue;
+      }
+
+      // Αν είμαστε μέσα σε li (top-level) και έρχεται συνέχεια γραμμής, την κάνουμε νέο line μέσα στο ίδιο li
+      if (lastLiOpen && ul && !ul2){
+        out[out.length-1] += '<br>' + esc(rawLine.trim());
+      } else {
+        // κανονική παράγραφος
+        p.push(rawLine.trim());
+      }
+    }
+
+    flushParagraph();
+    // κλείσιμο ανοιχτών li/lists
+    if (ul2){ out.push('</ul>'); ul2=null; }
+    closeLiIfOpen();
+    if (ul){ out.push('</ul>'); ul=null; }
+
+    return out.join('\n');
+  }
+
+  async function init(){
+    try{
+      const p = new URLSearchParams(window.location.search);
+      const q = (p.get('lang') || '').toLowerCase();
+      let lang = (q === 'en' || q === 'gr') ? q : '';
+      if(!lang){
+        try{
+          const saved = (localStorage.getItem('aatLang') || '').toLowerCase();
+          if(saved === 'en' || saved === 'gr') lang = saved;
+        }catch(_e){}
+      }
+      if(!lang) lang = 'gr';
+      document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
+      document.title = (lang === 'en') ? 'Performance Program · S.H.M.' : 'Πρόγραμμα Παράστασης · Α.Α.Τ.';
+      const introFile = (lang === 'en') ? 'intro-en.json' : 'intro.json';
+
+      // Static UI localization
+      const wrap = document.querySelector('.wrap');
+      const meta = document.getElementById('metaLabel');
+      const leaflet = document.getElementById('leafletContent');
+      if(wrap){ wrap.setAttribute('aria-label', (lang==='en') ? 'Performance program (S.H.M.)' : 'Πρόγραμμα παράστασης Α.Α.Τ.'); }
+      if(meta){ meta.textContent = (lang==='en') ? 'Performance program' : 'Πρόγραμμα παράστασης'; }
+      if(leaflet){ leaflet.setAttribute('aria-label', (lang==='en') ? 'Program text' : 'Κείμενο προγράμματος'); }
+
+      // Language switch
+      const sw = document.getElementById('langSwitch');
+      if(sw){
+        sw.querySelectorAll('button[data-lang]').forEach(b=>{
+          const L = String(b.getAttribute('data-lang')||'').toLowerCase();
+          b.classList.toggle('active', L===lang);
+          b.onclick = ()=>{
+            const chosen = (L==='en') ? 'en' : 'gr';
+            try{ localStorage.setItem('aatLang', chosen); }catch(_e){}
+            const u = new URL(window.location.href);
+            u.searchParams.set('lang', chosen);
+            window.location.href = u.toString();
+          };
+        });
+      }
+
+      let r = await fetch(introFile, { cache: 'no-cache' });
+      if(!r.ok && introFile !== 'intro.json') r = await fetch('intro.json', { cache: 'no-cache' });
+      const cfg = r.ok ? await r.json() : null;
+      if (!cfg) return;
+
+      const img = document.getElementById('poster');
+      if(img){ img.alt = (lang==='en') ? 'Performance program (S.H.M.)' : 'Πρόγραμμα παράστασης Α.Α.Τ.'; }
+
+      const bg  = document.getElementById('introBg');
+
+      // Robust poster/background resolution:
+      // - works on GitHub Pages/Netlify under subpaths (no leading '/')
+      // - falls back to common locations if the configured path 404s
+      const candidates = [];
+      const addCandidate = (rel) => {
+        if (!rel) return;
+        const safe = String(rel).trim().replace(/^\/+/, ''); // cut leading "/"
+        if (!safe) return;
+        try { candidates.push(new URL(safe, window.location.href).href); } catch(_e) {}
+      };
+
+      const pickPoster = (lang==='en' && cfg.posterSrcEn) ? cfg.posterSrcEn
+                      : (lang==='gr' && cfg.posterSrcGr) ? cfg.posterSrcGr
+                      : (cfg.posterSrc || '');
+      addCandidate(pickPoster);
+      addCandidate((lang==='en') ? 'assets/theatron-banner-en.png' : 'assets/theatron-banner.png');
+      addCandidate((lang==='en') ? 'theatron-banner-en.png' : 'theatron-banner.png');
+      addCandidate('assets/theatron-banner.png');
+      addCandidate('theatron-banner.png');
+
+      // de-dup
+      const uniq = [...new Set(candidates)];
+      let k = 0;
+
+      const apply = (url) => {
+        img.src = url;
+        if (bg) bg.style.backgroundImage = `url("${url}")`;
+      };
+
+      img.onerror = () => {
+        k++;
+        if (k < uniq.length) {
+          apply(uniq[k]);
+        } else {
+          img.onerror = null;
+        }
+      };
+
+      if (uniq.length) apply(uniq[0]);
+      if (cfg.posterAlt) img.alt = cfg.posterAlt;
+
+      const cont = document.getElementById('leafletContent');
+      const txt = cfg.leafletText || '';
+      cont.innerHTML = buildHtmlFromText(txt);
+    }catch(e){
+      // αν κάτι πάει στραβά, μένουμε απλά με την εικόνα
+      const cont = document.getElementById('leafletContent');
+      cont.innerHTML = (document.documentElement.lang==='en')
+        ? '<p class="mono">Failed to load intro.json</p>'
+        : '<p class="mono">Αποτυχία φόρτωσης intro.json</p>';
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

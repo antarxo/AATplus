@@ -1,0 +1,962 @@
+{
+  "actsAvatarOffset": -55,
+  "ui": {
+    "lawsTitle": "SHM Laws",
+    "measureTitle": "Measurements",
+    "measureColIdx": "#",
+    "countdownMain": "The show is starting.",
+    "countdownSub": "time for paper and pencil!",
+    "actBreakTitle": "End of Act 1",
+    "actBreakMsg": "(m₁,D₁) continues. Ready for Act 2?",
+    "btnAct2": "Start Act 2",
+    "foyerBreakTitle": "End of Act 2",
+    "foyerBreakMsg": "Want to head to the foyer for a chat?",
+    "btnFoyerGo": "Go to the Foyer",
+    "btnEndShow": "End of Show",
+    "btnFoyer": "Foyer",
+    "startBtn": "One viewer should click Start",
+    "btnPauseTitle": "pause",
+    "btnPlayTitle": "play",
+    "btnResetTitle": "reset",
+    "btnFoyerTitle": "Foyer"
+  },
+  "viewers": [
+    {
+      "name_gr": "Θεατής 1",
+      "name_en": "Viewer 1",
+      "color": "#ffcc00",
+      "xFrac": 0.06,
+      "bubbleDx": 25,
+      "bubbleDy": -10,
+      "avatarDy": 110,
+      "avatarScale": 0.32,
+      "chipDx": 55,
+      "chipDy": 18,
+      "img": "viewer1.png"
+    },
+    {
+      "name_gr": "Θεατής 2",
+      "name_en": "Viewer 2",
+      "color": "#66ccff",
+      "xFrac": 0.36,
+      "bubbleDx": 25,
+      "bubbleDy": -10,
+      "avatarDy": 110,
+      "avatarScale": 0.3,
+      "chipDx": 55,
+      "chipDy": 18,
+      "img": "viewer2.png"
+    },
+    {
+      "name_gr": "Θεατής 3",
+      "name_en": "Viewer 3",
+      "color": "#ff99cc",
+      "xFrac": 0.44,
+      "bubbleDx": 25,
+      "bubbleDy": -10,
+      "avatarDy": 110,
+      "avatarScale": 0.32,
+      "chipDx": 55,
+      "chipDy": 18,
+      "img": "viewer3.png"
+    },
+    {
+      "name_gr": "Θεατής 4",
+      "name_en": "Viewer 4",
+      "color": "#99ff99",
+      "xFrac": 0.6,
+      "bubbleDx": 25,
+      "bubbleDy": -10,
+      "avatarDy": 110,
+      "avatarScale": 0.3,
+      "chipDx": 55,
+      "chipDy": 18,
+      "img": "viewer4.png"
+    },
+    {
+      "name_gr": "Θεατής 5",
+      "name_en": "Viewer 5",
+      "color": "#ff9966",
+      "xFrac": 0.77,
+      "bubbleDx": 25,
+      "bubbleDy": -10,
+      "avatarDy": 110,
+      "avatarScale": 0.3,
+      "chipDx": 55,
+      "chipDy": 18,
+      "img": "viewer5.png"
+    }
+  ],
+  "act1": [
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "m₁D₁ was <b>already in motion!</b>",
+      "right": ""
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...important! We record the curtain opening as the moment <b>t₀=0</b>!",
+      "right": ""
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...this motion is <b>straight-line and back-and-forth!</b>",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...and repeating, periodic, <b>so it’s an oscillation!</b>",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Could it be <b>Simple Harmonic Motion?</b>",
+      "right": ""
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...but if it *is* SHM, then the values we measure should satisfy <b>x=A·sin(ωt+φ₀)</b>, right?",
+      "right": ""
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...so if we draw an <b>x–t graph</b>, could it confirm it?",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "Hmm, yes and no. Still, let’s do it, because <b>a graph usually reveals things!</b>",
+      "right": "",
+      "graph": "xt"
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "param": "A",
+      "left": "...Anyway, if it’s SHM, it should have amplitude <b>A={A} m</b>!",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "param": "Tw",
+      "left": "...and period <b>T={T} s</b>! so in that case it also has <b>ω={omega} rad/s</b>!",
+      "right": ""
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "If the motion is SHM, then the points on a plot of <b>x ... versus sin(ωt+φ₀)</b> must lie on a straight line with slope A!",
+      "right": "",
+      "viewer": 3
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "Exactly! So if the curve <b>x=A·sin(ωt+φ₀)</b> ... and the graph <b>x–sin(ωt+φ₀)</b> is a straight line, then it’s proven to be SHM!",
+      "right": "",
+      "viewer": 5
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "Sure… but it looks like there’s an unknown initial phase φ₀, which makes that check impossible for now…",
+      "right": "",
+      "viewer": 4
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "But if we find on the x–t graph the time t₁ ... where <b>x=A·sin(ωt)</b>, more precisely <b>x=A·sin(ω(t−t₁))</b>",
+      "right": "",
+      "viewer": 3
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "...exactly! and then the problem becomes simple. Look what we can do: <b>t₁={tZero}s</b> where the <b>red arrow</b> points on x–t...",
+      "right": "",
+      "viewer": 2,
+      "xtMark": true,
+      "xtMarkTail": true,
+      "xtZeroMark": true
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "...So we get the <b>red curve</b> that corresponds ... and for <b>x=A·sin(ωt)</b> we can say, from there on! ...",
+      "right": "",
+      "viewer": 3,
+      "xtMark": true,
+      "xtMarkTail": true,
+      "xtZeroMark": true
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 400,
+      "param": "phi",
+      "left": "Perfect!\n1) We see that the two curves match perfectly, and\n2) the graph <b>x–sin(ωt)</b> is indeed a straight line with slope A!",
+      "right": "",
+      "plot": "xsin"
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "...so the motion is SHM! And since <b>x₀={x0} m</b>, ... <b>φ₀={phi0}°={phi0rad}rad</b>. Haha—one down! Moving on!</b>",
+      "right": "<b>x=A·sin(ωt+φ₀) (1)</b>",
+      "param": true,
+      "alsoParams": true
+    },
+    {
+      "viewer": null,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "",
+      "right": "",
+      "xtMark": false,
+      "xtMarkTail": false,
+      "xtZeroMark": false
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 400,
+      "left": "...so the velocity is given by the law <b>v=ωA·cos(ωt+φ₀)!</b>",
+      "right": "<b>v=ωA·cos(ωt+φ₀) (2)</b>",
+      "plot": "v"
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 400,
+      "left": "...and the acceleration by the law <b>a=−ω²A·sin(ωt+φ₀)!</b>",
+      "right": "<b>a=−ω²A·sin(ωt+φ₀) (3)</b>\n\n<b>a=−ω²x (4)</b>",
+      "plot": "a"
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "But the relation <b>x=A·sin(ωt+φ₀) (1)</b> is contained in (3)...! So the new law can also be written as <b>a(x)=−ω²x</b>",
+      "right": "<b>ΣF=−mω²A·sin(ωt+φ₀) (5)</b>\n\n<b>ΣF=−mω²x (6)</b>",
+      "plot": "ax"
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "<b>Perfect! The full set of SHM laws!</b>",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Hmm… <b>Now we need to see how m₁D₁ pulls off SHM!</b>",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Ok, what did we achieve so far—and with what tools?\n1. We used exclusively the <b>measurements x and t</b>\n2. From the features of periodic motion we formed the <b>hypothesis that the motion is SHM</b>\n3. <b>We proved, through a chain of reasoning, that it is SHM</b>\n4. We brought out <b>all the laws</b> of this motion!",
+      "right": ""
+    },
+    {
+      "viewer": null,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "",
+      "right": "",
+      "close": true
+    }
+  ],
+  "act2": [
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Whoa! m₁D₁ is tied to a spring!",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "Look! The titles now reveal the mass: <b>m₁={m1}Kg!</b> ... and on the spring there’s the label <b>D₁</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "<b>...I’ve seen this exact m₁D₁ before</b> dragging a mass–spring setup in another show, <b>but with a different producer!</b>",
+      "right": "",
+      "gStart": true,
+      "gStop": false
+    },
+    {
+      "viewer": 4,
+      "xShift": 1,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...yeah, and even there he moved obsessively <b>with the same period T={T}s</b>, <b>but with a bigger amplitude A=5m!</b>",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Anyway—let’s see <b>what exactly he’s doing here, and more importantly: why?</b>",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Hmm… I’m getting the vibe that the <b>Protagonist</b> is probably the moving actor *and* his tools together!",
+      "right": "",
+      "gStart": false,
+      "gStop": true
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Now it makes sense why they don’t call him m₁ but m₁,D₁!…",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "…m₁ is the actor’s mass but, as an <b>oscillator</b>... there is also the <b>elastic cause–force</b>, which is what that <b>D₁</b> seems to stand for!",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "…so m₁ and D₁ go everywhere as a package deal! and <b>the two together are the oscillator—the protagonist!</b>",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...meaning every oscillator is characterized\n1. by its mass m and\n2. by the elastic cause–force, which sets the timing (T) of the oscillation!",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...I’m starting to get why its “signature name” is <b>mD</b> and not just <b>m!</b>...",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "So the uniqueness of each oscillator—its “obsession”, i.e. the characteristic period T (and thus f and ω)—must be due to...\n1. the <b>“body type”</b> of the oscillator, i.e. its mass m\n2. and the <b>elastic cause</b> (that D in its name)!",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Daaamn, guys. That’s a lot of talking. Drop it and let’s move on…!",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Alright. So how do we write Newton’s 2nd law for the oscillator case?",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 400,
+      "left": "…uh, <b>no big deal: ΣF = m·a</b>, but... here, using (3): <b>ΣF = −mω²A·sin(ωt+φ₀) (5)!</b>",
+      "right": "<b>ΣF = −mω²A·sin(ωt+φ₀) (5)</b>",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 400,
+      "left": "...and based on (4) it can also be written as <b>ΣF = −mω²x (6)!</b>",
+      "right": "<b>ΣF(x)=−mω²x (6)</b>",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Notice that (6) contains the actor’s two constants—if we may:\n<b>the “body type” (m) and the “obsession” (ω)</b>!",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "<b>Should we combine those two constants into one and call it D = mω² (6’)</b>? Does that make sense?",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "Great idea!\n1. Let’s give the symbol D to the elastic cause–force.\n2. That way we eliminate a symbol from our formulas.\n3. It also gets a “face” because D is <b>written on the spring</b>.\n4. And it makes it clear that D belongs to the “tool” that forces the actor to oscillate.\n5. In general we’ll call D the oscillator’s “elastic constant”.",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "...okay, and this also explains why <b>the actor, no matter the spring or the producer, “obsessively” keeps his period constant</b>?",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "",
+      "right": ""
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 400,
+      "left": "...Exactly! (6’) <b>D = mω²</b> shows it: since m and D are constant, then <b>ω=√(D/m)</b> is also constant for the moving actor!",
+      "right": "<b>D=mω² (6')</b>",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "…so, rightly, they call the <b>protagonist–oscillator (=actor + elastic cause) (m,D)</b>!",
+      "right": "",
+      "gStart": false,
+      "gStop": false
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "And we can, with a simple numerical substitution, compute D₁ for our m₁D₁:\n<b>D₁=m₁ω²={D1}N/m</b>",
+      "right": "",
+      "viewer": 1
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "…and (6)—don’t forget—becomes <b>ΣF = −D·x (7)!</b>",
+      "right": "<b>ΣF = −D·x (7)</b>",
+      "viewer": 5
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "Which expresses Newton’s 2nd law for SHM:\n<b>“A body performs SHM if and only if the net force on it is proportional to its displacement and directed opposite to it.”</b>",
+      "right": ""
+    }
+  ],
+  "foyer": [
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 500,
+      "left": "Relations (1), (2), (3) and (5)",
+      "right": "<b>(1) x(t)=A·sin(ωt+φ₀)\n(2) υ(t)=ωA·cos(ωt+φ₀)\n(3) α(t)=−ω²A·sin(ωt+φ₀)\n(5) ΣF(t)=−m·ω²A·sin(ωt+φ₀)</b>"
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 500,
+      "left": "...help us <b>“predict” position, velocity, acceleration and net force</b> at any moment, without having to go back in for the rest of the show!",
+      "right": ""
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 500,
+      "left": "<b>Right! Similarly,</b> (3)’ and (6)",
+      "right": "<b>(3)’ α(x)=−ω²·x\n(6)  ΣF(x)=−m·ω²·x</b>"
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...help us <b>“predict” acceleration and net force</b> as functions of position… without us being forced to keep being spectators!",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "Alright!\n1. We see, my dear people, that for now we can’t ... reach a clean conclusion about velocity and its relation to the position of (m₁ ,D₁).\n2. But I think what we’ve seen so far in the show ... generalizes to any protagonist (m,D) in a similar SHM show.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...3. As people who know their …Algebra, and with a bit of <i>“algebraic curiosity”</i> we can cover that too (without waiting for Act 3!), to fill <b>Gap 1 mentioned by Viewer 3</b>.\n✓ Solve (1) for sin(ωt+φ₀)",
+      "right": "(1) x=A·sin(ωt+φ₀) ⇒ sin(ωt+φ₀)=x/A\n..."
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "<b>Right!</b> Do the same for (2): solve for cos(ωt+φ₀)",
+      "right": "(2) υ=ωA·cos(ωt+φ₀) ⇒ cos(ωt+φ₀)=υ/(ωA)\n and square\n <b>cos²(ωt+φ₀)= υ²/(ω²A²)</b>\n since sin²(ωt+φ₀)+cos²(ωt+φ₀)=1\n add term by term\n ⇒ <b>1 = x²/A² + υ²/(ω²A²) (8)</b>"
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "✓Here’s the relation we were missing! Now we can <b>“predict” velocity at any moment when we know the protagonist’s position on stage</b>, and\n✓We can (thinking similarly) derive a relation between acceleration and velocity!\nThat is, here we “play with” (3) and (2).",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...of course! of course! Solve (3) for sin(ωt+φ₀) and (2) for cos(ωt+φ₀), square them, and add.",
+      "right": "(3) ⇒ sin²(ωt+φ₀)=α²/(ω⁴A²),\n(2) ⇒ cos²(ωt+φ₀)=υ²/(ω²A²)\n and add term by term\n ⇒ <b>1 = α²/(ω⁴A²) + υ²/(ω²A²)  (9)</b>  bingo!"
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...but isn’t it even better if we solve (8) for υ! meaning:\n...\n  ⇔     E<sub>mech</sub>       =        U       +        K\n  i.e. “P.C.M.E.”?",
+      "right": "(8) 1 = x²/A² + υ²/(ω²A²)\n⇔ ω²A² = ω²x² + υ² "
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "…hold up!",
+      "right": ""
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "Let me finish, please… solving for υ gives",
+      "right": "⇔ <b>υ = ±ω·√(A²−x²)  ⁽¹⁰⁾</b>\nand that’s the desired relation of oscillator speed vs position!"
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...and from (9), similarly solving for α...",
+      "right": "(9) 1 = α²/(ω⁴A²) + υ²/(ω²A²)\n⇔ <b>α = ±ω·√(ω²A² − υ²)  ⁽¹¹⁾</b>\nand that’s the desired relation of oscillator acceleration vs speed!"
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "hmm yes—and if we think that ωA = υ_max",
+      "right": "⁽¹¹⁾ ⇔ α = ±ω·√((ωA)² − υ²)\n⇔ <b>a = ±ω·√(υ_max² − υ²)  (11΄)</b>"
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "which means that now (11) and (11’) help us <b>“predict” acceleration as long as we know the actor’s speed!</b>",
+      "right": ""
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...but <b>Viewer 1</b> wanted to say something!",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "The point where I stopped had written <b>ω²A² = ω²x² ...</b>\nIf we multiply both sides by ½m, look— the relation becomes:",
+      "right": "<b>½ m ω²A² = ½ m ω²x² + ½ m υ²  ⁽¹²⁾</b>"
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "But then the term ½ m υ² is the kinetic energy of the protagonist (m,D).",
+      "right": "<b>K = ½ m υ²</b>"
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...hmm! And that term is added to ½ m ω² x², which turns out to be the potential energy U (due to position) of the protagonist (m,D)!",
+      "right": "<b>U= ½ m ω² x²</b>",
+      "viewer": 4
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "",
+      "right": ""
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...Therefore, the term ½ m ω² A² on the left\n<b>– First</b> must, as the sum K+U, represent the mechanical energy E<sub>M</sub> of the protagonist (m,D).",
+      "right": "<b>E<sub>mech</sub>= ½ m ω² A²</b>"
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...So you’re saying that (12) shows the validity of a Principle of Conservation of Mechanical Energy?",
+      "right": "<b>⁽¹²⁾ ½ m ω²A² = ½ m ω²x² + ½ m υ²</b>\n  ⇔     E<sub>mech</sub>       =        U       +        K\n  i.e. “P.C.M.E.”?",
+      "viewer": 5
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "Don’t rush! We didn’t conclude yet that this ... (12) leads us to a “P.C.M.E. (oscillator)” for the protagonist oscillator (m,D)!",
+      "right": "E<sub>mech</sub>= ½ m ω² A² = constant ⇔ \n“P.C.M.E. (oscillator)” of protagonist (m,D)",
+      "viewer": 3
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "<b>– Second</b>, comparing E<sub>mech</sub>= ½ m ω² A² with U= ½ m ω² <b>x²</b> (note: at maximum displacement!), we see that ½ m ω² A² is also the maximum potential energy U_max of (m,D).",
+      "right": "<b>E<sub>mech</sub>= ½ m ω² A² = U_max</b>"
+    },
+    {
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...<b>– Third</b>, ½ m ω² A², as mechanical energy, will also equal the maximum kinetic energy of the oscillator—when x=0, i.e. at the equilibrium position.",
+      "right": "<b>E<sub>mech</sub>=½ m ω² A²=U<sub>max</sub>=K<sub>max</sub></b>",
+      "viewer": 3
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "So basically, we now even know the show’s … budget! Without having to watch Act 3 about energy! We’ve… seen this before?",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 800,
+      "left": "Of course we know the budget! We can compute it right here with a simple substitution.",
+      "right": "in the relation E<sub>mech</sub>=½DA² which gives <b>E<sub>mech</sub>={Emech}J</b>"
+    },
+    {
+      "viewer": 4,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "Right! That “algebraic curiosity”, which so often ... ends up giving the relation <b>D=mω²</b>—the one we also put into (7) ΣF = −D·x ...",
+      "right": "<b>D=mω²</b>"
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...which is what you’d want to say: if we use it in (12), it becomes:",
+      "right": "<b>½ D A² = ½ D x² + ½ m υ²  ⁽¹³⁾</b>\n i.e. P.C.M.E. (oscillator) for each (m,D)"
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "Basically, I’m down to leave too—but with an aftertaste from tonight’s show of (m₁,D₁). Let’s summarize:",
+      "right": "The protagonist oscillator <b>(m,D)</b> is characteriz... by its <b>“body type” (m)</b> and its <b>“timing obsession” (ω)</b>"
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...or equivalently—and let’s keep this:",
+      "right": "The protagonist oscillator <b>is fully defined by its own (m,D)!</b>"
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "...So from now on, for us it will hold:",
+      "right": "<b>1. The oscillator (m,D) sets its own ω, f, T for the SHM it will perform</b>\n <b>2. The limits</b> in its show (path length – with ... via the mechanical energy E<sub>mech</sub> it invests, and\n3. </b>the start of SHM and therefore the <b>(φ₀), are always set by us, the viewers</b>!"
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "So… <b>Shall we leave?</b>",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 4000,
+      "pauseMs": 1500,
+      "left": "Of course!",
+      "right": ""
+    }
+  ],
+  "uiTitles": {
+    "act1": {
+      "signTitle": "Act 1: Kinematics… in Algebra!",
+      "signLineA": "Starring the oscillator (m₁, D₁) and the actors(*)",
+      "signLineB": "in the monologue <span class=\"hl\">“endless back-and-forth”</span>… on stage!",
+      "signLineC": "Production–Direction: Emech Energeioulis",
+      "signLineD": "(*) … you"
+    },
+    "act2": {
+      "signTitle": "Act 2: Dynamics… in Algebra!",
+      "signLineA": "Starring the oscillator (m₁, D₁) and the actors",
+      "signLineB": "in the monologue <span class=\"hl\">“endless back-and-forth”</span>… on stage!",
+      "signLineC": "m₁={m1} kg",
+      "signLineD": ""
+    },
+    "act3": {
+      "signTitle": "Act 3: Energy… in Algebra!",
+      "signLineA": "Starring the oscillator (m₁, D₁) and the actors",
+      "signLineB": "in the monologue <span class=\"hl\">“endless back-and-forth”</span>… on stage!",
+      "signLineC": "m₁={m1} kg , D₁={D1} N/m , E<sub>mech</sub>={Emech} J",
+      "signLineD": ""
+    },
+    "foyer": {
+      "signTitle": "Foyer: Free discussion zone!",
+      "signLineA": "Waiting for Act 3 to start: Energy… in Algebra!",
+      "signLineB": "",
+      "signLineC": "",
+      "signLineD": ""
+    }
+  }
+}

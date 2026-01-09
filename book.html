@@ -1,0 +1,2405 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</title>
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#f5f7fb;
+      color:#111827;
+      -webkit-font-smoothing:antialiased;
+    }
+    .page{
+      max-width:1080px;
+      margin:0 auto;
+      padding:24px 16px 40px;
+    }
+    header{
+      margin-bottom:20px;
+    }
+    header h1{
+      font-size:1.7rem;
+      font-weight:700;
+      letter-spacing:-0.03em;
+      color:#111827;
+      margin-bottom:6px;
+    }
+    header .subtitle{
+      font-size:.95rem;
+      color:#4b5563;
+      max-width:720px;
+      line-height:1.5;
+    }
+    section{
+      margin-bottom:20px;
+    }
+    h2{
+      font-size:1.1rem;
+      font-weight:600;
+      margin:4px 0 10px;
+      color:#111827;
+    }
+    p{
+      margin:6px 0;
+      font-size:.95rem;
+    }
+    .muted{
+      color:#6b7280;
+      font-size:.9rem;
+    }
+    .section-label{
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#6b7280;
+      margin-bottom:2px;
+    }
+    .card{
+      background:#ffffff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:12px 14px;
+      box-shadow:0 10px 30px rgba(15,23,42,0.06);
+      margin-top:6px;
+    }
+    .params-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+      gap:8px 16px;
+      margin-top:8px;
+    }
+    .param-pill{
+      background:#f9fafb;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:8px 10px;
+      font-size:.9rem;
+    }
+    .param-label{
+      font-size:.78rem;
+      text-transform:none;
+      letter-spacing:.08em;
+      color:#6b7280;
+      margin-bottom:2px;
+    }
+    .param-value{
+      font-weight:600;
+      color:#111827;
+      margin-bottom:2px;
+    }
+    .param-note{
+      font-size:.8rem;
+      color:#6b7280;
+    }
+    .small-note{
+      font-size:.8rem;
+      color:#6b7280;
+      margin-top:6px;
+    }
+
+    .layout-act1{
+      display:grid;
+      grid-template-columns: minmax(0,1.1fr) minmax(0,1.1fr);
+      gap:16px;
+      align-items:flex-start;
+    }
+
+    .tx-card{
+      background:#ffffff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:10px 12px;
+      box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    }
+
+    .tx-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:6px;
+    }
+    .tx-title{
+      font-size:.98rem;
+      font-weight:600;
+      color:#111827;
+    }
+    .tx-sub{
+      font-size:.8rem;
+      color:#6b7280;
+    }
+
+    .tx-scroll{
+      max-height:220px;
+      overflow:auto;
+      margin-top:6px;
+      border-radius:8px;
+      border:1px solid #e5e7eb;
+      background:#f9fafb;
+    }
+    table.tx-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.9rem;
+    }
+    .tx-table th,
+    .tx-table td{
+      padding:4px 6px;
+      text-align:right;
+      border-bottom:1px solid #e5e7eb;
+      white-space:nowrap;
+    }
+    .tx-table th{
+      font-weight:600;
+      color:#374151;
+      background:#f3f4f6;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    .tx-table tr:nth-child(even) td{
+      background:#f9fafb;
+    }
+
+    .dialog-card{
+      margin-top:12px;
+      padding:0;
+      overflow:hidden;
+    }
+    .dialog-header{
+      padding:10px 12px;
+      border-bottom:1px solid #e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .dialog-title{
+      font-size:.98rem;
+      font-weight:600;
+      color:#111827;
+    }
+    .dialog-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:flex-end;
+    }
+    .tag-pill{
+      font-size:.75rem;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      color:#4b5563;
+      background:#f9fafb;
+    }
+    .dialog-body{
+      padding:0;
+    }
+
+    .dialog-table{
+      display:block;
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      background:#ffffff;
+    }
+    .dialog-row{
+      display:grid;
+      grid-template-columns:minmax(0,2.3fr) minmax(0,1.1fr);
+      border-top:1px solid #e5e7eb;
+    }
+    .dialog-row:first-child{
+      border-top:none;
+    }
+    .dialog-cell{
+      padding:8px 10px;
+      font-size:.94rem;
+    }
+    .dialog-cell.left{
+      border-right:1px solid #e5e7eb;
+      background:#ffffff;
+    }
+    .dialog-cell.right{
+      background:#f9fafb;
+    }
+
+    .speaker{
+      margin-bottom:4px;
+    }
+    .speaker-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#e5e7eb;
+      font-size:.82rem;
+      color:#111827;
+    }
+    .speaker-avatar{
+      width:22px;
+      height:22px;
+      border-radius:999px;
+
+      /* Face focus (χωρίς αλλαγή μεγέθους εικονιδίου):
+         - μετακινούμε το "κάδρο" πιο πάνω (y = 18%)
+         - αν θες πιο κοντινό πλάνο αργότερα, μπορείς να βάλεις:
+           --avatar-bg-size: 140% auto;  (ή 160% auto) */
+      background-size: var(--avatar-bg-size, cover);
+      background-position: 50% var(--avatar-bg-y, 18%);
+      background-repeat:no-repeat;
+
+      flex-shrink:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.8rem;
+      font-weight:600;
+      color:#f9fafb;
+    }
+    .speaker-name{
+      font-weight:500;
+    }
+    .speech{
+      font-size:.94rem;
+      line-height:1.5;
+    }
+
+    .diagram-inline{
+      margin-top:8px;
+      padding-top:4px;
+      border-top:1px dashed #d1d5db;
+    }
+    .diagram-inline canvas{
+      width:100%;
+      max-width:260px;
+      height:auto;
+      display:block;
+      margin:4px 0;
+      background:#ffffff;
+      border-radius:6px;
+      border:1px solid #e5e7eb;
+    }
+    .diagram-caption{
+      font-size:.8rem;
+      color:#6b7280;
+    }
+
+    .footer-note{
+      font-size:.8rem;
+      color:#6b7280;
+      margin-top:12px;
+      padding-top:8px;
+      border-top:1px dashed #d1d5db;
+    }
+
+    .note-box{
+      background:#ecfdf3;
+      border:1px solid #bbf7d0;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:.9rem;
+      margin-top:6px;
+      color:#14532d;
+    }
+
+    .warning-box{
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:.9rem;
+      margin-top:6px;
+      color:#7c2d12;
+    }
+
+    /* ----- Πίνακας t–x ----- */
+    #txTableWrapper{
+      margin-top:8px;
+    }
+    #txTableContainer{
+      margin-top:4px;
+      background:#ffffff;
+      border-radius:8px;
+      border:1px solid #e5e7eb;
+      padding:4px;
+      max-height:150px;        /* ~5 γραμμές */
+      overflow-y:auto;
+    }
+
+    #txTableBodyEmpty{
+      text-align:left;
+      font-size:.9rem;
+      color:#6b7280;
+      padding:6px;
+    }
+
+    .dialog-block{
+      padding:10px 12px;
+    }
+
+
+    /* ----- Actions / PDF export ----- */
+    .book-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .book-header-left{
+      min-width:0;
+    }
+    .book-actions{
+      display:flex;
+      gap:8px;
+      flex-shrink:0;
+      margin-top:2px;
+    }
+
+
+    .pdf-controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pdf-label{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      font-size:.82rem;
+      color:#334155;
+      white-space:nowrap;
+    }
+    .pdf-select{
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      padding:8px 10px;
+      background:#fff;
+      color:#111827;
+      font-size:.9rem;
+      box-shadow:0 8px 18px rgba(15,23,42,0.06);
+    }
+    .btn{
+      appearance:none;
+      border:1px solid #e5e7eb;
+      background:#ffffff;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:.9rem;
+      font-weight:600;
+      color:#111827;
+      cursor:pointer;
+      box-shadow:0 8px 18px rgba(15,23,42,0.06);
+    }
+    .btn:hover{
+      background:#f9fafb;
+    }
+    .btn:active{
+      transform:translateY(1px);
+    }
+    .btn:focus{
+      outline:2px solid rgba(59,130,246,0.35);
+      outline-offset:2px;
+    }
+
+    /* ----- Print to PDF ----- */
+    @media print{
+      @page{
+        size:A4;
+        margin:12mm;
+      }
+      /* hide on-screen controls in PDF */
+      .book-actions{ display:none !important; }
+
+      /* keep the two-column theatre layout also in print */
+      .layout-act1{
+        grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr) !important;
+        gap:16px !important;
+      }
+      .dialog-row{
+        grid-template-columns:minmax(0,2.3fr) minmax(0,1.1fr) !important;
+      }
+
+      body{
+        background:#ffffff !important;
+        color:#000000 !important;
+      }
+      .page{
+        max-width:none !important;
+        margin:0 !important;
+        padding:0 !important;
+      }
+      .book-actions{
+        display:none !important;
+      }
+      /* remove "app" effects */
+      .card,
+      .tx-card{
+        box-shadow:none !important;
+      }
+      /* expand scroll areas for printing */
+      .tx-scroll,
+      #txTableContainer{
+        max-height:none !important;
+        overflow:visible !important;
+      }
+      /* allow content to break naturally across pages.
+         Only figures/images should avoid being split. */
+      img, svg, canvas,
+      .chart-wrap,
+      .figure,
+      .book-figure{
+        break-inside:avoid;
+        page-break-inside:avoid;
+      }
+
+      /* force page breaks between acts / foyer sections */
+      section + section{
+        break-before:page;
+        page-break-before:always;
+      }
+      /* keep sticky headers normal in print */
+      .tx-table th{
+        position:static !important;
+      }
+    }
+
+
+    @media screen and (max-width:900px){
+      .layout-act1{
+        grid-template-columns:1fr;
+      }
+      .dialog-row{
+        grid-template-columns:1fr;
+      }
+      .dialog-cell.left{
+        border-right:none;
+        border-bottom:1px solid #e5e7eb;
+      }
+      .dialog-cell.right{
+        border-top:none;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header class="book-header">
+    <div class="book-header-left">
+      <h1 id="bookH1">Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
+      <div class="subtitle" id="bookSubtitle">
+        Η ίδια παράσταση, αλλά σε «λειτουργία βιβλίου». Ο πίνακας t–x, τα διαγράμματα και οι διάλογοι, σε μια σελίδα που
+        μπορείς να διαβάσεις με το δικό σου ρυθμό.
+      </div>
+    </div>
+    <div class="book-actions">
+      <div class="pdf-controls">
+        <label class="pdf-label"><span id="lblOrient">Προσανατολισμός</span>
+          <select id="pdfOrient" class="pdf-select">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </label>
+        <label class="pdf-label"><span id="lblTableMode">Πίνακας t–x</span>
+          <select id="pdfTableMode" class="pdf-select">
+            <option value="summary">Σύνοψη (10 πρώτες)</option>
+            <option value="full">Πλήρης</option>
+          </select>
+        </label>
+      </div>
+      <button id="btnPdf" class="btn" type="button">Εξαγωγή PDF</button>
+    </div>
+  </header>
+
+  <!-- ΜΕΡΟΣ Β: Πράξη 1 -->
+  <section>
+    <div class="section-label" id="act1Label">Πράξη 1</div>
+    <h2 id="act1H2">Η Κινηματική στα ...Αλγεβρικά! </h2>
+
+    <div class="layout-act1">
+      <div>
+        <div class="card">
+          <p id="act1IntroP1">
+            Στην Πράξη 1, οι θεατές προσπαθούν να μελετήσουν την κίνηση
+            από τις μετρήσεις t–x. Σκέφτονται, προτείνουν τρόπους ώστε να αποδείξουν τους νόμους της ΑΑΤ!
+            Παρεμβάλλονται σχόλια, επεξηγήσεις που βοηθούν τον αναγνώστη στην καλύτερη κατανόηση αυτής της διαδικασίας,
+            που είναι σε τελευταία ανάλυση καθαρά πειραματική!
+          </p>
+          <p class="muted" id="act1IntroP2">
+            Ο πίνακας στα δεξιά περιέχει τα ζεύγη (t, x) από τη παράσταση που πριν παρακολουθήσατε.
+            Κάτω από αυτόν ξεκινούν οι διάλογοι της παράστασης: αριστερά τα όσα σκέφτηκαν κατά τη διάρκειά της οι θεατές, δεξιά οι νόμοι
+            και τα γραφήματα όπως εμφανίστηκαν σ αυτήν.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <div class="tx-card">
+          <div class="tx-header">
+            <div>
+              <div class="tx-title" id="txTitle">Πίνακας μετρήσεων t–x</div>
+              <div class="tx-sub" id="txSub">
+                Απόσπασμα του πίνακα μετρήσεων της παράστασης.
+              </div>
+            </div>
+          </div>
+          <div id="txTableWrapper">
+            <div id="txTableContainer">
+              <table class="tx-table">
+                <thead>
+                  <tr>
+                    <th>t (s)</th>
+                    <th>x (m)</th>
+                  </tr>
+                </thead>
+                <tbody id="txTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card dialog-card">
+      <div class="dialog-header">
+        <div class="dialog-title" id="act1DialogTitle">Διάλογοι Πράξης 1</div>
+        <div class="dialog-tags" id="act1Tags"></div>
+      </div>
+      <div class="dialog-body">
+        <div id="act1Transcript" class="dialog-block"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ΠΑΡΑΜΕΤΡΟΙ Α.Α.Τ. ΜΕΤΑΞΥ ΠΡΑΞΗΣ 1 & 2 -->
+  <section>
+    <div class="section-label" id="paramsLabel">Τα μέχρι τώρα ποσοτικά συμπεράσματα</div>
+    <div class="card">
+      <div class="params-grid">
+        <div class="param-pill">
+          <div class="param-label" id="lblA">Πλάτος A</div>
+          <div class="param-value"><span data-param="A">—</span> m</div>
+          <div class="param-note" id="noteA">Μέγιστη απομάκρυνση από τη Θ.Ι.</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label" id="lblT">Περίοδος T</div>
+          <div class="param-value"><span data-param="T">—</span> s</div>
+          <div class="param-note" id="noteT">Χρόνος για μία πλήρη ταλάντωση</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label" id="lblOmega">Γωνιακή συχνότητα ω</div>
+          <div class="param-value"><span data-param="omega">—</span> rad/s</div>
+          <div class="param-note" id="noteOmega">ω = 2π/T</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label" id="lblX0">Αρχική θέση x₀</div>
+          <div class="param-value"><span data-param="x0">—</span> m</div>
+          <div class="param-note" id="noteX0">x₀ = A·ημ(φ₀)</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label" id="lblV0">Αρχική ταχύτητα υ₀</div>
+          <div class="param-value">
+            <span data-param="v0">—</span> m/s
+          </div>
+          <div class="param-note" id="noteV0">
+            Σημάδι: <span data-param="vSignSymbol">υ=0</span>
+            (<span data-param="vSignWord">μηδενική</span>)
+          </div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label" id="lblPhi0">Αρχική φάση φ₀</div>
+          <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
+          <div class="param-note" id="notePhi0">Φάση τη στιγμή t = 0</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label" id="lblTzero">νέο t = 0</div>
+          <div class="param-value"><span data-param="tZero">—</span> s</div>
+          <div class="param-note" id="noteTzero">στιγμή πρώτου μηδενισμού της φάσης</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ΜΕΡΟΣ Γ: Πράξη 2 -->
+  <section>
+    <div class="section-label" id="act2Label">Πράξη 2</div>
+    <h2 id="act2H2">Η δυναμική στα ... Αλγεβρικά!</h2>
+
+    <div class="card dialog-card">
+      <div class="dialog-header">
+        <div class="dialog-title" id="act2DialogTitle">Διάλογοι Πράξης 2</div>
+        <div class="dialog-tags" id="act2Tags"></div>
+      </div>
+      <div class="dialog-body">
+        <div id="act2Transcript" class="dialog-block"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ΜΕΡΟΣ Δ: Φουαγιέ -->
+  <section>
+    <div class="section-label" id="foyerLabel">Φουαγιέ</div>
+    <h2 id="foyerH2">Συζήτηση στο φουαγιέ στο διάλλειμα ανάμεσα σε Δεύτερη και Τρίτη Πράξη</h2>
+
+    <div class="card">
+      <p class="muted" id="foyerMutedP">
+        Και εδώ, σκέψεις θεατών αριστερά,
+        συνοδευτικά σχόλια / τύποι στη δεξιά στήλη.
+      </p>
+      <div id="foyerTranscript" class="dialog-block"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const BOOK_STORAGE_KEY = 'aatBookData';
+
+  let VIEWERS = [];
+  let ACT1 = [];
+  let ACT2 = [];
+  let FOYER = [];
+
+  let BOOK_CFG = null;
+
+  let gA = 3.0;
+  let gT = 6.0;
+  let gOmega = 2*Math.PI/6.0;
+  let gX0 = 0.0;
+  let gPhi0Deg = 0.0;
+  let gPhi0Rad = 0.0;
+  let gV0 = 0.0;
+  let gVSignSymbol = 'υ=0';
+  let gVSignWord = 'μηδενική';
+  let gM1 = 70.0;
+  let gD1 = NaN;
+  let gEmech = NaN; // Eμηχ
+
+  let gSamples = [];
+  let gPhaseZeroT = 0.0; // θα έρχεται από index μέσω localStorage
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
+  document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
+
+  // --- Static UI localization for Book page (GR/EN) ---
+  const BOOK_UI = {
+    gr: {
+      title: 'Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση',
+      subtitle: 'Η ίδια παράσταση, αλλά σε «λειτουργία βιβλίου». Ο πίνακας t–x, τα διαγράμματα και οι διάλογοι, σε μια σελίδα που μπορείς να διαβάσεις με το δικό σου ρυθμό.',
+      lblOrient: 'Προσανατολισμός',
+      lblTableMode: 'Πίνακας t–x',
+      optSummary: 'Σύνοψη (10 πρώτες)',
+      optFull: 'Πλήρης',
+      btnPdf: 'Εξαγωγή PDF',
+      act1Label: 'Πράξη 1',
+      act1H2: 'Η Κινηματική στα ...Αλγεβρικά! ',
+      act1IntroP1: 'Στην Πράξη 1, οι θεατές προσπαθούν να μελετήσουν την κίνηση από τις μετρήσεις t–x. Σκέφτονται, προτείνουν τρόπους ώστε να αποδείξουν τους νόμους της ΑΑΤ! Παρεμβάλλονται σχόλια, επεξηγήσεις που βοηθούν τον αναγνώστη στην καλύτερη κατανόηση αυτής της διαδικασίας, που είναι σε τελευταία ανάλυση καθαρά πειραματική!',
+      act1IntroP2: 'Ο πίνακας στα δεξιά περιέχει τα ζεύγη (t, x) από τη παράσταση που πριν παρακολουθήσατε. Κάτω από αυτόν ξεκινούν οι διάλογοι της παράστασης: αριστερά τα όσα σκέφτηκαν κατά τη διάρκειά της οι θεατές, δεξιά οι νόμοι και τα γραφήματα όπως εμφανίστηκαν σ αυτήν.',
+      txTitle: 'Πίνακας μετρήσεων t–x',
+      txSub: 'Απόσπασμα του πίνακα μετρήσεων της παράστασης.',
+      act1DialogTitle: 'Διάλογοι Πράξης 1',
+      paramsLabel: 'Τα μέχρι τώρα ποσοτικά συμπεράσματα',
+      lblA: 'Πλάτος A',
+      noteA: 'Μέγιστη απομάκρυνση από τη Θ.Ι.',
+      lblT: 'Περίοδος T',
+      noteT: 'Χρόνος για μία πλήρη ταλάντωση',
+      lblOmega: 'Γωνιακή συχνότητα ω',
+      noteOmega: 'ω = 2π/T',
+      lblX0: 'Αρχική θέση x₀',
+      noteX0: 'x₀ = A·ημ(φ₀)',
+      lblV0: 'Αρχική ταχύτητα υ₀',
+      noteV0Prefix: 'Σημάδι:',
+      lblPhi0: 'Αρχική φάση φ₀',
+      notePhi0: 'Φάση τη στιγμή t = 0',
+      lblTzero: 'νέο t = 0',
+      noteTzero: 'στιγμή πρώτου μηδενισμού της φάσης',
+      act2Label: 'Πράξη 2',
+      act2H2: 'Η δυναμική στα ... Αλγεβρικά!',
+      act2DialogTitle: 'Διάλογοι Πράξης 2',
+      foyerLabel: 'Φουαγιέ',
+      foyerH2: 'Συζήτηση στο φουαγιέ στο διάλλειμα ανάμεσα σε Δεύτερη και Τρίτη Πράξη',
+      foyerMutedP: 'Και εδώ, σκέψεις θεατών αριστερά, συνοδευτικά σχόλια / τύποι στη δεξιά στήλη.',
+      cap_xt: 'Διάγραμμα x–t',
+      cap_xsin: 'Διάγραμμα x–ημ(ωt)',
+      cap_v: 'Διάγραμμα υ–t',
+      cap_a: 'Διάγραμμα a–t',
+      cap_ax: 'Διάγραμμα a–x'
+    },
+    en: {
+      title: 'Performance Book — Simple Harmonic Motion',
+      subtitle: 'The same performance, but in “book mode”. The t–x table, the plots, and the dialogues — on one page, at your own pace.',
+      lblOrient: 'Orientation',
+      lblTableMode: 't–x table',
+      optSummary: 'Summary (first 10)',
+      optFull: 'Full',
+      btnPdf: 'Export PDF',
+      act1Label: 'Act 1',
+      act1H2: 'Kinematics in ...Algebra!',
+      act1IntroP1: 'In Act 1, the viewers try to read the motion straight from the t–x measurements. They think out loud, propose methods, and basically attempt to *prove* the SHM laws — using data, not vibes.',
+      act1IntroP2: 'The table on the right contains the (t, x) pairs from the performance you just watched. Under it, the dialogue starts: viewers’ thoughts on the left, and the laws/plots as they appeared on the right.',
+      txTitle: 't–x measurement table',
+      txSub: 'Excerpt from the performance measurement table.',
+      act1DialogTitle: 'Act 1 Dialogues',
+      paramsLabel: 'Quantitative conclusions so far',
+      lblA: 'Amplitude A',
+      noteA: 'Maximum displacement from equilibrium.',
+      lblT: 'Period T',
+      noteT: 'Time for one full oscillation',
+      lblOmega: 'Angular frequency ω',
+      noteOmega: 'ω = 2π/T',
+      lblX0: 'Initial position x₀',
+      noteX0: 'x₀ = A·sin(φ₀)',
+      lblV0: 'Initial velocity v₀',
+      noteV0Prefix: 'Sign:',
+      lblPhi0: 'Initial phase φ₀',
+      notePhi0: 'Phase at t = 0',
+      lblTzero: 'new t = 0',
+      noteTzero: 'time of first phase zero-crossing',
+      act2Label: 'Act 2',
+      act2H2: 'Dynamics in ...Algebra!',
+      act2DialogTitle: 'Act 2 Dialogues',
+      foyerLabel: 'Foyer',
+      foyerH2: 'Foyer discussion during the break between Act 2 and Act 3',
+      foyerMutedP: 'Here too: viewers’ thoughts on the left, supporting notes / formulas on the right.',
+      cap_xt: 'x–t plot',
+      cap_xsin: 'x–sin(ωt) plot',
+      cap_v: 'v–t plot',
+      cap_a: 'a–t plot',
+      cap_ax: 'a–x plot'
+    }
+  };
+
+  function applyBookStaticUI(){
+    const U = BOOK_UI[lang] || BOOK_UI.gr;
+
+    document.title = U.title;
+    const h1 = document.getElementById('bookH1');
+    if(h1) h1.textContent = U.title;
+
+    const sub = document.getElementById('bookSubtitle');
+    if(sub) sub.textContent = U.subtitle;
+
+    const lblOrient = document.getElementById('lblOrient');
+    if(lblOrient) lblOrient.textContent = U.lblOrient;
+
+    const lblTableMode = document.getElementById('lblTableMode');
+    if(lblTableMode) lblTableMode.textContent = U.lblTableMode;
+
+    const btnPdf = document.getElementById('btnPdf');
+    if(btnPdf) btnPdf.textContent = U.btnPdf;
+
+    const act1Label = document.getElementById('act1Label');
+    if(act1Label) act1Label.textContent = U.act1Label;
+    const act1H2 = document.getElementById('act1H2');
+    if(act1H2) act1H2.textContent = U.act1H2;
+
+    const act1IntroP1 = document.getElementById('act1IntroP1');
+    if(act1IntroP1 && U.act1IntroP1!=null) act1IntroP1.textContent = U.act1IntroP1;
+    const act1IntroP2 = document.getElementById('act1IntroP2');
+    if(act1IntroP2 && U.act1IntroP2!=null) act1IntroP2.textContent = U.act1IntroP2;
+
+    const txTitle = document.getElementById('txTitle');
+    if(txTitle) txTitle.textContent = U.txTitle;
+    const txSub = document.getElementById('txSub');
+    if(txSub) txSub.textContent = U.txSub;
+
+    const act1DialogTitle = document.getElementById('act1DialogTitle');
+    if(act1DialogTitle) act1DialogTitle.textContent = U.act1DialogTitle;
+
+    const paramsLabel = document.getElementById('paramsLabel');
+    if(paramsLabel) paramsLabel.textContent = U.paramsLabel;
+
+    const set = (id, val) => { const el = document.getElementById(id); if(el && val!=null) el.textContent = val; };
+
+    set('lblA', U.lblA); set('noteA', U.noteA);
+    set('lblT', U.lblT); set('noteT', U.noteT);
+    set('lblOmega', U.lblOmega); set('noteOmega', U.noteOmega);
+    set('lblX0', U.lblX0); set('noteX0', U.noteX0);
+    set('lblV0', U.lblV0);
+    set('lblPhi0', U.lblPhi0); set('notePhi0', U.notePhi0);
+    set('lblTzero', U.lblTzero); set('noteTzero', U.noteTzero);
+
+    // v0 sign line keeps the data-param spans, just swaps prefix and v/υ label
+    const noteV0 = document.getElementById('noteV0');
+    if(noteV0){
+      noteV0.innerHTML = `${U.noteV0Prefix} <span data-param="vSignSymbol">${(lang==='en') ? 'v=0' : 'υ=0'}</span> (<span data-param="vSignWord">${(lang==='en') ? 'zero' : 'μηδενική'}</span>)`;
+    }
+
+    const act2Label = document.getElementById('act2Label');
+    if(act2Label) act2Label.textContent = U.act2Label;
+    const act2H2 = document.getElementById('act2H2');
+    if(act2H2) act2H2.textContent = U.act2H2;
+    const act2DialogTitle = document.getElementById('act2DialogTitle');
+    if(act2DialogTitle) act2DialogTitle.textContent = U.act2DialogTitle;
+
+    const foyerLabel = document.getElementById('foyerLabel');
+    if(foyerLabel) foyerLabel.textContent = U.foyerLabel;
+    const foyerH2 = document.getElementById('foyerH2');
+    if(foyerH2) foyerH2.textContent = U.foyerH2;
+    const foyerMutedP = document.getElementById('foyerMutedP');
+    if(foyerMutedP) foyerMutedP.textContent = U.foyerMutedP;
+
+    // Options in select
+    const o = document.getElementById('pdfTableMode');
+    if(o){
+      const optSummary = o.querySelector('option[value="summary"]');
+      const optFull = o.querySelector('option[value="full"]');
+      if(optSummary) optSummary.textContent = U.optSummary;
+      if(optFull) optFull.textContent = U.optFull;
+    }
+  }
+
+  applyBookStaticUI();
+
+
+  const diagramJobs = [];
+
+  function localizeTrig(text){
+    if(!text) return '';
+    let out = String(text);
+    if(lang === 'gr'){
+      out = out.replace(/sin/g,'ημ').replace(/cos/g,'συν');
+    }
+    return out;
+  }
+
+  function loadBookData(){
+    try{
+      const raw = localStorage.getItem(BOOK_STORAGE_KEY);
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      return data || null;
+    }catch(e){
+      console.error('loadBookData error', e);
+      return null;
+    }
+  }
+
+  function setParam(name, valueStr){
+    document.querySelectorAll('[data-param="'+name+'"]').forEach(el=>{
+      el.textContent = valueStr;
+    });
+  }
+
+  function expandDynTemplate(tpl){
+    if(!tpl) return '';
+    const s = String(tpl);
+    return s
+      .replaceAll('{A}', gA.toFixed(2))
+      .replaceAll('{T}', gT.toFixed(2))
+      .replaceAll('{omega}', gOmega.toFixed(3))
+      .replaceAll('{x0}', gX0.toFixed(2))
+      .replaceAll('{phi0}', gPhi0Deg.toFixed(1))
+      .replaceAll('{phi0rad}', (((gPhi0Rad%(2*Math.PI)) + 2*Math.PI)%(2*Math.PI)).toFixed(3))
+      .replaceAll('{phi0Rad}', (((gPhi0Rad%(2*Math.PI)) + 2*Math.PI)%(2*Math.PI)).toFixed(3))
+      .replaceAll('{vSignSymbol}', gVSignSymbol)
+      .replaceAll('{vSignWord}', gVSignWord)
+      .replaceAll('{m1}', (isFinite(gM1) ? String(gM1.toFixed(2)) : ''))
+      .replaceAll('{D1}', (isFinite(gD1) ? String(gD1.toFixed(2)) : ''))
+      .replaceAll('{Emech}', (isFinite(gEmech) ? String(gEmech.toFixed(2)) : ''))
+      .replaceAll('{Eμηχ}', (isFinite(gEmech) ? String(gEmech.toFixed(2)) : ''))
+      .replaceAll('{tZero}', gPhaseZeroT.toFixed(2));
+  }
+
+  function renderTxTable(samples){
+    const tbody = document.getElementById('txTableBody');
+    tbody.innerHTML = '';
+
+    if(!samples || !samples.length){
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 2;
+      td.textContent = (lang === 'en')
+        ? 'No t–x samples available. Play the scene at least once with the Book button.'
+        : 'Δεν υπάρχουν δείγματα t–x. Παίξε τουλάχιστον μία φορά τη σκηνή με το κουμπί Βιβλίο.';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    samples.forEach(pair=>{
+      if(pair && pair._ellipsis){
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 2;
+        td.textContent = (lang === 'en')
+          ? '… (intermediate rows omitted)'
+          : '… (παραλείπονται ενδιάμεσες τιμές)';
+        td.style.textAlign = 'center';
+        td.style.color = '#6b7280';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+      const tr = document.createElement('tr');
+      const tdT = document.createElement('td');
+      const tdX = document.createElement('td');
+
+      tdT.textContent = (pair.t != null) ? pair.t.toFixed(2) : '';
+      tdX.textContent = (pair.x != null) ? pair.x.toFixed(2) : '';
+
+      tr.appendChild(tdT);
+      tr.appendChild(tdX);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function viewerName(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    if(idx0 < 0 || idx0 >= VIEWERS.length) return '';
+    const v = VIEWERS[idx0];
+    if(!v) return '';
+    if(lang === 'en'){
+      return v.name_en || v.name_gr || ('Viewer ' + viewerIdx1);
+    }else{
+      return v.name_gr || ('Θεατής ' + viewerIdx1);
+    }
+  }
+
+  function viewerInitial(viewerIdx1){
+    const name = viewerName(viewerIdx1);
+    return name ? (name.trim()[0] || '?') : '?';
+  }
+
+  function viewerColor(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.color) ? v.color : '#4b5563';
+  }
+
+  function viewerImg(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.img) ? v.img : null;
+  }
+
+  function applyColumnAlignment(div, column){
+    if(column === 'left'){
+      div.style.maxWidth = '60%';
+    }else if(column === 'right'){
+      div.style.maxWidth = '40%';
+      div.style.marginLeft = 'auto';
+    }else if(column === 'full'){
+      div.style.maxWidth = '100%';
+    }
+  }
+
+  function pickBlockClass(block, fallback){
+    if(!block || typeof block !== 'object') return fallback || '';
+    const explicit = block.className || block.class;
+    if(explicit != null && String(explicit).trim() !== '') return String(explicit).trim();
+
+    const t = (block.type || '').toLowerCase();
+    if(t === 'warning') return 'warning-box';
+    if(t === 'note')    return 'note-box';
+    if(t === 'card')    return 'card';
+    if(t === 'html')    return 'card';
+    if(t === 'plain')   return '';
+    return fallback || '';
+  }
+
+  function applyInlineStyle(el, styleText){
+    if(!el) return;
+    const s = (styleText == null) ? '' : String(styleText).trim();
+    if(!s) return;
+    const prev = el.getAttribute('style') || '';
+    el.setAttribute('style', prev ? (prev + '; ' + s) : s);
+  }
+
+  function renderBlockStandalone(block, container, actId, dialogIndex, zone){
+    if(!block || typeof block !== 'object') return;
+    const type = (block.type || 'note').toLowerCase();
+    const col  = block.column || '';
+
+    if(col === 'left' || col === 'right'){
+      const row = document.createElement('div');
+      row.className = 'dialog-row';
+
+      const leftCell  = document.createElement('div');
+      const rightCell = document.createElement('div');
+      leftCell.className  = 'dialog-cell left';
+      rightCell.className = 'dialog-cell right';
+
+      renderBlockInline(
+        block,
+        leftCell,
+        rightCell,
+        actId,
+        dialogIndex,
+        zone || 'standalone'
+      );
+
+      if(col === 'left' && !rightCell.innerHTML.trim()){
+        rightCell.innerHTML = '&nbsp;';
+      }
+      if(col === 'right' && !leftCell.innerHTML.trim()){
+        leftCell.innerHTML = '&nbsp;';
+      }
+
+      row.appendChild(leftCell);
+      row.appendChild(rightCell);
+      container.appendChild(row);
+      return;
+    }
+
+    if(type === 'note' || type === 'html' || type === 'warning' || type === 'card' || type === 'plain'){
+      const div = document.createElement('div');
+      const fallback = (type === 'warning') ? 'warning-box'
+                    : (type === 'note')    ? 'note-box'
+                    : (type === 'plain')   ? ''
+                    : 'card';
+      div.className = pickBlockClass(block, fallback);
+
+      const html = expandDynTemplate(block.html || block.text || '');
+      div.innerHTML = html;
+
+      applyColumnAlignment(div, col || 'full');
+      applyInlineStyle(div, block.style);
+
+      container.appendChild(div);
+      return;
+    }
+
+    if(type === 'image'){
+      const wrapper = document.createElement('div');
+      wrapper.className = pickBlockClass(block, 'card');
+      applyColumnAlignment(wrapper, col || 'full');
+      applyInlineStyle(wrapper, block.style);
+
+      const img = document.createElement('img');
+      img.src = block.src || '';
+      img.alt = block.alt || '';
+      img.style.maxWidth = '100%';
+      img.style.display = 'block';
+      img.style.borderRadius = '6px';
+      wrapper.appendChild(img);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        wrapper.appendChild(cap);
+      }
+
+      container.appendChild(wrapper);
+      return;
+    }
+
+    if(type === 'diagram'){
+      const wrapper = document.createElement('div');
+      wrapper.className = pickBlockClass(block, 'card');
+      applyColumnAlignment(wrapper, col || 'full');
+      applyInlineStyle(wrapper, block.style);
+
+      if(block.title){
+        const h3 = document.createElement('h3');
+        h3.textContent = block.title;
+        wrapper.appendChild(h3);
+      }
+
+      const canvBox = document.createElement('div');
+      canvBox.className = 'diagram-inline';
+      const canv = document.createElement('canvas');
+      const id = `${actId}-${zone || 'extra'}-${dialogIndex != null ? dialogIndex : 'all'}-${block.id || block.kind || 'd'}-${diagramJobs.length}`;
+      canv.id = id;
+      canvBox.appendChild(canv);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        canvBox.appendChild(cap);
+      }
+
+      wrapper.appendChild(canvBox);
+      container.appendChild(wrapper);
+
+      diagramJobs.push({
+        id,
+        kind: block.kind || 'xt',
+        xtZeroMark: !!block.xtZeroMark,
+        xtMarkTail: !!block.xtMarkTail
+      });
+      return;
+    }
+  }
+
+  function renderBlockInline(block, leftCell, rightCell, actId, dialogIndex, zone){
+    if(!block || typeof block !== 'object') return false;
+
+    let parent = rightCell;
+    if(block.column === 'left' && leftCell){
+      parent = leftCell;
+    }
+    const goesRight = (parent === rightCell);
+
+    const type = (block.type || 'note').toLowerCase();
+
+    if(type === 'note' || type === 'html' || type === 'warning' || type === 'card' || type === 'plain'){
+      const box = document.createElement('div');
+      const fallback = (type === 'warning') ? 'warning-box'
+                    : (type === 'note')    ? 'note-box'
+                    : (type === 'plain')   ? ''
+                    : 'card';
+      box.className = pickBlockClass(block, fallback);
+      box.style.marginTop = '6px';
+
+      const html = expandDynTemplate(block.html || block.text || '');
+      box.innerHTML = html;
+
+      applyInlineStyle(box, block.style);
+
+      parent.appendChild(box);
+      return goesRight;
+    }
+
+    if(type === 'image'){
+      const wrap = document.createElement('div');
+      wrap.className = 'diagram-inline';
+      applyInlineStyle(wrap, block.style);
+
+      const img = document.createElement('img');
+      img.src = block.src || '';
+      img.alt = block.alt || '';
+      img.style.maxWidth = '100%';
+      img.style.display = 'block';
+      img.style.borderRadius = '6px';
+      wrap.appendChild(img);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        wrap.appendChild(cap);
+      }
+
+      parent.appendChild(wrap);
+      return goesRight;
+    }
+
+    if(type === 'diagram'){
+      const box = document.createElement('div');
+      box.className = 'diagram-inline';
+      applyInlineStyle(box, block.style);
+
+      const canv = document.createElement('canvas');
+      const id = `${actId}-inline-${zone || 'in'}-${dialogIndex != null ? dialogIndex : 'x'}-${block.id || block.kind || 'd'}-${diagramJobs.length}`;
+      canv.id = id;
+      box.appendChild(canv);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        box.appendChild(cap);
+      }
+
+      parent.appendChild(box);
+      diagramJobs.push({
+        id,
+        kind: block.kind || 'xt',
+        xtZeroMark: !!block.xtZeroMark,
+        xtMarkTail: !!block.xtMarkTail
+      });
+      return goesRight;
+    }
+
+    return goesRight;
+  }
+
+  function getEventInlineBlocks(ev){
+    if(!ev || typeof ev !== 'object') return [];
+    const a = [];
+
+    if(Array.isArray(ev.inline)) a.push(...ev.inline);
+    if(Array.isArray(ev.inlineBlocks)) a.push(...ev.inlineBlocks);
+    if(Array.isArray(ev.inlineAdd)) a.push(...ev.inlineAdd);
+    if(Array.isArray(ev.addonsInline)) a.push(...ev.addonsInline);
+
+    return a;
+  }
+
+  function buildDialogRow(ev, idx, contextLabel, inlineBlocks){
+    const row = document.createElement('div');
+    row.className = 'dialog-row';
+
+    const leftCell  = document.createElement('div');
+    const rightCell = document.createElement('div');
+    leftCell.className  = 'dialog-cell left';
+    rightCell.className = 'dialog-cell right';
+
+    const hasLeftRaw  = ev.left  && String(ev.left).trim()  !== '';
+    const hasRightRaw = ev.right && String(ev.right).trim() !== '';
+
+    const leftText  = hasLeftRaw  ? expandDynTemplate(ev.left)  : '';
+    const rightText = hasRightRaw ? expandDynTemplate(ev.right) : '';
+
+    const hasLeft  = leftText.trim()  !== '';
+    const hasRight = rightText.trim() !== '';
+
+    if(hasLeft){
+      const sp = document.createElement('div');
+      sp.className = 'speaker';
+
+      const badge = document.createElement('div');
+      badge.className = 'speaker-badge';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'speaker-avatar';
+
+      if(ev.viewer != null){
+        const vColor = viewerColor(ev.viewer);
+        const vImg   = viewerImg(ev.viewer);
+        avatar.style.backgroundColor = vColor;
+        if(vImg){
+          avatar.style.backgroundImage = 'url("'+vImg+'")';
+        }else{
+          avatar.textContent = viewerInitial(ev.viewer);
+        }
+      }else{
+        avatar.style.backgroundColor = '#6b7280';
+        avatar.textContent = (lang === 'en') ? 'N' : 'Α';
+      }
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'speaker-name';
+      if(ev.viewer != null){
+        nameSpan.textContent = viewerName(ev.viewer);
+      }else{
+        nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
+      }
+
+      badge.appendChild(avatar);
+      badge.appendChild(nameSpan);
+      sp.appendChild(badge);
+
+      const speech = document.createElement('div');
+      speech.className = 'speech';
+      speech.innerHTML = leftText.replaceAll('\n','<br>');
+
+      leftCell.appendChild(sp);
+      leftCell.appendChild(speech);
+    }else{
+      leftCell.innerHTML = '&nbsp;';
+    }
+
+    let anythingRight = false;
+
+    if(hasRight){
+      const txt = localizeTrig(rightText).replaceAll('\n','<br>');
+      const lawDiv = document.createElement('div');
+      lawDiv.innerHTML = txt;
+      rightCell.appendChild(lawDiv);
+      anythingRight = true;
+    }
+
+    function addDiagram(kind, caption, extraOpts){
+      const box = document.createElement('div');
+      box.className = 'diagram-inline';
+      const canv = document.createElement('canvas');
+      const id = `${contextLabel}-${kind}-${idx}-${diagramJobs.length}`;
+      canv.id = id;
+      box.appendChild(canv);
+      if(caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = caption;
+        box.appendChild(cap);
+      }
+      rightCell.appendChild(box);
+      diagramJobs.push(Object.assign({ id, kind }, (extraOpts || {})));
+      anythingRight = true;
+    }
+
+    const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
+
+    if(ev.graph === 'xt' || hasXtMark){
+      addDiagram(
+        'xt',
+        (BOOK_UI[lang]||BOOK_UI.gr).cap_xt,
+        {
+          xtZeroMark: !!ev.xtZeroMark,
+          xtMarkTail: !!ev.xtMarkTail
+        }
+      );
+    }
+
+    if(ev.plot === 'xsin'){
+      addDiagram('xsin', (BOOK_UI[lang]||BOOK_UI.gr).cap_xsin);
+    }
+    if(ev.plot === 'v'){
+      addDiagram('v', (BOOK_UI[lang]||BOOK_UI.gr).cap_v);
+    }
+    if(ev.plot === 'a'){
+      addDiagram('a', (BOOK_UI[lang]||BOOK_UI.gr).cap_a);
+    }
+    if(ev.plot === 'ax'){
+      addDiagram('ax', (BOOK_UI[lang]||BOOK_UI.gr).cap_ax);
+    }
+
+    // ✅ Inline πρόσθετα: και από book-*.json (inlineBlocks) ΚΑΙ απευθείας από dialogs JSON (ev.inline)
+    const mergedInline = [];
+    if(inlineBlocks && inlineBlocks.length) mergedInline.push(...inlineBlocks);
+    const evInline = getEventInlineBlocks(ev);
+    if(evInline.length) mergedInline.push(...evInline);
+
+    if(mergedInline.length){
+      mergedInline.forEach(block => {
+        const placedRight = renderBlockInline(
+          block,
+          leftCell,
+          rightCell,
+          contextLabel,
+          idx,
+          'inline'
+        );
+        if(placedRight) anythingRight = true;
+      });
+    }
+
+    if(!anythingRight){
+      rightCell.innerHTML = '&nbsp;';
+    }
+
+    row.appendChild(leftCell);
+    row.appendChild(rightCell);
+    return row;
+  }
+
+  function buildPlainDialogTable(events, contextLabel){
+    const wrapper = document.createElement('div');
+    wrapper.className = 'dialog-table';
+
+    if(!events || !events.length){
+      const emptyRow = document.createElement('div');
+      emptyRow.className = 'dialog-row';
+      const c1 = document.createElement('div');
+      const c2 = document.createElement('div');
+      c1.className = 'dialog-cell left';
+      c2.className = 'dialog-cell right';
+      c1.textContent = (lang === 'en')
+        ? 'No content found in JSON.'
+        : 'Δεν βρέθηκε περιεχόμενο στο JSON.';
+      emptyRow.appendChild(c1);
+      emptyRow.appendChild(c2);
+      wrapper.appendChild(emptyRow);
+      return wrapper;
+    }
+
+    events.forEach((ev, idx)=>{
+      if(ev.close) return;
+      const rowEl = buildDialogRow(ev, idx, contextLabel, []);
+      wrapper.appendChild(rowEl);
+    });
+
+    return wrapper;
+  }
+
+  function renderSection(actId, events, container, contextLabel){
+    container.innerHTML = '';
+
+    const actCfg = BOOK_CFG && BOOK_CFG[actId];
+    if(!actCfg){
+      container.appendChild(buildPlainDialogTable(events, contextLabel));
+      return;
+    }
+
+    function addBlocks(list, zone, dialogIndex){
+      if(!Array.isArray(list)) return;
+      list.forEach(block => {
+        renderBlockStandalone(block, container, actId, dialogIndex, zone);
+      });
+    }
+
+    addBlocks(actCfg.beforeAll, 'beforeAll', null);
+
+    const rowsCfg = Array.isArray(actCfg.rows) ? actCfg.rows : [];
+
+    for(let i=0; i<events.length; i++){
+      const ev = events[i];
+      if(!ev || ev.close) continue;
+
+      const rowCfg = rowsCfg[i] || {};
+      const before = Array.isArray(rowCfg.before) ? rowCfg.before : [];
+      const inline = Array.isArray(rowCfg.inline) ? rowCfg.inline : [];
+      const after  = Array.isArray(rowCfg.after)  ? rowCfg.after  : [];
+
+      addBlocks(before, 'before', i);
+
+      const rowEl = buildDialogRow(ev, i, contextLabel, inline);
+      container.appendChild(rowEl);
+
+      addBlocks(after, 'after', i);
+    }
+
+    addBlocks(actCfg.afterAll, 'afterAll', null);
+  }
+
+  function drawXTChart(canvas, opts){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin = 26;
+    const x0 = margin;
+    const x1 = w - margin;
+    const yTop = margin;
+    const yBot = h - margin;
+
+    const tMin = 0;
+    const tMax = 2*gT;
+    const A = gA;
+    const omega = gOmega;
+    const phi0 = gPhi0Rad;
+
+    function tToX(t){
+      return x0 + (t - tMin)/(tMax - tMin) * (x1 - x0);
+    }
+    function xToY(x){
+      const mid = (yTop + yBot)/2;
+      const amp = (yBot - yTop)/2;
+      const xMaxAbs = A*1.1;
+      return mid - (x/xMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+
+    const steps = 8;
+    for(let i=0;i<=steps;i++){
+      const tt = tMin + (tMax - tMin)*i/steps;
+      const xx = tToX(tt);
+      ctx.beginPath();
+      ctx.moveTo(xx,yTop);
+      ctx.lineTo(xx,yBot);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = 'rgba(31,41,55,1)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yBot);
+    ctx.lineTo(x1,yBot);
+    ctx.stroke();
+
+    const yMid = (yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle = '#111827';
+    ctx.font = '10px system-ui';
+
+    const tickStep = gT/2;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for(let tt=tMin; tt<=tMax+1e-9; tt += tickStep){
+      const X = tToX(tt);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(tt.toFixed(1), X, yBot+6);
+    }
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('t (s)', x0 + (x1-x0)/2, h-2);
+
+    const yTicks = [-A,0,A];
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    yTicks.forEach(val=>{
+      const Y = xToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4, Y);
+      ctx.lineTo(x0, Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.save();
+    ctx.translate(10, (yTop + yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('x (m)', 0, 0);
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(37,99,235,0.9)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    const N = 240;
+    for(let i=0;i<=N;i++){
+      const t = tMin + (tMax - tMin)*i/N;
+      const x = A*Math.sin(omega*t + phi0);
+      const X = tToX(t);
+      const Y = xToY(x);
+      if(i===0) ctx.moveTo(X,Y);
+      else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    const x0val = gX0;
+    const yx0 = xToY(x0val);
+    ctx.strokeStyle = 'rgba(37,99,235,0.8)';
+    ctx.setLineDash([4,2]);
+    ctx.beginPath();
+    ctx.moveTo(x0,yx0);
+    ctx.lineTo(x1,yx0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(30,64,175,1)';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('x₀ ≈ '+x0val.toFixed(2)+' m', x0+4, yx0-4);
+
+    if(gSamples && gSamples.length){
+      ctx.save();
+      ctx.fillStyle = 'rgba(15,23,42,0.95)';
+      ctx.strokeStyle = 'rgba(249,250,251,0.9)';
+      ctx.lineWidth = 1;
+      gSamples.forEach(pair=>{
+        if(!pair || typeof pair.t !== 'number' || typeof pair.x !== 'number') return;
+        const t = pair.t;
+        if(t < tMin || t > tMax) return;
+        const x = pair.x;
+        const X = tToX(t);
+        const Y = xToY(x);
+        ctx.beginPath();
+        ctx.arc(X, Y, 2.5, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    const showMark = opts && opts.xtZeroMark;
+    const showTail = opts && opts.xtMarkTail;
+
+    if(showMark){
+      let tZero = gPhaseZeroT;
+      if(tZero < tMin) tZero = tMin;
+      if(tZero > tMax) tZero = tZero % gT;
+
+      const px0 = tToX(tZero);
+      const py0 = xToY(0);
+
+      const tEnd = Math.min(tZero + gT, tMax);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(220,38,38,0.95)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      const N2 = 200;
+      ctx.beginPath();
+      for(let i=0;i<=N2;i++){
+        const t = tZero + (tEnd - tZero)*(i/N2);
+        const x = A*Math.sin(omega*(t - tZero));
+        const X = tToX(t);
+        const Y = xToY(x);
+        if(i===0) ctx.moveTo(X,Y);
+        else ctx.lineTo(X,Y);
+      }
+      ctx.stroke();
+
+      if(showTail){
+        ctx.strokeStyle = 'rgba(220,38,38,0.8)';
+        ctx.setLineDash([4,2]);
+        ctx.beginPath();
+        ctx.moveTo(x0,py0);
+        ctx.lineTo(px0,py0);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.fillStyle='rgba(220,38,38,0.95)';
+      ctx.beginPath();
+      ctx.arc(px0,py0,3,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      const labelText = (lang === 'en') ? 'new t = 0' : 'νέο t = 0';
+      ctx.save();
+      ctx.font = '10px system-ui';
+      const textWidth = ctx.measureText(labelText).width;
+      const padX = 6;
+      const padY = 3;
+      let labelX = px0;
+      let labelY = yTop + 10;
+
+      const pillHalfW = textWidth/2 + padX;
+      if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
+      if(labelX > x1 - pillHalfW - 4) labelX = x1 - pillHalfW - 4;
+
+      const pillLeft = labelX - pillHalfW;
+      const pillTop  = labelY - (8 + padY);
+      const pillW    = pillHalfW*2;
+      const pillH    = 16 + 2*padY;
+      const r=8;
+
+      ctx.beginPath();
+      let X=pillLeft, Y=pillTop, W2=pillW, H2=pillH;
+      ctx.moveTo(X+r,Y);
+      ctx.lineTo(X+W2-r,Y);
+      ctx.quadraticCurveTo(X+W2,Y,X+W2,Y+r);
+      ctx.lineTo(X+W2,Y+H2-r);
+      ctx.quadraticCurveTo(X+W2,Y+H2,X+W2-r,Y+H2);
+      ctx.lineTo(X+r,Y+H2);
+      ctx.quadraticCurveTo(X,Y+H2,X,Y+H2-r);
+      ctx.lineTo(X,Y+r);
+      ctx.quadraticCurveTo(X,Y,X+r,Y);
+      ctx.closePath();
+      ctx.fillStyle='rgba(127,29,29,0.9)';
+      ctx.strokeStyle='rgba(248,113,113,0.95)';
+      ctx.lineWidth=1.2;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle='rgba(254,242,242,0.98)';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(labelText,labelX,labelY);
+
+      const arrowStartX = labelX;
+      const arrowStartY = pillTop + pillH;
+      const arrowEndX   = px0;
+      const arrowEndY   = py0 - 5;
+
+      ctx.beginPath();
+      ctx.moveTo(arrowStartX,arrowStartY);
+      ctx.lineTo(arrowEndX,arrowEndY);
+      ctx.strokeStyle='rgba(248,113,113,0.95)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+
+      const angle = Math.atan2(arrowEndY-arrowStartY, arrowEndX-arrowStartX);
+      const headLen = 6;
+      ctx.beginPath();
+      ctx.moveTo(arrowEndX,arrowEndY);
+      ctx.lineTo(
+        arrowEndX - headLen*Math.cos(angle-Math.PI/6),
+        arrowEndY - headLen*Math.sin(angle-Math.PI/6)
+      );
+      ctx.lineTo(
+        arrowEndX - headLen*Math.cos(angle+Math.PI/6),
+        arrowEndY - headLen*Math.sin(angle+Math.PI/6)
+      );
+      ctx.closePath();
+      ctx.fillStyle='rgba(248,113,113,0.95)';
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
+
+  function drawXSinChart(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin = 26;
+    const x0 = margin;
+    const x1 = w - margin;
+    const yTop = margin;
+    const yBot = h - margin;
+
+    const Smin = -1.1;
+    const Smax =  1.1;
+    const xMaxAbs = gA * 1.1;
+
+    function SToX(S){
+      return x0 + (S - Smin)/(Smax - Smin)*(x1-x0);
+    }
+    function xToY(x){
+      const mid = (yTop+yBot)/2;
+      const amp = (yBot-yTop)/2;
+      return mid - (x/xMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+
+    ctx.strokeStyle='rgba(148,163,184,0.45)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    [-1,0,1].forEach(S=>{
+      const xx = SToX(S);
+      ctx.beginPath();
+      ctx.moveTo(xx,yTop);
+      ctx.lineTo(xx,yBot);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle='rgba(31,41,55,1)';
+    ctx.lineWidth=1.2;
+
+    ctx.beginPath();
+    ctx.moveTo(x0,yBot);
+    ctx.lineTo(x1,yBot);
+    ctx.stroke();
+
+    const yMid = (yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle='#111827';
+    ctx.font='10px system-ui';
+
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    [-1,0,1].forEach(S=>{
+      const X = SToX(S);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(S.toString(), X, yBot+6);
+    });
+
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    const labelSin = (lang === 'en') ? 'sin(ωt)' : 'ημ(ωt)';
+    ctx.fillText(labelSin, x0 + (x1-x0)/2, h-2);
+
+    ctx.save();
+    ctx.translate(10, (yTop+yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('x (m)', 0, 0);
+    ctx.restore();
+
+    const xTicks = [-gA, 0, gA];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    xTicks.forEach(val=>{
+      const Y = xToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.strokeStyle='rgba(37,99,235,0.9)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    const N = 120;
+    for(let i=0;i<=N;i++){
+      const S = Smin + (Smax-Smin)*i/N;
+      const x = gA * S;
+      const X = SToX(S);
+      const Y = xToY(x);
+      if(i===0) ctx.moveTo(X,Y);
+      else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawVChart(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin=26;
+    const x0=margin;
+    const x1=w-margin;
+    const yTop=margin;
+    const yBot=h-margin;
+
+    const tMin=0;
+    const tMax=2*gT;
+    const A=gA;
+    const omega=gOmega;
+    const phi0=gPhi0Rad;
+
+    const vAmp = A*omega;
+    const vMaxAbs = vAmp*1.1;
+
+    function tToX(t){
+      return x0 + (t-tMin)/(tMax-tMin)*(x1-x0);
+    }
+    function vToY(v){
+      const mid = (yTop+yBot)/2;
+      const amp = (yBot-yTop)/2;
+      return mid - (v/vMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+
+    ctx.strokeStyle='rgba(148,163,184,0.45)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    const steps=8;
+    for(let i=0;i<=steps;i++){
+      const tt=tMin+(tMax-tMin)*i/steps;
+      const xx=tToX(tt);
+      ctx.beginPath();
+      ctx.moveTo(xx,yTop);
+      ctx.lineTo(xx,yBot);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle='rgba(31,41,55,1)';
+    ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yBot);
+    ctx.lineTo(x1,yBot);
+    ctx.stroke();
+
+    const yMid=(yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle='#111827';
+    ctx.font='10px system-ui';
+
+    const tickStep = gT/2;
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    for(let tt=tMin; tt<=tMax+1e-9; tt+=tickStep){
+      const X=tToX(tt);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(tt.toFixed(1), X, yBot+6);
+    }
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    ctx.fillText('t (s)', x0 + (x1-x0)/2, h-2);
+
+    const vTicks = [-vAmp,0,vAmp];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    vTicks.forEach(val=>{
+      const Y=vToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.save();
+    ctx.translate(10,(yTop+yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('v (m/s)',0,0);
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(22,163,74,0.9)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    const N=240;
+    for(let i=0;i<=N;i++){
+      const t=tMin+(tMax-tMin)*i/N;
+      const v=A*omega*Math.cos(omega*t+phi0);
+      const X=tToX(t);
+      const Y=vToY(v);
+      if(i===0) ctx.moveTo(X,Y);
+      else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawAChart(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin=26;
+    const x0=margin;
+    const x1=w-margin;
+    const yTop=margin;
+    const yBot=h-margin;
+
+    const tMin=0;
+    const tMax=2*gT;
+    const A=gA;
+    const omega=gOmega;
+    const phi0=gPhi0Rad;
+
+    const aAmp = A*omega*omega;
+    const aMaxAbs = aAmp*1.1;
+
+    function tToX(t){
+      return x0 + (t-tMin)/(tMax-tMin)*(x1-x0);
+    }
+    function aToY(a){
+      const mid=(yTop+yBot)/2;
+      const amp=(yBot-yTop)/2;
+      return mid - (a/aMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+
+    ctx.strokeStyle='rgba(148,163,184,0.45)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    const steps=8;
+    for(let i=0;i<=steps;i++){
+      const tt=tMin+(tMax-tMin)*i/steps;
+      const xx=tToX(tt);
+      ctx.beginPath();
+      ctx.moveTo(xx,yTop);
+      ctx.lineTo(xx,yBot);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle='rgba(31,41,55,1)';
+    ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yBot);
+    ctx.lineTo(x1,yBot);
+    ctx.stroke();
+
+    const yMid=(yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle='#111827';
+    ctx.font='10px system-ui';
+
+    const tickStep = gT/2;
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    for(let tt=tMin; tt<=tMax+1e-9; tt+=tickStep){
+      const X=tToX(tt);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(tt.toFixed(1), X, yBot+6);
+    }
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    ctx.fillText('t (s)', x0+(x1-x0)/2, h-2);
+
+    const aTicks = [-aAmp,0,aAmp];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    aTicks.forEach(val=>{
+      const Y=aToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.save();
+    ctx.translate(10,(yTop+yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('a (m/s²)',0,0);
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(220,38,38,0.9)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    const N=240;
+    for(let i=0;i<=N;i++){
+      const t=tMin+(tMax-tMin)*i/N;
+      const a=-A*omega*omega*Math.sin(omega*t+phi0);
+      const X=tToX(t);
+      const Y=aToY(a);
+      if(i===0) ctx.moveTo(X,Y);
+      else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawAXChart(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin = 26;
+    const x0 = margin;
+    const x1 = w - margin;
+    const yTop = margin;
+    const yBot = h - margin;
+
+    const A = gA;
+    const omega = gOmega;
+
+    const xmin = -A*1.1;
+    const xmax = +A*1.1;
+    const aAmp = A*omega*omega;
+    const aMaxAbs = aAmp*1.1;
+
+    function xToXcoord(x){
+      return x0 + (x - xmin)/(xmax - xmin)*(x1-x0);
+    }
+    function aToY(a){
+      const mid=(yTop+yBot)/2;
+      const amp=(yBot-yTop)/2;
+      return mid - (a/aMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+
+    ctx.strokeStyle='rgba(148,163,184,0.45)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    const steps=4;
+    for(let i=0;i<=steps;i++){
+      const xx=xmin+(xmax-xmin)*i/steps;
+      const X=xToXcoord(xx);
+      ctx.beginPath();
+      ctx.moveTo(X,yTop);
+      ctx.lineTo(X,yBot);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle='rgba(31,41,55,1)';
+    ctx.lineWidth=1.2;
+    const xZero = xToXcoord(0);
+    ctx.beginPath();
+    ctx.moveTo(xZero,yTop);
+    ctx.lineTo(xZero,yBot);
+    ctx.stroke();
+
+    const yMid=(yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle='#111827';
+    ctx.font='10px system-ui';
+
+    const xTicks = [-A,0,A];
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    xTicks.forEach(val=>{
+      const X=xToXcoord(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yMid);
+      ctx.lineTo(X,yMid+4);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), X, yMid+6);
+    });
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    ctx.fillText('x (m)', x0+(x1-x0)/2, h-2);
+
+    const aTicks = [-aAmp,0,aAmp];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    aTicks.forEach(val=>{
+      const Y=aToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.save();
+    ctx.translate(10,(yTop+yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('a (m/s²)',0,0);
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(220,38,38,0.9)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    const Xmin = xToXcoord(xmin);
+    const Xmax = xToXcoord(xmax);
+    const Amin = aToY(+aMaxAbs);
+    const Amax = aToY(-aMaxAbs);
+    ctx.moveTo(Xmin, Amin);
+    ctx.lineTo(Xmax, Amax);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function renderDiagramJobs(){
+    diagramJobs.forEach(job=>{
+      const canvas = document.getElementById(job.id);
+      if(!canvas) return;
+      switch(job.kind){
+        case 'xt':   drawXTChart(canvas, job);   break;
+        case 'xsin': drawXSinChart(canvas);      break;
+        case 'v':    drawVChart(canvas);         break;
+        case 'a':    drawAChart(canvas);         break;
+        case 'ax':   drawAXChart(canvas);        break;
+      }
+    });
+  }
+
+  async function loadDialogsAndBuild(){
+    const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
+    diagramJobs.length = 0;
+
+    const bookData = loadBookData();
+    const DEFAULT_A = 3.0;
+    const DEFAULT_T = 6.0;
+
+    gA = (bookData && typeof bookData.A === 'number') ? bookData.A : DEFAULT_A;
+    gT = (bookData && typeof bookData.T === 'number') ? bookData.T : DEFAULT_T;
+    gOmega = (bookData && typeof bookData.omega === 'number') ? bookData.omega : (2*Math.PI/gT);
+    gX0 = (bookData && typeof bookData.x0 === 'number') ? bookData.x0 : 1.80;
+    gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
+    gPhi0Rad = gPhi0Deg * Math.PI / 180;
+
+    if(bookData && typeof bookData.tZero === 'number'){
+      gPhaseZeroT = bookData.tZero;
+    }else{
+      gPhaseZeroT = 0.0;
+    }
+
+
+    /* m1, D1, Eμηχ: έρχονται από aatBookData ή υπολογίζονται */
+    const DEFAULT_M1 = 70.0;
+    gM1 = (bookData && typeof bookData.m1 === 'number') ? bookData.m1 : DEFAULT_M1;
+
+    if(bookData && typeof bookData.D1 === 'number'){
+      gD1 = bookData.D1;
+    }else if(isFinite(gM1) && isFinite(gOmega)){
+      gD1 = gM1 * gOmega * gOmega;
+    }else{
+      gD1 = NaN;
+    }
+
+    if(bookData && typeof bookData.Emech === 'number'){
+      gEmech = bookData.Emech;
+    }else if(isFinite(gD1) && isFinite(gA)){
+      gEmech = 0.5 * gD1 * gA * gA;
+    }else{
+      gEmech = NaN;
+    }
+
+    gV0 = gOmega * gA * Math.cos(gPhi0Rad);
+    const eps = 1e-6;
+    if(gV0 > eps){
+      gVSignSymbol = 'υ>0';
+      gVSignWord = (lang === 'en') ? 'positive' : 'θετική';
+    }else if(gV0 < -eps){
+      gVSignSymbol = 'υ<0';
+      gVSignWord = (lang === 'en') ? 'negative' : 'αρνητική';
+    }else{
+      gVSignSymbol = 'υ=0';
+      gVSignWord = (lang === 'en') ? 'zero' : 'μηδενική';
+    }
+
+    setParam('A', gA.toFixed(2));
+    setParam('T', gT.toFixed(2));
+    setParam('omega', gOmega.toFixed(2));
+    setParam('x0', gX0.toFixed(2));
+    setParam('phi0Deg', gPhi0Deg.toFixed(1));
+    setParam('v0', gV0.toFixed(2));
+    setParam('vSignSymbol', gVSignSymbol);
+    setParam('vSignWord', gVSignWord);
+    setParam('tZero', gPhaseZeroT.toFixed(2));
+    setParam('m1', isFinite(gM1) ? gM1.toFixed(2) : '');
+    setParam('D1', isFinite(gD1) ? gD1.toFixed(2) : '');
+    setParam('Emech', isFinite(gEmech) ? gEmech.toFixed(2) : '');
+    setParam('Eμηχ', isFinite(gEmech) ? gEmech.toFixed(2) : '');
+
+    if(bookData && Array.isArray(bookData.samples)){
+      gSamples = bookData.samples.slice();
+      renderTxTable(bookData.samples);
+    }else{
+      gSamples = [];
+      renderTxTable([]);
+    }
+
+    try{
+      const resp = await fetch(file,{cache:'no-store'});
+      if(!resp.ok){
+        console.error('Δεν βρέθηκε', file);
+        return;
+      }
+      const data = await resp.json();
+      VIEWERS = data.viewers || [];
+      ACT1    = data.act1    || [];
+      ACT2    = data.act2    || [];
+      FOYER   = data.foyer   || [];
+
+      const act1Cont  = document.getElementById('act1Transcript');
+      const act2Cont  = document.getElementById('act2Transcript');
+      const foyerCont = document.getElementById('foyerTranscript');
+
+      act1Cont.innerHTML  = '';
+      act2Cont.innerHTML  = '';
+      foyerCont.innerHTML = '';
+
+      BOOK_CFG = null;
+      const bookFile = (lang === 'en') ? 'book-en.json' : 'book-gr.json';
+      try{
+        let br = await fetch(bookFile,{cache:'no-store'});
+        if(!br.ok){
+          br = await fetch('book.json',{cache:'no-store'});
+        }
+        if(br.ok){
+          BOOK_CFG = await br.json();
+        }
+      }catch(e2){
+        console.warn('book*.json όχι διαθέσιμο ή μη έγκυρο', e2);
+        BOOK_CFG = null;
+      }
+
+      renderSection('act1',  ACT1,  act1Cont,  'act1');
+      renderSection('act2',  ACT2,  act2Cont,  'act2');
+      renderSection('foyer', FOYER, foyerCont, 'foyer');
+
+    }catch(err){
+      console.error(err);
+    }
+
+    renderDiagramJobs();
+  }
+
+
+  function sampleTxForPrint(samples, mode){
+    const arr = Array.isArray(samples) ? samples : [];
+    if(mode === 'full') return arr;
+
+    // "Σύνοψη" για PDF: μόνο οι αρχικές τιμές (10 πρώτες)
+    const HEAD = 10;
+    return arr.slice(0, Math.min(HEAD, arr.length));
+  }
+
+  function applyPrintPageStyle(orientation){
+    const id = 'printPageStyle';
+    let el = document.getElementById(id);
+    if(!el){
+      el = document.createElement('style');
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    const size = (orientation === 'landscape') ? 'A4 landscape' : 'A4 portrait';
+    el.textContent = `@page{ size:${size}; margin:12mm; }`;
+  }
+
+  function setupPdfExport(){
+    const btn = document.getElementById('btnPdf');
+    if(!btn) return;
+
+    const orientSel = document.getElementById('pdfOrient');
+    const tableSel  = document.getElementById('pdfTableMode');
+
+    const ORIENT_KEY = 'aatBookPdfOrient';
+    const TABLE_KEY  = 'aatBookPdfTableMode';
+
+    if(orientSel){
+      orientSel.value = localStorage.getItem(ORIENT_KEY) || 'portrait';
+      orientSel.addEventListener('change', ()=> localStorage.setItem(ORIENT_KEY, orientSel.value));
+    }
+    if(tableSel){
+      tableSel.value = localStorage.getItem(TABLE_KEY) || 'summary';
+      tableSel.addEventListener('change', ()=> localStorage.setItem(TABLE_KEY, tableSel.value));
+    }
+
+    btn.addEventListener('click', ()=>{
+      const orientation = orientSel ? orientSel.value : (localStorage.getItem(ORIENT_KEY) || 'portrait');
+      const tableMode   = tableSel  ? tableSel.value  : (localStorage.getItem(TABLE_KEY)  || 'summary');
+
+      localStorage.setItem(ORIENT_KEY, orientation);
+      localStorage.setItem(TABLE_KEY, tableMode);
+
+      // Ensure correct page orientation (portrait/landscape)
+      applyPrintPageStyle(orientation);
+
+      // Condense the t–x table for print, unless user asks for full
+      const originalSamples = Array.isArray(gSamples) ? gSamples.slice() : [];
+      const samplesForPrint = sampleTxForPrint(originalSamples, tableMode);
+      const hadCondense = (tableMode !== 'full' && samplesForPrint.length !== originalSamples.length);
+
+      if(hadCondense){
+        renderTxTable(samplesForPrint);
+      }else{
+        renderTxTable(originalSamples);
+      }
+
+      // Enter print mode (CSS)
+      document.body.classList.add('print-mode');
+
+      const cleanupOnce = ()=>{
+        window.removeEventListener('afterprint', cleanupOnce);
+        document.body.classList.remove('print-mode');
+
+        const styleEl = document.getElementById('printPageStyle');
+        if(styleEl) styleEl.remove();
+
+        // restore full table on screen
+        if(hadCondense){
+          renderTxTable(originalSamples);
+        }
+      };
+
+      window.addEventListener('afterprint', cleanupOnce);
+
+      // Let DOM settle (important for consistent PDF)
+      requestAnimationFrame(()=> setTimeout(()=> window.print(), 60));
+    });
+  }
+
+  setupPdfExport();
+
+  loadDialogsAndBuild();
+</script>
+
+</body>
+</html>
+

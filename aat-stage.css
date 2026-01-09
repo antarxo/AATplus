@@ -1,0 +1,1054 @@
+:root{
+  --aat-dw: 1403;
+  --aat-dh: 648;
+  --aat-scale: 1;
+  --aat-vh0: calc(var(--aat-dh) * 1px / 100);
+  --aat-vw0: calc(var(--aat-dw) * 1px / 100);
+
+  --foyer-h: 445px;
+}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+html{
+  background:#000;
+}
+
+body{
+  margin:0;
+  position:fixed;
+  left:var(--aat-vvoffx, 0px);
+  top:var(--aat-vvoffy, 0px);
+  width:var(--aat-vvw, 100vw);
+  height:var(--aat-vvh, 100vh);
+  background:radial-gradient(circle at center,#222 0%,#000 100%);
+  overflow:hidden;
+  font-family:Inter,system-ui,sans-serif;
+  color:#fff;
+}
+
+
+.stage{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:calc(var(--aat-dw) * 1px);
+  height:calc(var(--aat-dh) * 1px);
+  transform:translate(-50%,-50%) scale(var(--aat-scale));
+  transform-origin:center center;
+  overflow:hidden;
+  background:radial-gradient(circle at center,#222 0%,#000 100%);
+}
+
+/* Κουρτίνες */
+.curtain-top,
+.curtain-upper,
+.curtain-side{
+  position:absolute;
+  transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s,filter .8s ease;
+}
+.curtain-top{
+  top:0;
+  left:0;
+  width:100%;
+  height:calc(26% - 22px);
+  background:linear-gradient(to bottom,#230000,#180000);
+  box-shadow:0 5px 18px rgba(0,0,0,.8);
+  z-index:160;
+}
+.curtain-upper{
+  top:calc(26% - 16px);
+  left:0;
+  width:100%;
+  height:calc(44% + 24px);
+  background:
+    url('courtin.png') center top/cover no-repeat,
+    linear-gradient(to bottom,#8b0000,#400000);
+  transform-origin:top;
+  z-index:160;
+}
+.stage.open .curtain-upper{
+  transform:translateY(calc(-100% + 10px));
+}
+.curtain-side{
+  top:0;
+  height:100%;
+  width:18%;
+  z-index:160;
+}
+.curtain-side.left{
+  left:0;
+  background:linear-gradient(to right,#300000,#1a0000);
+  box-shadow:inset -6px 0 10px rgba(0,0,0,.6);
+}
+.curtain-side.right{
+  right:0;
+  background:linear-gradient(to left,#300000,#1a0000);
+  box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
+}
+
+.spotlight{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:150;
+  opacity:.25;
+  background:radial-gradient(200px 120px at 50% 60%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%);
+}
+
+/* Σκηνή – ελατήριο, ηθοποιός, δάπεδο */
+
+.spring{
+  position:absolute;
+  bottom:calc(calc(32 * var(--aat-vh0)) + 92px);
+  left:10%;
+  height:96px;
+  width:auto;
+  z-index:156; /* κάτω από κουρτίνα (160), πάνω από πάτωμα (155) */
+  pointer-events:none;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
+  transform-origin:left center;
+  display:none; /* Act 2 μόνο */
+}
+
+.actor{
+  position:absolute;
+  bottom:calc(calc(32 * var(--aat-vh0)) + 135px);
+  left:50%;
+  width:144px;
+  height:96px;
+  z-index:157; /* ηθοποιός > ελατήριο */
+  pointer-events:none;
+}
+.actor img{
+  width:100%;
+  height:auto;
+  display:block;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
+}
+
+.floor{
+  position:absolute;
+  left:18%;
+  width:64%;
+  bottom:calc(calc(32 * var(--aat-vh0)) - 8px);
+  height:2px;
+  background:#aaa;
+  z-index:155;
+  pointer-events:none;
+}
+
+/* Κοινό */
+
+.audience-main{
+  position:absolute;
+  left:18%;
+  width:64%;
+  bottom:0;
+  height:auto;
+  object-fit:contain;
+  object-position:bottom center;
+  z-index:1500;
+  pointer-events:none;
+}
+
+.audience-extra{
+  position:absolute;
+  left:18%;
+  width:64%;
+  bottom:0;
+  height:auto;
+  object-fit:contain;
+  object-position:bottom center;
+  opacity:.9;
+  z-index:980;
+  pointer-events:none;
+}
+
+/* Ομιλητές / θεατές */
+
+.viewers{
+  position:absolute;
+  left:0;
+  width:100%;
+  bottom:0;
+  height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
+  z-index:1400;          /* πίσω από koino.png */
+  pointer-events:none;
+  overflow:visible;
+}
+
+.viewer-avatar{
+  position:absolute;
+  width:140px;           /* ΣΗΜΑΝΤΙΚΟ: όχι auto, αλλιώς 0px και εξαφανίζονται */
+  height:calc(22 * var(--aat-vh0));           /* default, μπορεί να αλλάξει από JSON */
+  overflow:visible;
+  border-radius:0;
+  border:none;
+  box-shadow:none;
+  background:transparent center bottom/contain no-repeat; /* PNG διαφανή */
+  transform:translateX(-50%); /* το left ορίζει το κέντρο */
+  opacity:0;
+  transition:opacity .5s ease;
+}
+
+/* Ταμπέλα τίτλου */
+
+.signboard{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.4);
+  border-radius:10px;
+  padding:12px 18px;
+  color:#ddd;
+  font-family:'Georgia',serif;
+  text-align:center;
+  z-index:170;
+  line-height:1.25;
+}
+.signboard h1{
+  font-size:28px;
+  margin:0;
+  color:#fff;
+}
+.signboard .sb-lineA{
+  font-size:16px;
+  font-style:italic;
+  margin-top:2px;
+  color:#ddd;
+}
+.signboard .sb-lineB{
+  font-size:16px;
+  margin-top:2px;
+}
+.signboard .sb-lineB .hl{
+  color:#ffd27a;
+  font-weight:600;
+}
+.signboard .sb-lineC{
+  font-size:15px;
+  margin-top:2px;
+  font-weight:700;
+  color:#fff;
+}
+.signboard .sb-lineD{
+  font-size:13px;
+  margin-top:2px;
+  font-style:italic;
+  opacity:.9;
+}
+
+/* Ρολόι / Μετρήσεις / x–t / x–sin(ωt) / Params */
+
+.clock{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:rgba(0,0,0,.5);
+  color:#fff;
+  padding:6px 10px;
+  font-size:15px;
+  font-family:"Courier New",monospace;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,.3);
+  z-index:265;
+  pointer-events:none;
+  display:none;
+  min-width:220px;       /* ίδιο πλάτος με δεξιά στήλη */
+  text-align:center;     /* κεντράρισμα μέσα στο panel */
+}
+.clock .hint{
+  font-size:10px;
+  color:#ffd27a;
+  opacity:.9;
+  margin-left:6px;
+}
+
+.measure-box{
+  position:absolute;
+  right:10px;
+  top:44px;
+  width:220px;
+  z-index: 2200;
+  background:rgba(0,0,0,.55);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;
+  padding:6px 8px;
+  display:none;
+  max-height:calc(25 * var(--aat-vh0));      /* πιο χαμηλός πίνακας */
+  overflow-y:auto;
+  font-size:12px;
+}
+.measure-box .mb-title{
+  font-weight:700;
+  margin:0 0 6px 0;
+  font-size:13px;
+}
+.measure-box table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:12px;
+}
+.measure-box thead th{
+  position:sticky;
+  top:0;
+  background:rgba(0,0,0,.8);
+  z-index:1;
+}
+.measure-box th,
+.measure-box td{
+  border-bottom:1px solid rgba(255,255,255,.2);
+  padding:2px 4px;
+  text-align:right;
+}
+.measure-box th:first-child,
+.measure-box td:first-child{
+  text-align:center;
+}
+.measure-box tr.new td{
+  background:rgba(255,210,122,.2);
+  transition:background .6s ease;
+}
+
+/* Γράφημα x–t */
+#xtChart{
+  position:absolute;
+  right:10px;
+  width:220px;           /* πιο στενό, ευθυγραμμισμένο με measure-box/params */
+  height:120px;          /* μικρότερο ύψος */
+  top:calc(44px + calc(28 * var(--aat-vh0)) + 8px);
+  display:none;
+  z-index: 2200;
+  border:1px dashed rgba(255,255,255,.25);
+  pointer-events:none;
+}
+
+/* Γράφημα x–sin(ωt) */
+#xSinChart{
+  position:absolute;
+  right:10px;
+  width:220px;           /* ίδιο πλάτος */
+  height:120px;          /* ίδιο μικρό ύψος */
+  top:calc(44px + calc(28 * var(--aat-vh0)) + 8px + 120px + 8px);
+  display:none;
+  z-index: 2200;
+  border:1px dashed rgba(255,255,255,.25);
+  pointer-events:none;
+}
+
+/* Πίνακας A, ω, φ₀ */
+.params-box{
+  position:absolute;
+  right:10px;
+  top:calc(44px + calc(28 * var(--aat-vh0)) + 8px + 120px + 8px + 120px + 8px);
+  z-index: 2199;
+  background:rgba(0,0,0,.6);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;
+  padding:6px 10px;
+  font-size:13px;
+  line-height:1.45;
+  display:none;
+  min-width:220px;
+}
+
+/* Νόμοι & mini διαγράμματα */
+
+.laws{
+  position:absolute;
+  left:10px;
+  top:44px;
+  width:225px;
+  background:rgba(20,0,0,.7);
+  color:#fff;
+  border:1px solid rgba(255,200,200,.3);
+  border-radius:8px;
+  padding:6px 8px;
+  font-size:14px;
+  line-height:1.45;
+  z-index: 2200;
+  display:none;
+}
+.laws h4{
+  margin:0 0 6px 0;
+  font-size:14px;
+}
+.laws-body .law-line{
+  padding:4px 6px;
+  margin:2px 0;
+  border-left:3px solid rgba(255,210,122,.7);
+  background:rgba(255,210,122,.15);
+}
+.law-charts{
+  position:absolute;
+  left:10px;
+  top:calc(44px + 220px);
+  width:225px;
+  z-index: 2200;
+  transform:translateY(-80px); /* λίγο πιο κάτω για να σκεπάζονται λιγότερο */
+}
+.law-charts canvas{
+  display:block;
+  margin-top:6px;
+  background:rgba(0,0,0,.5);
+  border-radius:6px;
+}
+
+/* Ruler & marker */
+
+.ruler{
+  position:absolute;
+  left:18%;
+  width:64%;
+  bottom:calc(calc(32 * var(--aat-vh0)) - 8px + 1px);
+  height:24px;
+  font-size:10px;
+  font-family:"Courier New",monospace;
+  color:#aaa;
+  pointer-events:none;
+  z-index:  159;
+}
+.ruler::before{
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:1px;
+  background:#aaa;
+}
+.tick{
+  position:absolute;
+  bottom:0;
+  width:1px;
+  height:10px;
+  background:#aaa;
+}
+.tick-label{
+  position:absolute;
+  bottom:12px;
+  transform:translateX(-50%);
+  font-size:10px;
+  color:#aaa;
+  white-space:nowrap;
+}
+
+.marker{
+  position:absolute;
+  bottom:calc(calc(32 * var(--aat-vh0)) - 8px + 1px);
+  width:0;
+  height:80px;
+  transform:translateX(-50%);
+  pointer-events:none;
+  z-index:158; /* πάνω από ηθοποιούς, κάτω από κουρτίνα */
+  opacity:0;
+  transition:opacity .3s;
+}
+.marker-line{
+  position:absolute;
+  left:50%;
+  bottom:8px;
+  width:2px;
+  height:70px;
+  background:#ffd27a;
+  box-shadow:0 0 4px rgba(255,210,122,.8);
+  transform:translateX(-50%);
+}
+.marker-tip{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  width:0;
+  height:0;
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:8px solid #ffd27a;
+  filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));
+  transform:translateX(-50%);
+}
+
+/* Bubbles */
+
+@keyframes popIn{
+  0%{transform:scale(.9);opacity:0}
+  60%{transform:scale(1.04);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+.thought-bubble{
+  position:absolute;
+  max-width:520px;
+  background:rgba(255,255,255,.95);
+  color:#000;
+  font-size:15px;
+  line-height:1.45;
+  padding:10px 12px 12px;
+  border-radius:10px;
+  box-shadow:0 6px 12px rgba(0,0,0,.4);
+  z-index:2101;
+  pointer-events:none;
+  opacity:0;
+  display:none;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.thought-bubble.active{
+  display:block;
+  opacity:1;
+  animation:popIn .25s ease;
+}
+.thought-bubble.closing{
+  opacity:0;
+}
+.thought-bubble .text{
+  word-wrap:break-word;
+}
+.thought-bubble .checkmark{
+  position:absolute;
+  top:-8px;
+  right:-8px;
+  background:#2ecc71;
+  color:#fff;
+  font-size:11px;
+  line-height:1;
+  border-radius:50%;
+  border:1px solid rgba(0,0,0,.4);
+  width:18px;
+  height:18px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-family:system-ui,sans-serif;
+  font-weight:600;
+}
+
+.act-bubble,
+.foyer-bubble{
+  position:absolute;
+  display:none;
+  pointer-events:none;
+  min-width:120px;
+  text-align:center;
+  color:#fff;
+  font-weight:800;
+  font-size:13px;
+  padding:6px 12px;
+  border-radius:999px;
+  border:2px solid rgba(255,255,255,.65);
+  box-shadow:0 6px 14px rgba(0,0,0,.5);
+  letter-spacing:0.03em;
+  text-shadow:0 1px 2px rgba(0,0,0,.7);
+  background:rgba(0,0,0,.7);
+}
+.act-bubble{
+  z-index:2101;
+}
+.foyer-bubble{
+  z-index:2101;
+}
+
+/* Controls */
+
+.controls{
+  position:absolute;
+  bottom:12px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.7);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;
+  padding:6px 8px;
+  display:flex;
+  gap:8px;
+  z-index:2000;
+}
+.controls button{
+  background:none;
+  border:0;
+  color:#fff;
+  font-size:16px;
+  line-height:1;
+  cursor:pointer;
+  min-width:32px;
+  min-height:32px;
+  border-radius:4px;
+  padding:4px 6px;
+}
+.controls button.active{
+  background:rgba(255,255,255,.2);
+}
+
+.btn-end{
+  position:absolute;
+  bottom:12px;
+  right:12px;
+  z-index:2000;
+  background:#333;
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+}
+
+.btn-foyer{
+  position:absolute;
+  bottom:12px;
+  left:12px;
+  z-index:2000;
+  background:#333;
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+}
+
+/* 🔴 ΝΕΟ: Κουμπί βιβλίου παράστασης */
+.btn-book{
+  position:absolute;
+  bottom:52px;           /* λίγο πάνω από το Φουαγιέ */
+  left:12px;
+  z-index:2000;
+  background:#333;
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+}
+.btn-book:hover{
+  background:#700;
+}
+
+/* Start + countdown */
+
+.start-btn{
+  background:#700;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:10px 16px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.countdown-overlay{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,.65);
+  color:#fff;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  z-index:900;
+  pointer-events:none;
+  font-family:Inter,system-ui,sans-serif;
+}
+.countdown-box{
+  max-width:80%;
+}
+.countdown-main{
+  font-size:24px;
+  font-weight:600;
+  margin-bottom:8px;
+  color:#fff;
+}
+.countdown-sub{
+  font-size:14px;
+  color:#ffd27a;
+  margin-bottom:16px;
+}
+.countdown-timer{
+  font-family:"Courier New",monospace;
+  font-size:40px;
+  font-weight:700;
+  color:#fff;
+}
+
+/* Act break / foyer break */
+
+.actbreak,
+.foyerbreak,
+.startbreak{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background:transparent; /* όχι full dark overlay */
+  color:#fff;
+  z-index:410;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  pointer-events:none;
+}
+.startbreak{ display:flex; }
+
+.actbreak .box,
+.foyerbreak .box,
+.startbreak .box{
+  pointer-events:auto;
+  background:rgba(0,0,0,.8);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:12px;
+  padding:16px 20px;
+  max-width:520px;
+  margin:auto;
+}
+.actbreak h3,
+.foyerbreak h3,
+.startbreak h3{
+  margin-bottom:8px;
+}
+.actbreak p,
+.foyerbreak p,
+.startbreak p{
+  margin-bottom:16px;
+}
+.actbreak button,
+.foyerbreak button,
+.startbreak button{
+  background:#700;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:10px 16px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+/* Φουαγιέ */
+
+.foyer{
+  position:absolute;
+  left:18%;
+  width:64%;
+  top:0;
+  height:var(--foyer-h);
+  z-index:500;
+  display:none;
+}
+
+.foyer .wrap{
+  position:absolute;
+  inset: 0 0 10px 0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto 1fr;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.25);
+  background:#0d2a1e;
+}
+
+/* Τίτλοι φουαγιέ: ίδιο look με την ταμπέλα των πράξεων (ίδια γραμματοσειρά/μεγέθη/κεντράρισμα) */
+.foyer-titlebar{
+  grid-column:1 / span 2;
+  grid-row:1;
+  justify-self:center;
+  align-self:start;
+  margin:10px 10px 6px;
+  background:rgba(0,0,0,.4);
+  border-radius:10px;
+  padding:12px 18px;
+  color:#ddd;
+  font-family:'Georgia',serif;
+  text-align:center;
+  z-index:2;
+  line-height:1.25;
+  pointer-events:none;
+  max-width:calc(100% - 20px);
+}
+
+.foyer-titlebar .ft-line1{
+  font-size:28px;
+  margin:0;
+  color:#fff;
+  font-weight:700;
+}
+
+.foyer-titlebar .ft-line2{
+  font-size:16px;
+  font-style:italic;
+  margin-top:2px;
+  color:#ddd;
+}
+
+
+/* Ένδειξη θεατή στο φουαγιέ (ίδιο “pill + avatar” στυλ με το Βιβλίο) */
+.foyer-speaker-indicator{
+  position:absolute;
+  left:12px;
+  top:12px;
+  z-index:3;
+  pointer-events:none;
+  display:none;
+}
+.foyer .speaker-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:2px 8px;
+  border-radius:999px;
+  background:rgba(229,231,235,0.92);
+  font-size:.82rem;
+  color:#111827;
+  box-shadow:0 6px 16px rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.35);
+}
+.foyer .speaker-avatar{
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  background-size:cover;
+  background-position:50% 18%;
+  background-repeat:no-repeat;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.8rem;
+  font-weight:600;
+  color:#f9fafb;
+}
+.foyer .speaker-name{
+  font-weight:500;
+}
+
+.foyer .foyer-line-badge-wrap{
+  margin:2px 0 6px;
+}
+.foyer .foyer-line-text{
+  min-height:1em;
+}
+
+.board-left,
+.board-right{
+  grid-row:2;
+  background:transparent;
+  color:#fff;
+  padding:10px 10px 8px;
+  overflow:auto;
+  scroll-behavior:smooth;
+  font-size:14px;
+  line-height:1.35;
+}
+.board-left{
+  border-right:1px solid rgba(255,255,255,.25);
+}
+.cell{
+  padding:6px 10px;
+  border-bottom:1px dashed rgba(255,255,255,.18);
+  white-space:pre-wrap;
+}
+
+
+/* ---------- Μεταφορά πρώην inline styles ---------- */
+
+/* Κουμπιά γλώσσας */
+.lang-toggle{
+  position:absolute;
+  top:10px;
+  left:10px;
+  z-index:2000;
+  display:flex;
+  gap:6px;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.lang-toggle button{
+  padding:2px 8px;
+  font-size:11px;
+  border-radius:4px;
+  border:none;
+  cursor:pointer;
+  opacity:.75;
+  background:rgba(0,0,0,.4);
+  color:#fff;
+}
+.lang-toggle button.active{
+  opacity:1;
+  font-weight:600;
+  box-shadow:0 0 0 1px rgba(255,255,255,.7);
+  background:rgba(0,0,0,.75);
+}
+
+/* Φώτα κοινού + κουρτίνες dim */
+.audience-main,
+.audience-extra{
+  transition:filter .8s ease;
+}
+.audience-main.dimmed,
+.audience-extra.dimmed{
+  filter:brightness(0.5);
+}
+.curtain-top.dimmed,
+.curtain-upper.dimmed,
+.curtain-side.dimmed{
+  filter:brightness(0.5);
+}
+
+/* Avatars: καταστάσεις */
+.viewers .viewer-avatar.visible{
+  opacity:1;
+}
+.viewers .viewer-avatar.lit{
+  filter:brightness(0.8);
+}
+
+/* v2 fix: center start button inside startbreak box */
+.startbreak .box{ text-align:center; }
+.startbreak button,
+.startbreak .start-btn{ display:block; margin:0 auto; }
+
+
+/* ===============================
+   EXIT MASK (STROBE EXIT) v4
+   - Πέτασμα μπροστά από ομιλητές
+   - Panels/γραφήματα μπροστά από πέτασμα
+   - Πέτασμα αγκυρωμένο κάτω-δεξιά (δεξιό πάνελ/κουρτίνα)
+   =============================== */
+
+/* Ανέβασε panels/γραφήματα πάνω από το πέτασμα */
+.clock,
+.measure-box,
+#xtChart,
+#xSinChart,
+.params-box,
+.laws,
+.law-charts{
+  z-index: 2200;
+}
+
+/* Το πέτασμα: δεξιά ζώνη (18%), κάτω μέρος */
+.exit-panel-mask{
+  position:fixed;
+  bottom:0;
+
+  /* ΓΩΝΙΑ ΟΘΟΝΗΣ: δεξιά */
+  right:0;
+
+  width:calc(18 * var(--aat-vw0));
+  max-width:240px;
+  min-width:160px;
+  height:calc(46 * var(--aat-vh0));
+
+  /* ίδιο look με τα πλαϊνά panels/κουρτίνες */
+  background:linear-gradient(to left,#300000,#1a0000);
+  box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
+
+  /* πάνω από τους ομιλητές, κάτω από panels/γραφήματα */
+  z-index:2100;
+
+  pointer-events:none;
+  display:none;
+}
+.exit-panel-mask.left{
+  left:0;
+  right:auto;
+  background:linear-gradient(to right,#300000,#1a0000);
+  box-shadow:inset -6px 0 10px rgba(0,0,0,.6);
+}
+
+body.exit-mask-active .exit-panel-mask{
+  display:block;
+}
+
+
+/* ===============================
+   MARBLE TRACK
+   - Κύριο μάρμαρο: -3..+3 (θέση/πλάτος δίνονται από JS)
+   - Ghost δοκός: -5..+5 (μόνο όταν εμφανίζεται ο ghost)
+   - Πλήρως ορθογώνιο (χωρίς rounded άκρες)
+   =============================== */
+
+.marble-track{
+  position:absolute;
+  display:none;              /* εμφανίζεται από JS όταν έχει νόημα */
+  pointer-events:none;
+
+  /* ορθογώνιο */
+  border-radius:0;
+
+  /* “πράσινο με άσπρα” – marble-ish νερά */
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,.28) 0 6px,
+      rgba(255,255,255,0) 6px 20px),
+    linear-gradient(90deg,#2f7d57 0%, #2a6f4d 45%, #2f7d57 100%);
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+
+  /* πάνω από τη “γραμμή δαπέδου”, κάτω από τον ηθοποιό */
+  z-index:156;
+}
+
+.marble-track.ghost{
+  /* πιο “τεχνικό”/δοκός – αφήνουμε το opacity να το ορίζει το JS */
+  border:1px dashed rgba(255,255,255,.35);
+  box-shadow:none;
+  filter:brightness(1.05);
+}
+
+/* Ghost marble: make it greyer + more transparent (no size/position changes) */
+#marbleTrackGhost,
+.marble-track.ghost{
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+#marbleTrackGhost{
+  /* override vivid green veins with a neutral grey marble look */
+  background:
+    linear-gradient(180deg, rgba(245,245,245,0.85), rgba(205,205,205,0.85)),
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.0) 0px,
+      rgba(255,255,255,0.0) 10px,
+      rgba(255,255,255,0.18) 12px,
+      rgba(255,255,255,0.0) 22px
+    );
+}
+
+/* --- Layer fix: ensure dialogs/bubbles are never covered by the A-ω-φ0 params box --- */
+/* params box stays aligned with right panels/charts layer */
+.params-box, #paramsBox, .paramsPanel{
+  z-index: 2199 !important;
+}
+
+/* dialog bubbles ABOVE params box (and above panels/charts if they overlap) */
+.thought-bubble,
+.bubble,
+.dialog-bubble,
+#bubble,
+#bubbleLeft,
+#bubbleRight,
+#dialogBubble,
+#dialogLeft,
+#dialogRight{
+  z-index: 2300 !important;
+}
+
+/* --- Layer tweak: laws panel above the left charts by at least +1 --- */
+.law-charts,
+#lawCharts,
+.left-charts,
+.chart-panel-left{
+  z-index: 1600 !important;
+}
+
+.laws,
+#laws,
+.laws-panel{
+  z-index: 1601 !important;
+}

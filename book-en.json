@@ -1,0 +1,707 @@
+{
+  "meta": {
+    "title": "Performance Book — Simple Harmonic Motion",
+    "subtitle": "The show, at reading speed. You can study SHM through the dialogues and the in-between notes at a pace you choose!",
+    "sections": {
+      "paramsIntro": "All the data referenced in the Performance Book come from the show you just watched, so you have a consistent reading view.",
+      "act1Intro": "<p>In Act 1, the viewers try to study and infer the motion from the t–x measurements, which are the only ones available.</p><p class=\"muted\">NOTES:\n1. The table on the right contains exactly the pairs (t, x) as they were recorded during the live show. Below it, the viewers’ dialogues start on the left, while on the right the laws and graphs are presented in the order they appear in the show. 2. Between dialogues, laws and graphs, green-background notes are inserted where it is considered useful, for better understanding of the process.</p>",
+      "foyerIntro": "The foyer is also two-column: viewers’ thoughts on the left, supporting notes / formulas on the right.",
+      "footerNote": "Reminder: this book can be printed or saved as a .pdf"
+    },
+    "sectionTitles": {
+      "paramsLabel": "Motion data",
+      "paramsTitle": "SHM parameters in the show",
+      "act1Label": "Act 1",
+      "act1Title": "From t–x measurements to the laws of motion",
+      "act2Label": "Act 2",
+      "act2Title": "From the laws to predicting the motion",
+      "foyerLabel": "Foyer",
+      "foyerTitle": "Discussion after the show"
+    }
+  },
+  "act1": {
+    "beforeAll": [
+      {
+        "type": "note",
+        "column": "full",
+        "html": "In Act 1, the goal is to <b>identify the type of motion exclusively from position–time measurements. After all, these are what an observer can record in motions!</b>\nSo it becomes clear that in Kinematics we study a motion with the only tools a mechanics observer needs: <b><i>a directed reference frame and recording positions and the corresponding times!</i></b>"
+      }
+    ],
+    "afterAll": [],
+    "rows": [
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "1st observation!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "Here the viewer realizes and records that what everyone observes <b>was defined in time by the viewers themselves!</b> with the press of the <b>\"Start\"</b> button."
+          },
+          {
+            "type": "image",
+            "column": "right",
+            "html": "",
+            "src": "assets/skaterAct1.png",
+            "alt": "m1"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "Here come the first observations..."
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "...and the first suspicions!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "<b>Attention! Here the hypothesis is stated</b>, which triggers a chain of associations and proposals among the viewers, aiming to prove or reject it"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "It’s obvious that the relation x=A·sin(ωt+φ₀) cannot be verified, since the viewers do not yet have <b>A, ω, φ₀!</b>"
+          },
+          {
+            "type": "note",
+            "column": "left",
+            "html": "The proposal seems to target the <i>\"obvious\"</i>: check whether every pair of values from the t–x table, when substituted into x=A·sin(ωt+φ₀), satisfies it!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "As an idea it sounds good theoretically, but given the available data it raises a chain of difficulties, agreements and doubts..."
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "Let’s remember that graphs, beyond the <i>direct information</i> of the quantities they display, also provide <i>indirect information</i> via slope (rate of change) and area! On the other hand, the shape of this particular curve (it resembles a sine curve) strengthens the hypothesis that the actor’s motion is SHM, but it does not prove it in the end!"
+          }
+        ],
+        "after": [
+          {
+            "type": "note",
+            "column": "full",
+            "html": "So here, rightly, both agreement and skepticism appear! Theoretically such a graph helps up to being evidence. But an experimentally produced curve does not guarantee that <i>\"it is what it looks like\"</i>—especially by eye! (In practice, only for straight lines are we sure they’re straight.)"
+          }
+        ]
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "Here, surely, and from the values table, we can see there is a maximum displacement!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "Up to here the sure thing is that the motion is periodic and back-and-forth between two extreme positions that define amplitude A={A}m. An oscillation with constant period T={T}s, and with the hypothesis that it is SHM, the thoughts intensify to find a way to prove that hypothesis."
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "A correct thought, but it trips on the (still) unknown φ₀! We need the value of φ₀ so that viewers can fill a table of x and sin(ωt+φ₀) and thus draw the x–sin(ωt+φ₀) graph, seeking linearity (with slope A) and therefore proof that the motion is SHM!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "A very interesting proposal: if it’s feasible, it solves the φ₀ problem!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "...this observation seems to solve the problem: if the experimental x–t curve coincides with the also experimental x=A·sin(ω(t−t₁)), with the second one drawn after time t₁={tZero}s, they would have proof. But this comparison is done by eye, so it’s not certain. <b>We are absolutely sure only if the plot of x versus sin(ω(t−t₁)) after time t₁={tZero}s becomes a straight line with slope A</b>!"
+          }
+        ],
+        "after": [
+          {
+            "type": "note",
+            "column": "full",
+            "html": "Let’s recall some analogous examples of searching for \"linearity\" when we ask for experimental confirmation of a law:<br>\n<i>1. In straight-line uniformly accelerated motion the x–t curve must be a <b>parabola</b> because of the law: <b>x=1/2·a·t²</b>. The experimental curve may resemble a parabola, but it will be a parabola if the x–t² curve is a <b>straight line</b>!<br>\n2. In Coulomb’s law <b>F=K(Q₁Q₂)/r²</b>, the F–r plot is an <b>inverse-square curve</b>. The experimental curve will be inverse-square if the F–1/r² plot is a <b>straight line</b>!</i>"
+          }
+        ]
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "Bingo! The x–t curve just passed the linearity test, so there is no doubt that the motion is SHM!\nNow that it’s proven SHM, i.e. x=A·sin(ωt+φ₀) holds, and with x₀, t₀=0, and the sign of υ₀ known, we can compute φ₀!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "So the law for the time evolution of position can be written specifically:\n<b>x={A}sin({omega}t+{phi0rad}) </b>"
+          }
+        ],
+        "after": [
+          {
+            "type": "note",
+            "column": "full",
+            "html": "Everyone understands that once the position law x=A·sin(ωt+φ₀) is known, the road opens for the velocity and acceleration laws as functions of time!"
+          }
+        ]
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "...and specifically: <b>υ={omega}{A}cos({omega}t+{phi0rad}) </b> with its graph shown on the side!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "and the acceleration of our oscillator: <b>a=-({omega})²{A}sin({omega}t+{phi0rad}) </b> with its graph shown on the side!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "Let’s note here that an important law for acceleration as a function of position emerged! So besides a–t we also have a–x!<br> <b>This will whet the viewers’ appetite later to look for more similar relations!</b>"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": [
+          {
+            "type": "note",
+            "column": "full",
+            "html": "Act 1’s intermission finds the viewers having <b>proved that the motion is SHM, confirming the initial hypothesis</b>, knowing its basic characteristics and all its kinematic laws!<br> <b>We also observe that nobody has cared so far about special features of the oscillator!</b>"
+          }
+        ]
+      }
+    ]
+  },
+  "act2": {
+    "beforeAll": [
+      {
+        "type": "note",
+        "column": "full",
+        "html": "In Act 2, the viewers, having fully described the SHM of (m,D) kinematically, move from the purely kinematic description to the <b>dynamic description</b> of the motion."
+      }
+    ],
+    "afterAll": [],
+    "rows": [
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "left",
+            "html": "Observation that there is a <b>supporting <i>“tool”</i> behind the SHM of m₁D₁.</b>"
+          },
+          {
+            "type": "image",
+            "column": "right",
+            "html": "",
+            "src": "assets/skaterAct2.png"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "In some viewers’ minds, <b>m₁D₁ is an old acquaintance</b> from another theatrical production"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "image",
+            "column": "right",
+            "html": "",
+            "src": "assets/skaterAct22.png"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "<b>They remember his <i>“obsession”</i> to keep the same period as today</b>, even though in the other show he moved with larger displacements from the center—larger amplitude."
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "Very often, going deeper into a topic is mistaken for babbling!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "A very sharp remark that brings back the previous concern!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "The question is mostly rhetorical, since merging constants into a new constant is a common phenomenon in physics!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "hmm… we shouldn’t only wonder or react with questions we didn’t think of...."
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "...because the answer is lurking—and we didn’t notice it in time!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": [
+          {
+            "type": "note",
+            "column": "full",
+            "html": "As Act 2 ended, the viewers:\n1. fully understood the oscillator m₁D₁’s obsession to oscillate with constant period T={T}s in any show, attributing it to the two constant characteristics m₁={m1}Kg and D₁={D1}N/m.\n2. stated Newton’s 2nd law for SHM: ΣF=-Dx, and also the time evolution of the net force during SHM.\n3. In short: ΣF=-mω2A·sin(ωt+φ₀)=-D A·sin(ωt+φ₀)=-Dx!"
+          }
+        ]
+      }
+    ]
+  },
+  "foyer": {
+    "beforeAll": [
+      {
+        "type": "note",
+        "column": "full",
+        "html": "In the foyer, while waiting for Act 3 \"Energy… in Algebra!\", there is a lively discussion among the viewers: conclusions, recap, and more!"
+      }
+    ],
+    "afterAll": [
+      {
+        "type": "note",
+        "column": "full",
+        "html": "You watched a largely experimental investigation–revelation–complete study of an SHM, based on the minimal information that an observer can measure/record with the help of their reference frame:\n1. The positions x of the moving body at certain times t (as many as possible)\n2. The mass m of the moving body"
+      }
+    ],
+    "rows": [
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "The cost of the show was revealed: <b>the energy paid into the oscillator by E<sub>mech</sub> Energeioulis!</b>"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [
+          {
+            "type": "note",
+            "column": "right",
+            "html": "What should we not forget as we leave? Hmm—everything in the program leaflet they handed us before the show. It said it all!"
+          }
+        ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      }
+    ]
+  }
+}
