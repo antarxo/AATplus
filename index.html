@@ -1460,13 +1460,20 @@ let driverDx0 = 0;   // translateX στην αρχική στάση (για σω
 
 // =========================
 // Driven oscillator (Phase 3)
-// u = x - y (relative displacement)
+// x(t) is measured from the ruler's zero (centerX).
+// Let w(t) = x - x0  where x0 = centerX() is the equilibrium reference on the scale.
+// Base (support) position y(t) is the left spring anchor attached to the slider.
+// We take y0 = y(t) at the moment we enter Phase 3 (reference/base mean position).
+//
+// Equation (in pixels):
+//   w¨ + 2β w˙ + ω0² w = 2β y˙ + ω0² (y - y0)
 // =========================
-let driveU = 0;        // px
-let driveUd = 0;       // px/s
+let driveW = 0;        // px  (displacement from ruler zero)
+let driveWd = 0;       // px/s
 let driveInited = false;
 let basePrevX = null;  // px
 let basePrevV = 0;     // px/s
+let baseRefX  = null;  // px  (y0)
 // damping coefficient beta (1/s). Προσωρινό: θα γίνει slider αργότερα.
 let driveBeta = 0.25;
 
@@ -3484,9 +3491,10 @@ function resetShow(){
   driverTheta = DRIVER_THETA0;
   driverDx = 0;
   driverDx0 = 0;
-  driveU = 0;
-  driveUd = 0;
+  driveW = 0;
+  driveWd = 0;
   driveInited = false;
+  baseRefX = null;
   basePrevX = null;
   basePrevV = 0;
   BOOK_SAMPLES = [];
@@ -3707,41 +3715,49 @@ function animate(now){
   // --- Phase 3: driven oscillator with base excitation ---
   // Base (support) position is the left spring anchor (attached to slider)
   const baseX = axx; // px
-  // Numerical derivatives for base motion
+
+  // Numerical derivative for base motion (velocity)
   let baseV = 0;
-  let baseA = 0;
   if(dt > 0){
     if(basePrevX === null){
       basePrevX = baseX;
       basePrevV = 0;
     }
     baseV = (baseX - basePrevX) / dt;
-    baseA = (baseV - basePrevV) / dt;
   }
 
-  // Natural angular frequency (rad/s) of the oscillator
+  // Natural angular frequency of the oscillator (from the original AAT setup)
   const omega0 = omega;
 
   // Initialize so we don't "jump" when switching from the old SHM demo
   if(!driveInited){
+    // Start from the same SHM state used in the original AAT demo, but referenced to the ruler zero (cx).
     const x0 = cx + A_px*Math.sin(omega*playbackTime);
     const v0 = A_px*omega*Math.cos(omega*playbackTime);
-    driveU = x0 - baseX;
-    driveUd = v0 - baseV;
+    driveW  = x0 - cx;
+    driveWd = v0;
     driveInited = true;
+
+    // Lock the base reference position y0 at the moment we enter the driven mode
+    if(baseRefX === null) baseRefX = baseX;
   }
 
-  // Integrate u¨ + 2β u˙ + ω0² u = - y¨
+  // Integrate driven motion (semi-implicit Euler) for:
+  //   w¨ + 2β w˙ + ω0² w = 2β y˙ + ω0² (y - y0)
   if(dt > 0){
-    const uDD = -2*driveBeta*driveUd - (omega0*omega0)*driveU - baseA;
-    driveUd += uDD * dt;
-    driveU  += driveUd * dt;
+    const twoBeta = 2 * driveBeta;
+    const wDD = (twoBeta * baseV) + (omega0*omega0)*(baseX - (baseRefX ?? baseX))
+              - (twoBeta * driveWd) - (omega0*omega0)*driveW;
+
+    driveWd += wDD * dt;
+    driveW  += driveWd * dt;
 
     basePrevX = baseX;
     basePrevV = baseV;
   }
 
-  const hookX = baseX + driveU;
+  // Absolute (stage) x-position of the actor (center) referenced to the ruler zero
+  const hookX = cx + driveW;
 
   const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const dist=hookX-axx;
