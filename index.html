@@ -1285,7 +1285,7 @@ function updateMarbleTrack(){
   const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
 
   // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
-  const cx = stage.clientWidth / 2;
+  const cx = centerX();
   const leftPx  = cx - 3*pxPerMeter;
   const rightPx = cx + 3*pxPerMeter;
   track.style.left   = leftPx + 'px';
@@ -1354,7 +1354,19 @@ function setAudienceLights(on){
 /* ---------- Ruler / μετρήσεις ---------- */
 
 function anchorX(){ return stage.clientWidth * 0.18; }
-function centerX(){ return stage.clientWidth * 0.5; }
+
+// --- Driver/Ruler κοινή μετατόπιση (σημείωση: θα την ακολουθήσουν και άλλα αντικείμενα της σκηνής) ---
+const DRIVER_SHIFT_FACTOR = 0.50;   // << μετατόπιση μηχανισμού: 50% του πλάτους του (δεξιά)
+const DRIVER_SHIFT_REF    = 0.60;   // αναφορά (παλιό calibration) για μετατόπιση του άξονα/χάρακα
+
+function driverW(){ return (drvSlider && drvSlider.offsetWidth) ? drvSlider.offsetWidth : 0; }
+function driverShiftPx(){ return driverW() * DRIVER_SHIFT_FACTOR; }
+function rulerAxisShiftPx(){ return driverW() * (DRIVER_SHIFT_REF - DRIVER_SHIFT_FACTOR); }
+
+function centerX(){
+  const base = stage ? (stage.clientWidth * 0.5) : (window.innerWidth * 0.5);
+  return base + rulerAxisShiftPx();
+}
 
 
 // --- Driver mech placement (Phase 1) ---
@@ -1379,7 +1391,11 @@ function updateDriverPlacement(){
   // Οριζόντια: κουμπώνει στο anchorX.
   // ΣΗΜΕΙΩΣΗ: μεταφέρουμε ΟΛΟ τον μηχανισμό δεξιότερα κατά 60% του πλάτους του.
   // Αυτή η μετατόπιση (shiftPx) θα πρέπει να την ακολουθήσουν και άλλα αντικείμενα της σκηνής.
-  const DRIVER_SHIFT_FACTOR = 0.60;
+  // DRIVER_SHIFT_FACTOR: μετατόπιση οριζόντια του μηχανισμού (θα την ακολουθήσουν και άλλα αντικείμενα)
+  // Ζητούμενο: μετακίνηση αριστερότερα για να κερδίσουμε χώρο.
+  // (Ρυθμίζεται ΚΕΝΤΡΙΚΑ πιο πάνω.)
+  // const DRIVER_SHIFT_FACTOR = ...;
+
   const shiftPx = w * DRIVER_SHIFT_FACTOR;
 
   // --- Scotch yoke: κεντράρισμα πείρου μέσα στη σχισμή του slider ---
@@ -1466,12 +1482,12 @@ function applyDriverTransform(){
   drvSlider.style.transform = 'translateX(' + dx.toFixed(2) + 'px)';
 }
 function updateRuler(){
-  const baseLeft = stage.clientWidth * 0.18;
+  const baseLeft = stage.clientWidth * 0.18 + rulerAxisShiftPx();
   const usableW  = stage.clientWidth * 0.64;
   rulerEl.style.left  = baseLeft + 'px';
   rulerEl.style.width = usableW + 'px';
   rulerEl.innerHTML   = '';
-  const cX = stage.clientWidth / 2;
+  const cX = centerX();
   for(let mTick=-7;mTick<=7;mTick++){
     const xPx = cX + mTick*pxPerMeter;
     const rel = xPx - baseLeft;
