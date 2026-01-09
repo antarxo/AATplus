@@ -1401,36 +1401,52 @@ function updateDriverPlacement(){
    NOTE: Το οριζόντιο shift (DRIVER_SHIFT_FACTOR) που εφαρμόζεται στο placement
          πρέπει να ακολουθηθεί αργότερα και από άλλα αντικείμενα της σκηνής.
    ========================= */
-let driverTheta = Math.PI/2;          // ξεκινάμε στο κέντρο (cos=0) για να "κουμπώνει"
+const DRIVER_THETA0 = Math.PI/2;
+let driverTheta = DRIVER_THETA0;          // ξεκινάμε στο κέντρο (cos=0) για να "κουμπώνει"
 let driverOmega = 2 * Math.PI * 0.35; // rad/s (προσωρινό, Phase 3 θα γίνει slider)
 
 function applyDriverTransform(){
   if(!drvWheel || !drvPin || !drvSlider) return;
 
-  // Κέντρο τροχού πάνω στο κοινό canvas (196x306) — από τις διαστάσεις/σχέδιο των PNG
+  // Κοινό canvas των PNG (όλα 196x306).
+  // ΘΕΜΕΛΙΩΔΕΣ: το "r" του Scotch yoke ΔΕΝ είναι η ακτίνα του τροχού.
+  // Είναι η απόσταση: κέντρο πείρου ↔ κέντρο τροχού (eccentric offset).
   const W = 196, H = 306;
-  const wheelCX = 107, wheelCY = 53;  // px μέσα στο PNG
+
+  // Κέντρο τροχού (σε px μέσα στο PNG) — από μέτρηση των PNG.
+  const wheelCX = 107, wheelCY = 53;
+
+  // Κέντρο πείρου όταν θ=0 (σε px μέσα στο PNG) — από μέτρηση του peiros.png.
+  // (Ο πείρος είναι σε ξεχωριστό PNG, αλλά στο ίδιο canvas/σύστημα.)
+  const pinCX0 = 138.21, pinCY0 = 55.79;
+
+  // Pivot για wheel+pin
   const originX = (wheelCX / W) * 100;
   const originY = (wheelCY / H) * 100;
-
-  // Θέλουμε wheel+pin να περιστρέφονται γύρω από το ίδιο pivot
   drvWheel.style.transformOrigin = originX.toFixed(2) + '% ' + originY.toFixed(2) + '%';
   drvPin.style.transformOrigin   = originX.toFixed(2) + '% ' + originY.toFixed(2) + '%';
 
-  // Eccentric radius (στο PNG, θ=0 pin δεξιά): περίπου 31.5px (θα κλιμακωθεί)
-  const scale = (drvSlider.offsetWidth || W) / W;
-  const r = 31.5 * scale;
+  // Eccentric offset και αρχική γωνία του πείρου πάνω στο αρχικό PNG (θ=0).
+  const vx0 = pinCX0 - wheelCX;
+  const vy0 = pinCY0 - wheelCY;
+  const e0  = Math.hypot(vx0, vy0);          // <<< αυτό είναι το σωστό "r"
+  const phi0 = Math.atan2(vy0, vx0);
 
-  // Slider motion (Scotch yoke): x = r·cos(theta)
-  const dx = r * Math.cos(driverTheta);
+  // Κλιμάκωση (τα PNG κλιμακώνονται με CSS width).
+  const scale = (drvWheel.offsetWidth || W) / W;
 
-  // Εφαρμογή transforms (pin πάνω από slider παραμένει λόγω z-index)
+  // Slider motion (Scotch yoke): ακολουθεί τη Χ-συνιστώσα του πείρου.
+  // Για να ξεκινάει "κεντραρισμένο" όπως το βλέπεις (dx=0 στην αρχική στάση),
+  // αφαιρούμε τη Χ-συνιστώσα στην αρχική γωνία DRIVER_THETA0.
+  const xRelNow  = e0 * Math.cos(phi0 + driverTheta);
+  const xRelBase = e0 * Math.cos(phi0 + DRIVER_THETA0);
+  const dx = (xRelNow - xRelBase) * scale;
+
+  // Εφαρμογή transforms (pin πάνω από slider παραμένει λόγω z-index).
   drvWheel.style.transform  = 'rotate(' + driverTheta + 'rad)';
   drvPin.style.transform    = 'rotate(' + driverTheta + 'rad)';
   drvSlider.style.transform = 'translateX(' + dx.toFixed(2) + 'px)';
 }
-
-
 function updateRuler(){
   const baseLeft = stage.clientWidth * 0.18;
   const usableW  = stage.clientWidth * 0.64;
