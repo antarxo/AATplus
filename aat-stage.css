@@ -101,6 +101,35 @@ body{
 
 /* Σκηνή – ελατήριο, ηθοποιός, δάπεδο */
 
+
+/* ===============================
+   DRIVER MECH (Scotch yoke) — Phase 1
+   Τα 4 PNG (table/troxos/slider/peiros) έχουν ίδιο canvas (196×306) και τοποθετούνται overlay.
+   Σημείωση: ο πείρος πρέπει να είναι πάνω από τον slider (z-index).
+   =============================== */
+
+.driver-mech{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+.driver-mech img{
+  position:absolute;
+  /* default κλίμακα (ρυθμίζεται εύκολα αργότερα) */
+  width:240px;
+  height:auto;
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+.drv-table{  z-index:154; }
+.drv-wheel{  z-index:155; transform-origin:50% 50%; }
+.drv-slider{ z-index:156; }
+.drv-pin{    z-index:157; }
+
+
 .spring{
   position:absolute;
   bottom:calc(calc(32 * var(--aat-vh0)) + 92px);
