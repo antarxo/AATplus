@@ -1374,10 +1374,10 @@ function updateDriverPlacement(){
   const h = drvSlider.offsetHeight || 1;
 
   // Προσεγγιστικό σημείο πρόσδεσης στο slider (σε ποσοστά του PNG)
-  const attachX = w * 0.85;
+  const attachX = w * 0.87;
 
   // Οριζόντια: κουμπώνει στο anchorX.
-  const ox = targetX - attachX;
+  const ox = targetX - attachX-10;
 
   // Κατακόρυφα: πατάει στο πάτωμα (ίδιο bottom για όλα τα overlay PNG).
   // Αν χρειαστεί micro-tune (1–6px), το κάνουμε εδώ.
