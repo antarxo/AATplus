@@ -117,8 +117,8 @@ body{
 .driver-mech img{
   position:absolute;
   /* default κλίμακα (ρυθμίζεται εύκολα αργότερα) */
-  width:247px;  /* ↓ ~20px μικρότερο ύψος */
-  height:auto;
+  width:auto;  /* ↓ ~20px μικρότερο ύψος */
+  height:355px;
   pointer-events:none;
   user-select:none;
   -webkit-user-drag:none;
@@ -1081,6 +1081,7 @@ body.exit-mask-active .exit-panel-mask{
 .laws-panel{
   z-index: 1601 !important;
 }
+
 
 
 
