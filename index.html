@@ -354,6 +354,14 @@ function num(v,fallback=0){
     <div class="marker-tip"></div>
   </div>
 
+  <!-- Διεγέρτης (Scotch yoke) — νέα assets (Phase 1) -->
+  <div class="driver-mech" id="driverMech" aria-hidden="true">
+    <img id="drvTable"  class="drv-table"  src="assets/table.png"  alt="table">
+    <img id="drvWheel"  class="drv-wheel"  src="assets/troxos.png" alt="crank wheel">
+    <img id="drvSlider" class="drv-slider" src="assets/slider.png" alt="slider">
+    <img id="drvPin"    class="drv-pin"    src="assets/peiros.png" alt="pin">
+  </div>
+
   <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
   <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
   <div class="marble-track" id="marbleTrack" aria-hidden="true"></div>
@@ -714,6 +722,12 @@ initIntro();
 const stage        = document.getElementById('stage');
 const springEl     = document.getElementById('spring');
 const actor        = document.getElementById('actor');
+const driverMech   = document.getElementById('driverMech');
+const drvTable     = document.getElementById('drvTable');
+const drvWheel     = document.getElementById('drvWheel');
+const drvSlider    = document.getElementById('drvSlider');
+const drvPin       = document.getElementById('drvPin');
+
 const spotlight    = document.getElementById('spotlight');
 const rulerEl      = document.getElementById('ruler');
 const markerEl     = document.getElementById('marker');
@@ -1341,6 +1355,41 @@ function setAudienceLights(on){
 
 function anchorX(){ return stage.clientWidth * 0.18; }
 function centerX(){ return stage.clientWidth * 0.5; }
+
+
+// --- Driver mech placement (Phase 1) ---
+// Στόχος: το άκρο πρόσδεσης του slider να κάθεται πάνω στο σταθερό στήριγμα (anchorX)
+// και στο ίδιο ύψος με το κέντρο του ελατηρίου.
+function updateDriverPlacement(){
+  if(!driverMech || !drvSlider || !stage) return;
+
+  const stageH = stage.clientHeight || 0;
+
+  // Αν το spring είναι display:none, offsetHeight θα είναι 0. Χρησιμοποιούμε measured natural height.
+  const springBottom = (springEl ? (parseFloat(getComputedStyle(springEl).bottom) || 0) : 0);
+  const sH = (springEl && springEl.offsetHeight) ? springEl.offsetHeight : (springNaturalHeight || 96);
+
+  const targetX = anchorX();
+  const targetY = stageH - springBottom - (sH/2);
+
+  const w = drvSlider.offsetWidth  || 1;
+  const h = drvSlider.offsetHeight || 1;
+
+  // Προσεγγιστικό σημείο “μάτι” της πρόσδεσης στο slider (σε ποσοστά του PNG).
+  // Ραφινάρεται εύκολα αργότερα αν χρειαστεί 1–2 px.
+  const attachX = w * 0.87;
+  const attachY = h * 0.41;
+
+  const ox = targetX - attachX;
+  const oy = targetY - attachY;
+
+  // Όλα τα assets έχουν ίδιο canvas (196×306), άρα overlay στο ίδιο origin.
+  const imgs = [drvTable, drvWheel, drvSlider, drvPin].filter(Boolean);
+  imgs.forEach(img=>{
+    img.style.left = ox + 'px';
+    img.style.top  = oy + 'px';
+  });
+}
 
 function updateRuler(){
   const baseLeft = stage.clientWidth * 0.18;
@@ -3499,6 +3548,7 @@ function animate(now){
   const dt = (mode==='run') ? realDt : 0;
 
   updateRuler();
+  updateDriverPlacement();
 
   const tPhys=(now-t0)/1000;
   if(!obsStarted){
