@@ -791,6 +791,7 @@ const drvPin       = document.getElementById('drvPin');
 
 const spotlight    = document.getElementById('spotlight');
 const rulerEl      = document.getElementById('ruler');
+let rulerZeroX = 0; // px (stage coords): το 0 της μετροταινίας (μέσα στη σκηνή)
 const markerEl     = document.getElementById('marker');
 const markerGhostEl= document.getElementById('markerGhost');
 markerGhostEl.style.zIndex = '159';
@@ -1632,30 +1633,27 @@ function applyDriverTransform(){
 
   // Εφαρμογή transforms (pin πάνω από slider παραμένει λόγω z-index).
   drvWheel.style.transform  = 'rotate(' + driverTheta + 'rad)';
-  drvPin.style.transform    = 'rotate(' + driverTheta + 'rad)';
-  drvSlider.style.transform = 'translateX(' + dx.toFixed(2) + 'px)';
-}
-function updateRuler(){
-  // Μετροταινία: ο χάρακας καταλαμβάνει όλο το διαθέσιμο πλάτος της σκηνής.
-  // Το 0 βρίσκεται στο αριστερότερο άκρο και οι ενδείξεις είναι μόνο θετικές.
-  // Πλάτος σκηνής = άνοιγμα κεντρικής κουρτίνας (μεταξύ των πλαϊνών).
-  // Δηλαδή ΔΕΝ πιάνει το full stage, αλλά το “άνοιγμα” που ορίζει η κεντρική κουρτίνα.
-  let baseLeft = 0;
-  let usableW  = stage.clientWidth;
+  drvPin.style.transform    = 'rotate(' + driverTheta function updateRuler(){
+  // Μετροταινία (σαν tape measure):
+  // - Το 0 μπαίνει εμφανώς ΜΕΣΑ στη σκηνή (λίγο δεξιά από την αριστερή κουρτίνα).
+  // - Ο χάρακας απλώνεται μέχρι το δεξί άκρο του stage, ώστε οι τελευταίες τιμές να μπορούν
+  //   να “χάνονται” πίσω από τη δεξιά κουρτίνα (ανάλογα με τα z-index).
+  const sRect = stage.getBoundingClientRect();
+  const stageW = stage.clientWidth;
 
-  const leftCurt  = stage.querySelector('.curtain-side.left');
-  const rightCurt = stage.querySelector('.curtain-side.right');
-  if(leftCurt && rightCurt){
-    const sRect = stage.getBoundingClientRect();
+  let openLeft = 0;
+  const leftCurt = stage.querySelector('.curtain-side.left');
+  if(leftCurt){
     const lRect = leftCurt.getBoundingClientRect();
-    const rRect = rightCurt.getBoundingClientRect();
-
-    baseLeft = Math.max(0, Math.round(lRect.right - sRect.left));
-    const rightEdge = Math.max(baseLeft, Math.round(rRect.left - sRect.left));
-    usableW = Math.max(0, rightEdge - baseLeft);
+    openLeft = Math.max(0, Math.round(lRect.right - sRect.left));
   }
 
-  rulerEl.style.left  = baseLeft + 'px';
+  const RULER_LEFT_INSET_PX = 14; // το 0 να φαίνεται μέσα στη σκηνή (όχι πάνω στην κουρτίνα)
+  rulerZeroX = Math.min(stageW - 1, Math.max(0, openLeft + RULER_LEFT_INSET_PX));
+
+  const usableW = Math.max(0, stageW - rulerZeroX);
+
+  rulerEl.style.left  = rulerZeroX + 'px';
   rulerEl.style.width = usableW + 'px';
   rulerEl.innerHTML   = '';
 
@@ -1673,11 +1671,12 @@ function updateRuler(){
     lbl.textContent = mTick + ' m';
     lbl.style.left = rel + 'px';
 
-    // Μην "βγαίνει" το 0 εκτός σκηνής, και κράτα και το τελευταίο μέσα.
-    if(mTick===0){
-      lbl.style.transform = 'translateX(0)';
-    }else if(mTick===maxTick){
-      lbl.style.transform = 'translateX(-100%)';
+    // Κράτα το 0 μέσα στο οπτικό πεδίο (αριστερά), άσε τα δεξιά να “χαθούν” πίσω από την κουρτίνα.
+    if(mTick===0) lbl.style.transform = 'translateX(0)';
+    rulerEl.appendChild(lbl);
+  }
+}
+tyle.transform = 'translateX(-100%)';
     }
 
     rulerEl.appendChild(lbl);
@@ -3921,7 +3920,7 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   spotlight.style.background =
     'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,0.65), rgba(255,255,255,0) 70%)';
 
-  const xMeters=(hookX-cx)/pxPerMeter;
+  const xMeters=(hookX-rulerZeroX)/pxPerMeter;
   logMeasurement(tObs,xMeters);
 
   if(ghost && ghostSpring){
