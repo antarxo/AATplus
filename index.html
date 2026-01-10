@@ -1638,8 +1638,22 @@ function applyDriverTransform(){
 function updateRuler(){
   // Μετροταινία: ο χάρακας καταλαμβάνει όλο το διαθέσιμο πλάτος της σκηνής.
   // Το 0 βρίσκεται στο αριστερότερο άκρο και οι ενδείξεις είναι μόνο θετικές.
-  const baseLeft = 0;
-  const usableW  = stage.clientWidth;
+  // Πλάτος σκηνής = άνοιγμα κεντρικής κουρτίνας (μεταξύ των πλαϊνών).
+  // Δηλαδή ΔΕΝ πιάνει το full stage, αλλά το “άνοιγμα” που ορίζει η κεντρική κουρτίνα.
+  let baseLeft = 0;
+  let usableW  = stage.clientWidth;
+
+  const leftCurt  = stage.querySelector('.curtain-side.left');
+  const rightCurt = stage.querySelector('.curtain-side.right');
+  if(leftCurt && rightCurt){
+    const sRect = stage.getBoundingClientRect();
+    const lRect = leftCurt.getBoundingClientRect();
+    const rRect = rightCurt.getBoundingClientRect();
+
+    baseLeft = Math.max(0, Math.round(lRect.right - sRect.left));
+    const rightEdge = Math.max(baseLeft, Math.round(rRect.left - sRect.left));
+    usableW = Math.max(0, rightEdge - baseLeft);
+  }
 
   rulerEl.style.left  = baseLeft + 'px';
   rulerEl.style.width = usableW + 'px';
