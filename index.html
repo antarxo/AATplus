@@ -1633,7 +1633,11 @@ function applyDriverTransform(){
 
   // Εφαρμογή transforms (pin πάνω από slider παραμένει λόγω z-index).
   drvWheel.style.transform  = 'rotate(' + driverTheta + 'rad)';
-  drvPin.style.transform    = 'rotate(' + driverTheta function updateRuler(){
+  drvPin.style.transform    = 'rotate(' + driverTheta + 'rad)';
+  drvSlider.style.transform = 'translateX(' + dx.toFixed(2) + 'px)';
+}
+
+function updateRuler(){
   // Μετροταινία (σαν tape measure):
   // - Το 0 μπαίνει εμφανώς ΜΕΣΑ στη σκηνή (λίγο δεξιά από την αριστερή κουρτίνα).
   // - Ο χάρακας απλώνεται μέχρι το δεξί άκρο του stage, ώστε οι τελευταίες τιμές να μπορούν
@@ -1673,12 +1677,6 @@ function applyDriverTransform(){
 
     // Κράτα το 0 μέσα στο οπτικό πεδίο (αριστερά), άσε τα δεξιά να “χαθούν” πίσω από την κουρτίνα.
     if(mTick===0) lbl.style.transform = 'translateX(0)';
-    rulerEl.appendChild(lbl);
-  }
-}
-tyle.transform = 'translateX(-100%)';
-    }
-
     rulerEl.appendChild(lbl);
   }
 }
