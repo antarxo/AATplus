@@ -452,7 +452,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     </div>
     <div class="dc-row">
       <span class="dc-lbl">b</span>
-      <input id="driveB" type="range" min="0" max="200" step="1" value="35" />
+      <input id="driveB" type="range" min="10" max="300" step="1" value="35" />
       <span class="dc-val" id="driveBVal">35 kg/s</span>
     </div>
   </div>
@@ -1543,6 +1543,9 @@ let baseRefX  = null;  // px (y0)
 
 let driveB = 35;       // kg/s  (b στη δύναμη -b·v)
 
+const DRIVE_B_MIN = 10;
+const DRIVE_B_MAX = 300;
+
 // --- Driver controls hookup (f as ratio, b as kg/s) ---
 const elDriveRatio   = document.getElementById('driveRatio');
 const elDriveB       = document.getElementById('driveB');
@@ -1565,8 +1568,8 @@ function syncDriveUI(){
   updateDriveFreqLabel();
 
   if(elDriveB){
-    elDriveB.value = String(Math.max(0, Math.round(driveB)));
-    if(elDriveBVal) elDriveBVal.textContent = `${Math.max(0, Math.round(driveB))} kg/s`;
+    elDriveB.value = String(Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_MIN, Math.round(driveB))));
+    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_MIN, Math.round(driveB)))} kg/s`;
   }
 }
 
@@ -1581,8 +1584,8 @@ if(elDriveRatio){
 
 if(elDriveB){
   elDriveB.addEventListener('input', () => {
-    driveB = Math.max(0, parseFloat(elDriveB.value) || 0);
-    if(elDriveBVal) elDriveBVal.textContent = `${Math.max(0, Math.round(driveB))} kg/s`;
+    driveB = Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_MIN, parseFloat(elDriveB.value) || DRIVE_B_MIN));
+    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_MIN, Math.round(driveB)))} kg/s`;
   });
 }
 
@@ -1633,23 +1636,36 @@ function applyDriverTransform(){
   drvSlider.style.transform = 'translateX(' + dx.toFixed(2) + 'px)';
 }
 function updateRuler(){
-  const baseLeft = stage.clientWidth * 0.18 + rulerAxisShiftPx();
-  const usableW  = stage.clientWidth * 0.64;
+  // Μετροταινία: ο χάρακας καταλαμβάνει όλο το διαθέσιμο πλάτος της σκηνής.
+  // Το 0 βρίσκεται στο αριστερότερο άκρο και οι ενδείξεις είναι μόνο θετικές.
+  const baseLeft = 0;
+  const usableW  = stage.clientWidth;
+
   rulerEl.style.left  = baseLeft + 'px';
   rulerEl.style.width = usableW + 'px';
   rulerEl.innerHTML   = '';
-  const cX = centerX();
-  for(let mTick=-7;mTick<=7;mTick++){
-    const xPx = cX + mTick*pxPerMeter;
-    const rel = xPx - baseLeft;
+
+  const maxTick = Math.floor(usableW / pxPerMeter);
+  for(let mTick=0; mTick<=maxTick; mTick++){
+    const rel = mTick * pxPerMeter;
+
     const tDiv = document.createElement('div');
     tDiv.className='tick';
     tDiv.style.left = rel + 'px';
     rulerEl.appendChild(tDiv);
+
     const lbl = document.createElement('div');
     lbl.className='tick-label';
-    lbl.textContent = (mTick===0?'0':(mTick>0? '+'+mTick:mTick))+' m';
-    lbl.style.left=rel+'px';
+    lbl.textContent = mTick + ' m';
+    lbl.style.left = rel + 'px';
+
+    // Μην "βγαίνει" το 0 εκτός σκηνής, και κράτα και το τελευταίο μέσα.
+    if(mTick===0){
+      lbl.style.transform = 'translateX(0)';
+    }else if(mTick===maxTick){
+      lbl.style.transform = 'translateX(-100%)';
+    }
+
     rulerEl.appendChild(lbl);
   }
 }
