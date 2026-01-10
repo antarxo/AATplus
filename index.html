@@ -432,19 +432,32 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <button id="btnBook"  title="Διαθέσιμο μετά το τέλος της Πράξης 1" disabled>📖</button>
   </div>
 
-  
   <div class="drive-controls" id="driveCtrl" aria-label="ρυθμίσεις διεγέρτη">
     <div class="dc-row">
       <span class="dc-lbl">f</span>
-      <input id="driveFreq" type="range" min="0.05" max="2.00" step="0.01" value="0.35" />
-      <span class="dc-val" id="driveFreqVal">0.35 Hz</span>
+      <select id="driveRatio" aria-label="συχνότητα διεγέρτη ως πολλαπλάσιο της ιδιοσυχνότητας">
+        <option value="0.25">0.25 f₀</option>
+        <option value="0.33">0.33 f₀</option>
+        <option value="0.50">0.50 f₀</option>
+        <option value="0.67">0.67 f₀</option>
+        <option value="0.75">0.75 f₀</option>
+        <option value="1.00">1.00 f₀</option>
+        <option value="1.25">1.25 f₀</option>
+        <option value="1.50">1.50 f₀</option>
+        <option value="2.00">2.00 f₀</option>
+        <option value="3.00">3.00 f₀</option>
+        <option value="4.00">4.00 f₀</option>
+      </select>
+      <span class="dc-val" id="driveFreqVal">2.00 f₀ · 0.33 Hz</span>
     </div>
     <div class="dc-row">
       <span class="dc-lbl">b</span>
-      <input id="driveBeta" type="range" min="0.00" max="2.00" step="0.01" value="0.25" />
-      <span class="dc-val" id="driveBetaVal">0.25 1/s</span>
+      <input id="driveB" type="range" min="0" max="200" step="1" value="35" />
+      <span class="dc-val" id="driveBVal">35 kg/s</span>
     </div>
   </div>
+
+</div>
 
 <div class="startbreak" id="startBreak">
     <div class="box">
@@ -1502,65 +1515,79 @@ function updateDriverPlacement(){
    ========================= */
 const DRIVER_THETA0 = Math.PI/2;
 let driverTheta = DRIVER_THETA0;          // ξεκινάμε στο κέντρο (cos=0) για να "κουμπώνει"
-let driverOmega = 2 * Math.PI * 0.35; // rad/s (προσωρινό, Phase 3 θα γίνει slider)
+
+// Για να φαίνεται καθαρά ο συντονισμός, αλλάζουμε τη συχνότητα σε (υπο)πολλαπλάσια της ιδιοσυχνότητας f0.
+let driveRatio = 2.00;                    // f = driveRatio · f0
+let driverOmega = omega * driveRatio;     // rad/s
+
 let driverDx  = 0;   // τρέχον translateX του slider (px, στο ίδιο σύστημα με το placement)
 let driverDx0 = 0;   // translateX στην αρχική στάση (για σωστό κούμπωμα)
 
 // =========================
-// Driven oscillator (Phase 3)
-// x(t) is measured from the ruler's zero (centerX).
-// Let w(t) = x - x0  where x0 = centerX() is the equilibrium reference on the scale.
-// Base (support) position y(t) is the left spring anchor attached to the slider.
-// We take y0 = y(t) at the moment we enter Phase 3 (reference/base mean position).
+// Driven oscillator (Phase 3) — με b (kg/s), όχι β.
+// Μοντέλο: m x¨ + b(x˙-y˙) + k((x-y)-L0)=0  , όπου y(t) είναι η βάση (slider).
 //
-// Equation (in pixels):
-//   w¨ + 2β w˙ + ω0² w = 2β y˙ + ω0² (y - y0)
+// Θέτουμε u = (x - y) - L0  (σχετική επιμήκυνση ως προς φυσικό μήκος).
+// Τότε: u¨ + (b/m) u˙ + ω0² u = -y¨
+// και:  x = y + L0 + u
+//
+// Επιλογή: L0 = (cx - y0) όπου y0 είναι η θέση βάσης τη στιγμή που μπαίνουμε στο driven mode.
 // =========================
-let driveW = 0;        // px  (displacement from ruler zero)
-let driveWd = 0;       // px/s
+let driveU = 0;        // px
+let driveUd = 0;       // px/s
 let driveInited = false;
-let basePrevX = null;  // px
-let basePrevV = 0;     // px/s
-let baseRefX  = null;  // px  (y0)
-// damping coefficient beta (1/s). Προσωρινό: θα γίνει slider αργότερα.
-let driveBeta = 0.25;
 
-// --- Driver sliders hookup (f, b) ---
-const elDriveFreq    = document.getElementById('driveFreq');
-const elDriveBeta    = document.getElementById('driveBeta');
+let basePrevX = null;  // px
+let basePrevV = null;  // px/s
+let baseRefX  = null;  // px (y0)
+
+let driveB = 35;       // kg/s  (b στη δύναμη -b·v)
+
+// --- Driver controls hookup (f as ratio, b as kg/s) ---
+const elDriveRatio   = document.getElementById('driveRatio');
+const elDriveB       = document.getElementById('driveB');
 const elDriveFreqVal = document.getElementById('driveFreqVal');
-const elDriveBetaVal = document.getElementById('driveBetaVal');
+const elDriveBVal    = document.getElementById('driveBVal');
+
+function updateDriveFreqLabel(){
+  const f0 = omega / (2*Math.PI);
+  const f  = (driverOmega / (2*Math.PI));
+  if(elDriveFreqVal) elDriveFreqVal.textContent = `${driveRatio.toFixed(2)} f₀ · ${f.toFixed(2)} Hz`;
+}
 
 function syncDriveUI(){
-  if(elDriveFreq){
-    const hz = Math.max(0.01, driverOmega / (2*Math.PI));
-    elDriveFreq.value = hz.toFixed(2);
-    if(elDriveFreqVal) elDriveFreqVal.textContent = `${hz.toFixed(2)} Hz`;
+  if(elDriveRatio){
+    // προσπαθούμε να "κουμπώσουμε" σε υπάρχουσα επιλογή
+    const v = driveRatio.toFixed(2);
+    const opt = Array.from(elDriveRatio.options).find(o => (parseFloat(o.value).toFixed(2) === v));
+    if(opt) elDriveRatio.value = opt.value;
   }
-  if(elDriveBeta){
-    elDriveBeta.value = Math.max(0, driveBeta).toFixed(2);
-    if(elDriveBetaVal) elDriveBetaVal.textContent = `${Math.max(0, driveBeta).toFixed(2)} 1/s`;
+  updateDriveFreqLabel();
+
+  if(elDriveB){
+    elDriveB.value = String(Math.max(0, Math.round(driveB)));
+    if(elDriveBVal) elDriveBVal.textContent = `${Math.max(0, Math.round(driveB))} kg/s`;
   }
 }
 
-if(elDriveFreq){
-  elDriveFreq.addEventListener('input', () => {
-    const hz = Math.max(0.01, parseFloat(elDriveFreq.value) || 0.35);
-    driverOmega = 2 * Math.PI * hz;
-    if(elDriveFreqVal) elDriveFreqVal.textContent = `${hz.toFixed(2)} Hz`;
+if(elDriveRatio){
+  elDriveRatio.addEventListener('change', () => {
+    const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
+    driveRatio = r;
+    driverOmega = omega * driveRatio;
+    updateDriveFreqLabel();
   });
 }
-if(elDriveBeta){
-  elDriveBeta.addEventListener('input', () => {
-    driveBeta = Math.max(0, parseFloat(elDriveBeta.value) || 0.0);
-    if(elDriveBetaVal) elDriveBetaVal.textContent = `${driveBeta.toFixed(2)} 1/s`;
+
+if(elDriveB){
+  elDriveB.addEventListener('input', () => {
+    driveB = Math.max(0, parseFloat(elDriveB.value) || 0);
+    if(elDriveBVal) elDriveBVal.textContent = `${Math.max(0, Math.round(driveB))} kg/s`;
   });
 }
 
 // αρχικοποίηση UI από τις τρέχουσες τιμές
 syncDriveUI();
-
-
 
 function applyDriverTransform(){
   if(!drvWheel || !drvPin || !drvSlider) return;
@@ -3575,12 +3602,12 @@ function resetShow(){
   driverTheta = DRIVER_THETA0;
   driverDx = 0;
   driverDx0 = 0;
-  driveW = 0;
-  driveWd = 0;
+  driveU = 0;
+  driveUd = 0;
   driveInited = false;
   baseRefX = null;
   basePrevX = null;
-  basePrevV = 0;
+  basePrevV = null;
   BOOK_SAMPLES = [];
   setMode('run');
   // κρατάμε το ξεκλείδωμα βιβλίου αν έχει γίνει στο παρελθόν
@@ -3800,14 +3827,17 @@ function animate(now){
   // Base (support) position is the left spring anchor (attached to slider)
   const baseX = axx; // px
 
-  // Numerical derivative for base motion (velocity)
+  // Numerical derivatives for base motion (velocity & acceleration)
   let baseV = 0;
+  let baseA = 0;
   if(dt > 0){
     if(basePrevX === null){
       basePrevX = baseX;
       basePrevV = 0;
     }
     baseV = (baseX - basePrevX) / dt;
+    if(basePrevV === null) basePrevV = 0;
+    baseA = (baseV - basePrevV) / dt;
   }
 
   // Natural angular frequency of the oscillator (from the original AAT setup)
@@ -3815,35 +3845,38 @@ function animate(now){
 
   // Initialize so we don't "jump" when switching from the old SHM demo
   if(!driveInited){
-    // Start from the same SHM state used in the original AAT demo, but referenced to the ruler zero (cx).
+    // Start from the same SHM state used in the original AAT demo, referenced to the ruler zero (cx).
     const x0 = cx + A_px*Math.sin(omega*playbackTime);
     const v0 = A_px*omega*Math.cos(omega*playbackTime);
-    driveW  = x0 - cx;
-    driveWd = v0;
-    driveInited = true;
 
-    // Lock the base reference position y0 at the moment we enter the driven mode
-    if(baseRefX === null) baseRefX = baseX;
+    // Lock y0 at entry and define L0 so that the equilibrium aligns with the ruler zero.
+    if(baseRefX === null) baseRefX = baseX; // y0
+    const L0 = cx - baseRefX;
+
+    // u = (x - y) - L0
+    driveU  = (x0 - baseX) - L0;
+    driveUd = (v0 - baseV);
+    driveInited = true;
   }
 
   // Integrate driven motion (semi-implicit Euler) for:
-  //   w¨ + 2β w˙ + ω0² w = 2β y˙ + ω0² (y - y0)
+  //   u¨ + (b/m) u˙ + ω0² u = -y¨
   if(dt > 0){
-    const twoBeta = 2 * driveBeta;
-    const wDD = (twoBeta * baseV) + (omega0*omega0)*(baseX - (baseRefX ?? baseX))
-              - (twoBeta * driveWd) - (omega0*omega0)*driveW;
+    const beta = (driveB / (2*m)); // 1/s
+    const uDD = (-2*beta*driveUd) - (omega0*omega0)*driveU - baseA;
 
-    driveWd += wDD * dt;
-    driveW  += driveWd * dt;
+    driveUd += uDD * dt;
+    driveU  += driveUd * dt;
 
     basePrevX = baseX;
     basePrevV = baseV;
   }
 
-  // Absolute (stage) x-position of the actor (center) referenced to the ruler zero
-  const hookX = cx + driveW;
+  // Absolute (stage) x-position of the actor (center)
+  const L0 = cx - (baseRefX ?? baseX);
+  const hookX = baseX + L0 + driveU;
 
-  const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
+const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const dist=hookX-axx;
   const scale=Math.max(0.001, dist/baseL);
   springEl.style.left=axx+'px';
