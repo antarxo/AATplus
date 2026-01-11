@@ -4187,12 +4187,9 @@ const AFRecorder = (() => {
   let yMaxAuto = 0.5;
 
   // tuning
-  const EXTREMA_NEED = 3;
-  const STABLE_REL_TOL = 0.03;  // 3%
-  const STABLE_HOLD_SEC = 0.9;  // seconds
-  const MIN_RECORD_GAP = 0.6;   // seconds
-
-  const XRANGE = [0.25, 3.0];
+  const EXTREMA_NEED = 2;
+  const STABLE_REL_TOL = 0.08;  // 8% (πιο ανεκτικό);  // seconds
+  const MIN_RECORD_GAP = 0.5;   // seconds;
   const XTICKS = [0.25,0.5,0.75,1.0,1.25,1.5,2.0,3.0];
 
   function bKeyFrom(b){ return Math.round(b); }
@@ -4224,7 +4221,10 @@ const AFRecorder = (() => {
     const amax = Math.max(...Aset);
     const amean = Aset.reduce((s,v)=>s+v,0)/Aset.length;
     if(amean <= 1e-9) return false;
-    return ((amax-amin)/amean) < STABLE_REL_TOL;
+
+    const spread = (amax - amin);
+    const tol = Math.max(STABLE_ABS_TOL, STABLE_REL_TOL * amean);
+    return spread < tol;
   }
 
   function alreadyRecorded(k, ratio){
