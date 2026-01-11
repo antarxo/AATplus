@@ -4188,8 +4188,11 @@ const AFRecorder = (() => {
 
   // tuning
   const EXTREMA_NEED = 2;
-  const STABLE_REL_TOL = 0.08;  // 8% (πιο ανεκτικό);  // seconds
-  const MIN_RECORD_GAP = 0.5;   // seconds;
+  const STABLE_REL_TOL = 0.08;   // 8% (πιο ανεκτικό)
+  const STABLE_ABS_TOL = 0.003;  // 3 mm (ώστε να μην κολλάει όταν A είναι μικρό)
+  const STABLE_HOLD_SEC = 0.5;   // seconds stable before recording
+  const MIN_RECORD_GAP = 0.5;    // seconds between recordings
+  const XRANGE = [0.25, 3.0];
   const XTICKS = [0.25,0.5,0.75,1.0,1.25,1.5,2.0,3.0];
 
   function bKeyFrom(b){ return Math.round(b); }
