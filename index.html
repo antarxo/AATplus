@@ -489,7 +489,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     </div>
     <div class="dc-row">
       <span class="dc-lbl">b</span>
-      <input id="driveB" type="range" min="10" max="50" step="1" value="20" />
+      <input id="driveB" type="range" min="6" max="50" step="1" value="20" />
       <span class="dc-val" id="driveBVal">20 kg/s</span>
     </div>
   </div>
@@ -1581,7 +1581,8 @@ let baseRefX  = null;  // px (y0)
 
 let driveB = 20;       // kg/s  (b στη δύναμη -b·v)
 
-const DRIVE_B_MIN = 10;
+const DRIVE_B_HARD_MIN = 6;   // επιτρέπουμε κάτω από 10 μόνο με “ασφάλεια” (βλ. applyFrequencySafetyByB)
+const DRIVE_B_SAFE_MIN = 10;  // φυσικό/λειτουργικό κατώφλι του συστήματος
 const DRIVE_B_MAX = 50;
 
 // --- Driver controls hookup (f as ratio, b as kg/s) ---
@@ -1606,8 +1607,37 @@ function syncDriveUI(){
   updateDriveFreqLabel();
 
   if(elDriveB){
-    elDriveB.value = String(Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_MIN, Math.round(driveB))));
-    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_MIN, Math.round(driveB)))} kg/s`;
+    elDriveB.value = String(Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB))));
+    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
+  }
+  // ασφάλεια συχνοτήτων όταν b < 10
+  applyFrequencySafetyByB(driveB);
+
+}
+
+// Αν b < 10: “κόβουμε” συχνότητες κοντά στον συντονισμό για να μη βγει το σύστημα εκτός ορίων.
+// (Διατηρούμε τη δυνατότητα να δοκιμάσεις μικρότερο b, αλλά μόνο με ασφαλείς ratios.)
+function applyFrequencySafetyByB(bKgPerS){
+  if(!elDriveRatio) return;
+
+  const lockNear = (bKgPerS < DRIVE_B_SAFE_MIN);
+  const nearRes = new Set(['0.90','1.00','1.10','1.20']);
+  const safeFallback = '0.75';
+
+  for(const opt of elDriveRatio.options){
+    const v = String(opt.value);
+    opt.disabled = lockNear && nearRes.has(v);
+  }
+
+  // Αν είναι επιλεγμένη απαγορευμένη τιμή, γύρνα σε ασφαλή
+  const sel = elDriveRatio.options[elDriveRatio.selectedIndex];
+  if(sel && sel.disabled){
+    elDriveRatio.value = safeFallback;
+    const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
+    driveRatio = r;
+    driverOmega = omega * driveRatio;
+    updateDriveFreqLabel();
+    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
   }
 }
 
@@ -1623,8 +1653,9 @@ if(elDriveRatio){
 
 if(elDriveB){
   elDriveB.addEventListener('input', () => {
-    driveB = Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_MIN, parseFloat(elDriveB.value) || DRIVE_B_MIN));
-    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_MIN, Math.round(driveB)))} kg/s`;
+    driveB = Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, parseFloat(elDriveB.value) || DRIVE_B_HARD_MIN));
+    applyFrequencySafetyByB(driveB);
+    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
     if (typeof AFRecorder !== 'undefined') AFRecorder.onBChange();
   });
 }
@@ -4299,15 +4330,21 @@ const AFRecorder = (() => {
       const u=A/yMaxAuto;
       return y1 - u*h;
     }
+    // x grid/ticks (αναλογική κλίμακα, όχι “κουμπωμένη” στις επιλογές)
+    const xTickStep = 0.10;
+    const xTickStart = Math.ceil(XRANGE[0] / xTickStep) * xTickStep;
+    const xTickEnd   = XRANGE[1];
 
-    // x grid/ticks
-    XTICKS.forEach(tr=>{
-      const xx=X(tr);
+    for(let tr = xTickStart; tr <= xTickEnd + 1e-9; tr += xTickStep){
+      const trR = Math.round(tr * 100) / 100; // 2 δεκαδικά χωρίς float σκουπίδια
+      const xx  = X(trR);
+
       ctx.strokeStyle='rgba(255,255,255,0.10)';
       ctx.beginPath(); ctx.moveTo(xx,y1); ctx.lineTo(xx,y0); ctx.stroke();
+
       ctx.fillStyle='rgba(255,255,255,0.6)';
-      ctx.fillText(String(tr), xx-10, y1+16);
-    });
+      ctx.fillText(trR.toFixed(2), xx-12, y1+16);
+    }
 
     // y grid/ticks
     for(let i=0;i<=4;i++){
@@ -4524,7 +4561,7 @@ data.forEach(p=>{
     </div>
     <div class="mh-note">Ορισμός: A = (xmax − xmin)/2. Καταγραφή όταν το peak-to-peak σταθεροποιείται.</div>
   </div>
-  <canvas id="afCanvas" width="520" height="220" aria-hidden="true"></canvas>
+  <canvas id="afCanvas" width="260" height="330" aria-hidden="true"></canvas>
 
 </body>
 </html>
