@@ -4313,6 +4313,74 @@ const AFRecorder = (() => {
       ctx.fillText(A.toFixed(2), 6, yy+4);
     }
 
+
+// smooth (monotone cubic Hermite / PCHIP-like) for nicer A–f curves (visual only)
+function drawSmoothMonotone(data){
+  const n = data.length;
+  if(n < 2) return;
+
+  const xs = data.map(p=>p.ratio);
+  const ys = data.map(p=>p.A);
+
+  if(n === 2){
+    ctx.beginPath();
+    ctx.moveTo(X(xs[0]), Y(ys[0]));
+    ctx.lineTo(X(xs[1]), Y(ys[1]));
+    ctx.stroke();
+    return;
+  }
+
+  const h = new Array(n-1);
+  const d = new Array(n-1);
+  for(let i=0;i<n-1;i++){
+    h[i] = xs[i+1] - xs[i];
+    d[i] = (ys[i+1] - ys[i]) / h[i];
+  }
+
+  const m = new Array(n);
+  m[0] = d[0];
+  m[n-1] = d[n-2];
+
+  for(let i=1;i<n-1;i++){
+    if(d[i-1]*d[i] <= 0){
+      m[i] = 0;
+    } else {
+      const w1 = 2*h[i] + h[i-1];
+      const w2 = h[i] + 2*h[i-1];
+      m[i] = (w1 + w2) / (w1/d[i-1] + w2/d[i]);
+    }
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(X(xs[0]), Y(ys[0]));
+
+  for(let i=0;i<n-1;i++){
+    const hi = h[i];
+    const x0 = xs[i], x1 = xs[i+1];
+    const y0 = ys[i], y1 = ys[i+1];
+    const m0 = m[i], m1 = m[i+1];
+
+    const pxSpan = Math.abs(X(x1) - X(x0));
+    const steps = Math.max(8, Math.min(40, Math.round(pxSpan/8)));
+
+    for(let s=1;s<=steps;s++){
+      const t = s/steps;
+      const t2 = t*t, t3 = t2*t;
+
+      const h00 = 2*t3 - 3*t2 + 1;
+      const h10 = t3 - 2*t2 + t;
+      const h01 = -2*t3 + 3*t2;
+      const h11 = t3 - t2;
+
+      const x = x0 + t*hi;
+      const y = h00*y0 + h10*hi*m0 + h01*y1 + h11*hi*m1;
+
+      ctx.lineTo(X(x), Y(y));
+    }
+  }
+
+  ctx.stroke();
+}
     // curves
     const keys = Array.from(series.keys()).sort((a,b)=>a-b);
     keys.forEach((k, idx)=>{
@@ -4323,16 +4391,8 @@ const AFRecorder = (() => {
       ctx.strokeStyle=`hsla(${hue},80%,60%,0.85)`;
       ctx.fillStyle=`hsla(${hue},80%,60%,0.95)`;
       ctx.lineWidth=2;
-
-      ctx.beginPath();
-      data.forEach((p,i)=>{
-        const xx=X(p.ratio);
-        const yy=Y(p.A);
-        if(i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
-      });
-      ctx.stroke();
-
-      data.forEach(p=>{
+      drawSmoothMonotone(data);
+data.forEach(p=>{
         const xx=X(p.ratio);
         const yy=Y(p.A);
         ctx.beginPath();
