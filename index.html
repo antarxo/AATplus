@@ -477,24 +477,32 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="dc-row">
       <span class="dc-lbl">f</span>
       <select id="driveRatio" aria-label="συχνότητα διεγέρτη ως πολλαπλάσιο της ιδιοσυχνότητας">
-        <option value="0.25">0.25 f₀</option>
-        <option value="0.33">0.33 f₀</option>
-        <option value="0.50">0.50 f₀</option>
-        <option value="0.67">0.67 f₀</option>
+                <option value="0.60">0.60 f₀</option>
+        <option value="0.65">0.65 f₀</option>
+        <option value="0.70">0.70 f₀</option>
         <option value="0.75">0.75 f₀</option>
+        <option value="0.80">0.80 f₀</option>
+        <option value="0.85">0.85 f₀</option>
+        <option value="0.90">0.90 f₀</option>
+        <option value="0.95">0.95 f₀</option>
         <option value="1.00">1.00 f₀</option>
+        <option value="1.05">1.05 f₀</option>
+        <option value="1.10">1.10 f₀</option>
+        <option value="1.15">1.15 f₀</option>
+        <option value="1.20">1.20 f₀</option>
         <option value="1.25">1.25 f₀</option>
+        <option value="1.30">1.30 f₀</option>
+        <option value="1.35">1.35 f₀</option>
+        <option value="1.40">1.40 f₀</option>
+        <option value="1.45">1.45 f₀</option>
         <option value="1.50">1.50 f₀</option>
-        <option value="2.00">2.00 f₀</option>
-        <option value="3.00">3.00 f₀</option>
-        <option value="4.00">4.00 f₀</option>
       </select>
-      <span class="dc-val" id="driveFreqVal">2.00 f₀ · 0.33 Hz</span>
+      <span class="dc-val" id="driveFreqVal">1.00 f₀ · – Hz</span>
     </div>
     <div class="dc-row">
       <span class="dc-lbl">b</span>
-      <input id="driveB" type="range" min="10" max="300" step="1" value="35" />
-      <span class="dc-val" id="driveBVal">35 kg/s</span>
+      <input id="driveB" type="range" min="10" max="50" step="1" value="20" />
+      <span class="dc-val" id="driveBVal">20 kg/s</span>
     </div>
   </div>
 
@@ -1559,7 +1567,7 @@ const DRIVER_THETA0 = Math.PI/2;
 let driverTheta = DRIVER_THETA0;          // ξεκινάμε στο κέντρο (cos=0) για να "κουμπώνει"
 
 // Για να φαίνεται καθαρά ο συντονισμός, αλλάζουμε τη συχνότητα σε (υπο)πολλαπλάσια της ιδιοσυχνότητας f0.
-let driveRatio = 2.00;                    // f = driveRatio · f0
+let driveRatio = 1.00;                    // f = driveRatio · f0
 let driverOmega = omega * driveRatio;     // rad/s
 
 let driverDx  = 0;   // τρέχον translateX του slider (px, στο ίδιο σύστημα με το placement)
@@ -1583,10 +1591,10 @@ let basePrevX = null;  // px
 let basePrevV = null;  // px/s
 let baseRefX  = null;  // px (y0)
 
-let driveB = 35;       // kg/s  (b στη δύναμη -b·v)
+let driveB = 20;       // kg/s  (b στη δύναμη -b·v)
 
 const DRIVE_B_MIN = 10;
-const DRIVE_B_MAX = 300;
+const DRIVE_B_MAX = 50;
 
 // --- Driver controls hookup (f as ratio, b as kg/s) ---
 const elDriveRatio   = document.getElementById('driveRatio');
@@ -4199,8 +4207,8 @@ const AFRecorder = (() => {
   const STABLE_ABS_TOL = 0.003;  // 3 mm (ώστε να μην κολλάει όταν A είναι μικρό)
   const STABLE_HOLD_SEC = 0.5;   // seconds stable before recording
   const MIN_RECORD_GAP = 0.5;    // seconds between recordings
-  const XRANGE = [0.25, 3.0];
-  const XTICKS = [0.25,0.5,0.75,1.0,1.25,1.5,2.0,3.0];
+  const XRANGE = [0.60, 1.50];
+  const XTICKS = [0.60,0.70,0.80,0.90,1.00,1.10,1.20,1.30,1.40,1.50];
 
   function bKeyFrom(b){ return Math.round(b); }
 
