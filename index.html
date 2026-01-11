@@ -4197,6 +4197,14 @@ const AFRecorder = (() => {
   const MIN_RECORD_GAP = 0.5;    // seconds between recordings
   const XRANGE = [0.60, 1.50];
     const XTICKS = [0.60,0.75,0.90,1.00,1.10,1.20,1.50];
+  // warmup (αποφυγή πρόωρης καταγραφής πριν “κάτσει” το πλάτος — ειδικά κοντά στον συντονισμό)
+  const WARMUP_CYCLES = 6;       // πόσοι κύκλοι διέγερσης να περάσουν πριν επιτρέψουμε καταγραφή
+  const MIN_WARMUP_SEC = 3.0;    // ελάχιστα δευτερόλεπτα warmup (για πολύ χαμηλές συχνότητες)
+
+  let lastParamChangeT = 0;      // time of last (f,b) change
+  let lastSeenRatio = null;
+  let lastSeenBKey  = null;
+
 
   function bKeyFrom(b){ return Math.round(b); }
 
@@ -4253,6 +4261,8 @@ const AFRecorder = (() => {
     xMax = -Infinity;
     stableHold = 0;
     stable = false;
+    lastX = null;
+    lastSign = 0;
   }
 
   function drawPlot(){
@@ -4423,7 +4433,23 @@ data.forEach(p=>{
     bind();
 
     t += dt;
+
+    // detect parameter change even if UI forgets to call onFChange/onBChange
+    const bKey = bKeyFrom(bKgPerS);
+    if(lastSeenRatio === null) lastSeenRatio = fRatio;
+    if(lastSeenBKey  === null) lastSeenBKey  = bKey;
+    const changed = (Math.abs(fRatio - lastSeenRatio) > 1e-9) || (bKey !== lastSeenBKey);
+    if(changed){
+      resetExtrema();
+      lastParamChangeT = t;
+      lastSeenRatio = fRatio;
+      lastSeenBKey  = bKey;
+    }
+
     const k = ensureSeries(bKgPerS);
+
+    // warmup gate: μην επιτρέπεις “stable→record” πριν περάσουν αρκετοί κύκλοι
+    const warmupSec = Math.max(MIN_WARMUP_SEC, WARMUP_CYCLES / Math.max(0.001, fHz));
 
     // running min/max for the current window
     xMin = Math.min(xMin, xMeters);
@@ -4450,10 +4476,15 @@ data.forEach(p=>{
     const Aset = computeASet();
     const nowStable = Aset ? isStableA(Aset) : false;
 
-    stableHold = nowStable ? (stableHold + dt) : 0;
-    stable = nowStable;
+    if((t - lastParamChangeT) < warmupSec){
+      stableHold = 0;
+      stable = false;
+    } else {
+      stableHold = nowStable ? (stableHold + dt) : 0;
+      stable = nowStable;
+    }
 
-    if(stable && stableHold >= STABLE_HOLD_SEC && (t - lastRecordStamp) >= MIN_RECORD_GAP){
+    if(stable && (t - lastParamChangeT) >= warmupSec && stableHold >= STABLE_HOLD_SEC && (t - lastRecordStamp) >= MIN_RECORD_GAP){
       const Aavg = Aset.reduce((s,v)=>s+v,0)/Aset.length;
       recordPoint(k, fRatio, Aavg);
       lastRecordStamp = t;
