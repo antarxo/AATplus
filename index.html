@@ -4156,16 +4156,23 @@ window.addEventListener('load',async ()=>{
    - b has units kg/s in force -b*v, so beta = b/(2m)
    ========================================================= */
 const AFRecorder = (() => {
-  const elX = document.getElementById('mhX');
-  const elXmin = document.getElementById('mhXmin');
-  const elXmax = document.getElementById('mhXmax');
-  const elA = document.getElementById('mhA');
-  const elF = document.getElementById('mhF');
-  const elB = document.getElementById('mhB');
-  const elStable = document.getElementById('mhStable');
+  // Lazy-bind UI nodes because this script executes before the HUD/canvas exist in the DOM.
+  let elX=null, elXmin=null, elXmax=null, elA=null, elF=null, elB=null, elStable=null;
+  let cvs=null, ctx=null;
 
-  const cvs = document.getElementById('afCanvas');
-  const ctx = cvs ? cvs.getContext('2d') : null;
+  function bind(){
+    if(!elX) elX = document.getElementById('mhX');
+    if(!elXmin) elXmin = document.getElementById('mhXmin');
+    if(!elXmax) elXmax = document.getElementById('mhXmax');
+    if(!elA) elA = document.getElementById('mhA');
+    if(!elF) elF = document.getElementById('mhF');
+    if(!elB) elB = document.getElementById('mhB');
+    if(!elStable) elStable = document.getElementById('mhStable');
+    if(!cvs){
+      cvs = document.getElementById('afCanvas');
+      ctx = cvs ? cvs.getContext('2d') : null;
+    }
+  }
 
   let t = 0;
   let lastX = null;
@@ -4253,6 +4260,7 @@ const AFRecorder = (() => {
   }
 
   function drawPlot(){
+    bind();
     if(!ctx || !cvs) return;
 
     const W=cvs.width, H=cvs.height;
@@ -4339,6 +4347,7 @@ const AFRecorder = (() => {
   }
 
   function updateHUD(x, fHz, ratio, b){
+    bind();
     if(!elX) return;
 
     elX.textContent = `${fmt(x,3)} m`;
@@ -4355,6 +4364,7 @@ const AFRecorder = (() => {
 
   function update({ xMeters, dt, fHz, fRatio, bKgPerS }){
     if(!Number.isFinite(xMeters) || !Number.isFinite(dt) || dt<=0) return;
+    bind();
 
     t += dt;
     const k = ensureSeries(bKgPerS);
