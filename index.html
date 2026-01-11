@@ -4319,11 +4319,13 @@ const AFRecorder = (() => {
     ctx.fillStyle='rgba(255,255,255,0.85)';
     ctx.font='12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.fillText('A–f', x0, 12);
-    ctx.fillText('f/f₀', x1-34, H-10);
+    ctx.fillText('f (Hz)', x1-34, H-10);
     ctx.fillText('A (m)', 6, y0+10);
 
-    function X(r){
-      const u=(r-XRANGE[0])/(XRANGE[1]-XRANGE[0]);
+    const f0Hz = omega / (2*Math.PI);
+    const FXRANGE = [XRANGE[0]*f0Hz, XRANGE[1]*f0Hz];
+    function X(fHz){
+      const u=(fHz-FXRANGE[0])/(FXRANGE[1]-FXRANGE[0]);
       return x0 + u*w;
     }
     function Y(A){
@@ -4331,22 +4333,32 @@ const AFRecorder = (() => {
       return y1 - u*h;
     }
     // x grid/ticks (αναλογική κλίμακα, όχι “κουμπωμένη” στις επιλογές)
-    const xTickStep = 0.10;
-    const xTickStart = Math.ceil(XRANGE[0] / xTickStep) * xTickStep;
-    const xTickEnd   = XRANGE[1];
+    // x grid/ticks (αναλογική κλίμακα Hz)
+    // Θέλουμε λίγες “καθαρές” ετικέτες για να μη μπουκώνει το στενό γράφημα.
+    const spanHz = (FXRANGE[1]-FXRANGE[0]);
+    const niceSteps = [0.005,0.01,0.02,0.025,0.05,0.1,0.2];
+    const target = spanHz/4; // ~4 μεγάλα διαστήματα
+    let xTickStepHz = niceSteps.find(s=>s>=target) || 0.05;
+    const xTickStartHz = FXRANGE[0];
+    const xTickEndHz   = FXRANGE[1];
 
-    for(let tr = xTickStart; tr <= xTickEnd + 1e-9; tr += xTickStep){
-      const trR = Math.round(tr * 100) / 100; // 2 δεκαδικά χωρίς float σκουπίδια
-      const xx  = X(trR);
-
-      ctx.strokeStyle='rgba(255,255,255,0.10)';
+    // minor grid
+    const minorStepHz = xTickStepHz/2;
+    for(let fHz = xTickStartHz; fHz <= xTickEndHz + 1e-9; fHz += minorStepHz){
+      const xx = X(fHz);
+      const isMajor = Math.abs(((fHz-xTickStartHz)/xTickStepHz) - Math.round((fHz-xTickStartHz)/xTickStepHz)) < 1e-6;
+      ctx.strokeStyle = isMajor ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.05)';
       ctx.beginPath(); ctx.moveTo(xx,y1); ctx.lineTo(xx,y0); ctx.stroke();
-
-      ctx.fillStyle='rgba(255,255,255,0.6)';
-      ctx.fillText(trR.toFixed(2), xx-12, y1+16);
     }
 
-    // y grid/ticks
+    // major labels
+    for(let fHz = xTickStartHz; fHz <= xTickEndHz + 1e-9; fHz += xTickStepHz){
+      const xx = X(fHz);
+      ctx.fillStyle='rgba(255,255,255,0.6)';
+      ctx.fillText(fHz.toFixed(2), xx-12, y1+16);
+    }
+
+// y grid/ticks
     for(let i=0;i<=4;i++){
       const A=(yMaxAuto*i)/4;
       const yy=Y(A);
@@ -4358,11 +4370,11 @@ const AFRecorder = (() => {
 
 
 // smooth (monotone cubic Hermite / PCHIP-like) for nicer A–f curves (visual only)
-function drawSmoothMonotone(data){
+function drawSmoothMonotone(data, f0Hz){
   const n = data.length;
   if(n < 2) return;
 
-  const xs = data.map(p=>p.ratio);
+  const xs = data.map(p=>p.ratio * f0Hz);
   const ys = data.map(p=>p.A);
 
   if(n === 2){
@@ -4404,7 +4416,7 @@ function drawSmoothMonotone(data){
     const m0 = m[i], m1 = m[i+1];
 
     const pxSpan = Math.abs(X(x1) - X(x0));
-    const steps = Math.max(8, Math.min(40, Math.round(pxSpan/8)));
+    const steps = Math.max(12, Math.min(60, Math.round(pxSpan/6)));
 
     for(let s=1;s<=steps;s++){
       const t = s/steps;
@@ -4434,9 +4446,9 @@ function drawSmoothMonotone(data){
       ctx.strokeStyle=`hsla(${hue},80%,60%,0.85)`;
       ctx.fillStyle=`hsla(${hue},80%,60%,0.95)`;
       ctx.lineWidth=2;
-      drawSmoothMonotone(data);
+      drawSmoothMonotone(data, f0Hz);
 data.forEach(p=>{
-        const xx=X(p.ratio);
+        const xx=X(p.ratio * f0Hz);
         const yy=Y(p.A);
         ctx.beginPath();
         ctx.arc(xx,yy,3,0,Math.PI*2);
@@ -4561,7 +4573,7 @@ data.forEach(p=>{
     </div>
     <div class="mh-note">Ορισμός: A = (xmax − xmin)/2. Καταγραφή όταν το peak-to-peak σταθεροποιείται.</div>
   </div>
-  <canvas id="afCanvas" width="260" height="330" aria-hidden="true"></canvas>
+  <canvas id="afCanvas" width="130" height="495" aria-hidden="true"></canvas>
 
 </body>
 </html>
