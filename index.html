@@ -4593,10 +4593,17 @@ function drawSmoothMonotone(data){
       ctx.strokeStyle = col.stroke;
       ctx.fillStyle = col.fill;
       ctx.lineWidth = 2;
-            const leftLine = data.filter(p=>p.ratio < 1.0);
-      const rightLine = data.filter(p=>p.ratio > 1.0);
-      if(leftLine.length>=2) drawSmoothMonotone(leftLine);
-      if(rightLine.length>=2) drawSmoothMonotone(rightLine);
+            const caps = getCaps(k);
+      const hasCap = (caps.leftCap != null) || (caps.rightCap != null);
+
+      if(!hasCap){
+        if(data.length>=2) drawSmoothMonotone(data);
+      } else {
+        const leftLine = data.filter(p=>p.ratio < 1.0);
+        const rightLine = data.filter(p=>p.ratio > 1.0);
+        if(leftLine.length>=2) drawSmoothMonotone(leftLine);
+        if(rightLine.length>=2) drawSmoothMonotone(rightLine);
+      }
 data.forEach(p=>{
         const xx=X(p.ratio);
         const yy=Y(p.A);
