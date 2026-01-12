@@ -4451,7 +4451,8 @@ function drawSmoothMonotone(data){
 
   ctx.stroke();
 }
-    // γραμμή σύγκρισης: πλάτος διεγέρτη
+        const driveA = (Number.isFinite(driverAmpMeters) ? Math.abs(driverAmpMeters) : 0);
+// γραμμή σύγκρισης: πλάτος διεγέρτη
     if (driveA > 0) {
       const yy = Y(driveA);
       ctx.strokeStyle = 'rgba(0,220,255,0.65)';
