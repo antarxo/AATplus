@@ -345,7 +345,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     #afCanvas{
       position:absolute;
       left:16px;
-      top:120px; /* θα γίνει fine-tune via JS ώστε να κάτσει στην αριστερή κουρτίνα */
+      bottom:16px;
       z-index:9998;
       border-radius:10px;
       background:rgba(0,0,0,0.45);
@@ -489,7 +489,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     </div>
     <div class="dc-row">
       <span class="dc-lbl">b</span>
-      <input id="driveB" type="range" min="6" max="50" step="1" value="20" />
+      <input id="driveB" type="range" min="3" max="50" step="1" value="20" />
       <span class="dc-val" id="driveBVal">20 kg/s</span>
     </div>
   </div>
@@ -1025,7 +1025,6 @@ const m   = 70;
 const T   = 6.0;
 const A_m = 3.0;
 const pxPerMeter = 50;
-let driverAmpMeters = 0; // πλάτος διεγέρτη (m)
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
@@ -1583,110 +1582,6 @@ let baseRefX  = null;  // px (y0)
 let driveB = 20;       // kg/s  (b στη δύναμη -b·v)
 
 const DRIVE_B_HARD_MIN = 6;   // επιτρέπουμε κάτω από 10 μόνο με “ασφάλεια” (βλ. applyFrequencySafetyByB)
-
-// --- Dynamic safety for small b: forbid (b,ratio) pairs that exceed amplitude limit ---
-const A_LIMIT = 5.0; // m  (μέγιστο επιτρεπτό πλάτος A). Αν ξεπεραστεί, απαγορεύεται το (b,f).
-
-const forbiddenByB = new Map(); // bKey(int kg/s) -> Set(ratioStr "0.95")
-
-function bKeyFromValue(bKgPerS){
-  return Math.round(bKgPerS); // slider είναι step=1, άρα integer
-}
-function isForbiddenPair(bKey, ratioStr){
-  const s = forbiddenByB.get(bKey);
-  return s ? s.has(String(ratioStr)) : false;
-}
-function markForbiddenPair(bKey, ratioStr){
-  const key = bKey;
-  const v = String(ratioStr);
-  if(!forbiddenByB.has(key)) forbiddenByB.set(key, new Set());
-  const s = forbiddenByB.get(key);
-  if(s.has(v)) return;
-  s.add(v);
-
-  // αν ο selector υπάρχει, απενεργοποίησε τη συγκεκριμένη επιλογή
-  if(typeof elDriveRatio !== 'undefined' && elDriveRatio){
-    const opt = Array.from(elDriveRatio.options).find(o => String(o.value) === v);
-    if(opt) opt.disabled = true;
-
-    // αν είναι επιλεγμένη, γύρνα σε ασφαλή τιμή
-    const sel = elDriveRatio.options[elDriveRatio.selectedIndex];
-    if(sel && sel.disabled){
-      autoPickSafeRatio();
-    }
-  }
-}
-
-// ratios: coarse για b>=10, dense για b<10 (ώστε να “παίζει” το παιχνίδι)
-const COARSE_RATIOS = [0.60, 0.75, 0.90, 1.00, 1.10, 1.20, 1.50];
-const DENSE_RATIOS = (() => {
-  const arr = [];
-  for(let r=0.60; r<=1.50+1e-9; r+=0.05){
-    arr.push(Math.round(r*100)/100);
-  }
-  return arr;
-})();
-
-function rebuildRatioOptionsByB(bKgPerS){
-  if(!elDriveRatio) return;
-
-  const bKey = bKeyFromValue(bKgPerS);
-  const ratios = (bKgPerS < DRIVE_B_SAFE_MIN) ? DENSE_RATIOS : COARSE_RATIOS;
-
-  const prev = elDriveRatio.value ? String(elDriveRatio.value) : null;
-  elDriveRatio.innerHTML = '';
-
-  for(const r of ratios){
-    const v = r.toFixed(2);
-    const opt = document.createElement('option');
-    opt.value = v;
-    opt.textContent = v;
-    opt.disabled = isForbiddenPair(bKey, v);
-    elDriveRatio.appendChild(opt);
-  }
-
-  // restore previous if still valid
-  if(prev && Array.from(elDriveRatio.options).some(o => o.value === prev && !o.disabled)){
-    elDriveRatio.value = prev;
-  } else {
-    // fallback will choose a safe ratio
-    autoPickSafeRatio();
-  }
-}
-
-function autoPickSafeRatio(){
-  if(!elDriveRatio) return;
-  const options = Array.from(elDriveRatio.options).filter(o => !o.disabled);
-  if(options.length === 0){
-    // ακραίο: τίποτα διαθέσιμο — επαναφορά σε coarse, χωρίς forbidden filtering
-    elDriveRatio.innerHTML = '';
-    for(const r of COARSE_RATIOS){
-      const opt = document.createElement('option');
-      opt.value = r.toFixed(2);
-      opt.textContent = r.toFixed(2);
-      elDriveRatio.appendChild(opt);
-    }
-    elDriveRatio.value = '0.75';
-  } else {
-    // επίλεξε “ασφαλές”: όσο πιο μακριά από 1.00, τόσο καλύτερα
-    let best = options[0];
-    let bestScore = -Infinity;
-    for(const o of options){
-      const val = parseFloat(o.value);
-      const score = Math.abs(val - 1.00);
-      if(score > bestScore){ bestScore = score; best = o; }
-    }
-    elDriveRatio.value = best.value;
-  }
-
-  // apply to model
-  const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
-  driveRatio = r;
-  driverOmega = omega * driveRatio;
-  updateDriveFreqLabel();
-  if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
-}
-
 const DRIVE_B_SAFE_MIN = 10;  // φυσικό/λειτουργικό κατώφλι του συστήματος
 const DRIVE_B_MAX = 50;
 
@@ -1703,36 +1598,158 @@ function updateDriveFreqLabel(){
 }
 
 function syncDriveUI(){
-  // b slider first
+  if(elDriveRatio){
+    // προσπαθούμε να "κουμπώσουμε" σε υπάρχουσα επιλογή
+    const v = driveRatio.toFixed(2);
+    const opt = Array.from(elDriveRatio.options).find(o => (parseFloat(o.value).toFixed(2) === v));
+    if(opt) elDriveRatio.value = opt.value;
+  }
+  updateDriveFreqLabel();
+
   if(elDriveB){
     elDriveB.value = String(Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB))));
     if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
   }
+  // ασφάλεια συχνοτήτων όταν b < 10
+  applyFrequencySafetyByB(driveB);
 
-  // rebuild ratios based on current b (dense for b<10, coarse otherwise) + apply forbidden mask
-  rebuildRatioOptionsByB(driveB);
-
-  // try to select current driveRatio if available and not disabled
-  if(elDriveRatio){
-    const v = driveRatio.toFixed(2);
-    const opt = Array.from(elDriveRatio.options).find(o => (String(o.value) === v) && !o.disabled);
-    if(opt){
-      elDriveRatio.value = opt.value;
-    } else {
-      // pick a safe ratio that is allowed
-      autoPickSafeRatio();
-    }
-  }
-
-  updateDriveFreqLabel();
 }
 
 // Αν b < 10: “κόβουμε” συχνότητες κοντά στον συντονισμό για να μη βγει το σύστημα εκτός ορίων.
 // (Διατηρούμε τη δυνατότητα να δοκιμάσεις μικρότερο b, αλλά μόνο με ασφαλείς ratios.)
+// =========================
+// Dynamic forbid ανά b με cap στο A=5m (χωρίς “κόψιμο” και από τις δύο πλευρές ταυτόχρονα)
+//
+// Ιδέα:
+// - Για κάθε b κρατάμε capLeft/capRight (όριο ratio όπου το Α “σκάει” > 5m).
+// - Αν “σκάσει” στη μια πλευρά, απαγορεύονται ΜΟΝΟ τα ratios προς το f0 στην ίδια πλευρά.
+// - Στο γράφημα, η καμπύλη τερματίζει με τεχνητό σημείο A=5 στο ratio που σκάει.
+// =========================
+const AMP_LIMIT_METERS = 5.0;
+
+// coarse list (για b>=10) — κρατάμε το “σφιχτό” παιχνίδι
+const DRIVE_RATIOS_COARSE = [0.60, 0.75, 0.90, 1.00, 1.10, 1.20, 1.50];
+
+// dense list (για b<10) — για να υπάρχουν αρκετά σημεία στους δύο κλάδους
+const DRIVE_RATIOS_DENSE = (() => {
+  const a = [];
+  for(let r=0.60; r<=1.500001; r+=0.05){
+    a.push(Math.round(r*100)/100);
+  }
+  return a;
+})();
+
+// bKey -> { leftCap: number|null, rightCap: number|null }
+const capsByB = new Map();
+
+function bKeyFromB(bKgPerS){ return Math.max(0, Math.round(bKgPerS)); }
+
+function getCaps(bKey){
+  if(!capsByB.has(bKey)) capsByB.set(bKey, { leftCap: null, rightCap: null });
+  return capsByB.get(bKey);
+}
+
+function setCap(bKey, ratio){
+  const c = getCaps(bKey);
+  const r = Number(ratio);
+  if(!Number.isFinite(r)) return;
+
+  // Κρατάμε cap “πιο κοντά” στο 1.00 (προς τον συντονισμό) ανά πλευρά.
+  if(r < 1.0){
+    c.leftCap = (c.leftCap == null) ? r : Math.max(c.leftCap, r);
+  } else if(r > 1.0){
+    c.rightCap = (c.rightCap == null) ? r : Math.min(c.rightCap, r);
+  }
+}
+
+// Απαγόρευση ΜΟΝΟ προς f0 στην ίδια πλευρά
+function isRatioDisabledForB(bKey, ratio){
+  const c = getCaps(bKey);
+  const r = Number(ratio);
+  if(!Number.isFinite(r)) return false;
+
+  if(c.leftCap != null && r < 1.0 && r >= c.leftCap) return true;   // [leftCap, 1)
+  if(c.rightCap != null && r > 1.0 && r <= c.rightCap) return true; // (1, rightCap]
+  return false;
+}
+
+function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
+  const enabled = options.filter(o => !o.disabled).map(o => Number(o.value)).filter(Number.isFinite);
+  if(!enabled.length) return null;
+
+  let pool = enabled;
+  if(preferSide === 'right'){
+    const r = enabled.filter(v => v > 1.0);
+    if(r.length) pool = r;
+  } else if(preferSide === 'left'){
+    const l = enabled.filter(v => v < 1.0);
+    if(l.length) pool = l;
+  }
+
+  // “ασφαλέστερο”: πιο μακριά από 1.00
+  let best = pool[0], bestScore = -Infinity;
+  for(const v of pool){
+    const score = Math.abs(v - 1.0);
+    if(score > bestScore){ bestScore = score; best = v; }
+  }
+  return best;
+}
+
+function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
+  if(!elDriveRatio) return;
+
+  const bKey = bKeyFromB(bKgPerS);
+  const ratios = (bKgPerS < DRIVE_B_SAFE_MIN) ? DRIVE_RATIOS_DENSE : DRIVE_RATIOS_COARSE;
+
+  const prev = String(elDriveRatio.value || '');
+  elDriveRatio.innerHTML = '';
+
+  for(const r of ratios){
+    const opt = document.createElement('option');
+    const v = r.toFixed(2);
+    opt.value = v;
+    opt.textContent = `${v} f₀`;
+    opt.disabled = isRatioDisabledForB(bKey, v);
+    elDriveRatio.appendChild(opt);
+  }
+
+  // προσπάθησε να κρατήσεις την προηγούμενη επιλογή αν επιτρέπεται
+  const canKeep = Array.from(elDriveRatio.options).some(o => o.value === prev && !o.disabled);
+  if(canKeep){
+    elDriveRatio.value = prev;
+    return;
+  }
+
+  // αλλιώς διάλεξε αυτόματα
+  const best = pickBestEnabledRatio(Array.from(elDriveRatio.options), preferSide);
+  if(best != null){
+    elDriveRatio.value = best.toFixed(2);
+
+    // ενημέρωση κινητήρα (χωρίς να βασιζόμαστε στο 'change' event)
+    const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
+    driveRatio = r;
+    driverOmega = omega * driveRatio;
+    updateDriveFreqLabel();
+    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
+  }
+}
+
+// αντικαθιστά το παλιό “κόψιμο” συχνοτήτων
 function applyFrequencySafetyByB(bKgPerS){
-  // Legacy name kept to avoid breaking older calls.
-  // New behavior: rebuild available ratios and apply per-b forbidden mask.
-  rebuildRatioOptionsByB(bKgPerS);
+  rebuildDriveRatioOptions(bKgPerS, null);
+}
+
+// Καλείται από τον recorder όταν “σκάσει” ένα (b,f): θέτει cap + ανανεώνει επιλογές
+function applyCapForCurrentBF(bKgPerS, fRatio){
+  const bKey = bKeyFromB(bKgPerS);
+  const r = Number(fRatio);
+  if(!Number.isFinite(r)) return;
+
+  setCap(bKey, r);
+
+  // Αν έσκασε στην αριστερή πλευρά, προτίμησε δεξιά (και αντίστροφα)
+  const prefer = (r < 1.0) ? 'right' : (r > 1.0 ? 'left' : null);
+  rebuildDriveRatioOptions(bKgPerS, prefer);
 }
 
 if(elDriveRatio){
@@ -1748,7 +1765,7 @@ if(elDriveRatio){
 if(elDriveB){
   elDriveB.addEventListener('input', () => {
     driveB = Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, parseFloat(elDriveB.value) || DRIVE_B_HARD_MIN));
-    rebuildRatioOptionsByB(driveB);
+    applyFrequencySafetyByB(driveB);
     if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
     if (typeof AFRecorder !== 'undefined') AFRecorder.onBChange();
   });
@@ -1786,9 +1803,6 @@ function applyDriverTransform(){
 
   // Κλιμάκωση (τα PNG κλιμακώνονται με CSS width).
   const scale = (drvWheel.offsetWidth || W) / W;
-
-  // Amplitude διεγέρτη σε μέτρα (για οριζόντια γραμμή σύγκρισης στο γράφημα A–f)
-  driverAmpMeters = (e0 * scale) / pxPerMeter;
 
   // Slider motion (Scotch yoke):
   // Κανόνας: (slotCenterX + dx) == pinCenterX  ⇒  dx = (pinX - slotCX)*scale
@@ -1846,30 +1860,7 @@ function updateRuler(){
     if(mTick===0) lbl.style.transform = 'translateX(0)';
     rulerEl.appendChild(lbl);
   }
-
-  layoutAFCanvas();
 }
-
-function layoutAFCanvas(){
-  const cvs = document.getElementById('afCanvas');
-  if(!cvs || !stage) return;
-  const leftCurt = stage.querySelector('.curtain-side.left');
-  if(!leftCurt) return;
-
-  const lRect = leftCurt.getBoundingClientRect();
-
-  // Ιδανικά: πλάτος ίσο με το πλάτος της αριστερής κουρτίνας (χώρος για νόμους/γραφήματα).
-  const targetW = Math.max(200, Math.round(lRect.width)); // μικρό minimum για να μην γίνει υπερβολικά στενό
-  const targetH = 330; // (προηγούμενο μέγεθος: 260×330)
-
-  if(cvs.width !== targetW) cvs.width = targetW;
-  if(cvs.height !== targetH) cvs.height = targetH;
-
-  // Τοποθέτηση πάνω στην αριστερή κουρτίνα (viewport coords, αφού είναι absolute στο body).
-  cvs.style.left = Math.round(lRect.left + 10) + 'px';
-  cvs.style.top  = Math.round(lRect.top + 90) + 'px';
-}
-
 
 /* ---------- Δειγματοληψία t–x (πίνακας + βιβλίο) ---------- */
 
@@ -4325,10 +4316,6 @@ const AFRecorder = (() => {
   let lastX = null;
   let lastSign = 0;
 
-  // dynamic forbid hold: μην κάνεις forbid με την πρώτη αιχμή (transient)
-  let exceedHold = 0;
-  const EXCEED_HOLD_SEC = 0.25;
-
   let xMin = Infinity;
   let xMax = -Infinity;
 
@@ -4339,6 +4326,7 @@ const AFRecorder = (() => {
   let stable = false;
   let stableHold = 0;
   let lastRecordStamp = -1e9;
+  let overLimitHold = 0;
 
   // per-b curves
   const series = new Map(); // bKey -> [{ratio, A}]
@@ -4401,50 +4389,42 @@ const AFRecorder = (() => {
     return arr.some(p => Math.abs(p.ratio - ratio) < 1e-6);
   }
 
-  function recordPoint(k, ratio, A){
+  function recordPoint(k, ratio, A, force=false){
     if(!Number.isFinite(A) || A<=0) return;
-    if(alreadyRecorded(k, ratio)) return;
-    series.get(k).push({ ratio, A });
-    series.get(k).sort((a,b)=>a.ratio - b.ratio);
+    const arr = series.get(k);
+    // upsert
+    const ex = arr.find(p => Math.abs(p.ratio - ratio) < 1e-9);
+    if(ex){
+      if(force) ex.A = A;
+      return;
+    }
+    if(!force && alreadyRecorded(k, ratio)) return;
+    arr.push({ ratio, A });
+    arr.sort((a,b)=>a.ratio - b.ratio);
     yMaxAuto = Math.max(yMaxAuto, A*1.25);
   }
 
-  
-  function hasForbiddenBetween(bKey, a, b){
-    // Σπάσε την καμπύλη ΜΟΝΟ όταν υπάρχει ρητά "forbidden" ratio ανάμεσα (όχι με βάση "gap").
-    // Αυτό κρατάει ενωμένη την καμπύλη για sparse sets (π.χ. 0.60→0.75→0.90...) αλλά κόβει γύρω από τον συντονισμό όταν απαγορευτούν ενδιάμεσα ratios.
-    try{
-      const s = (typeof forbiddenByB !== 'undefined') ? forbiddenByB.get(bKey) : null;
-      if(!s || s.size===0) return false;
-      const lo = Math.min(a,b), hi = Math.max(a,b);
-      for(const v of s){
-        const r = parseFloat(v);
-        if(Number.isFinite(r) && r > lo && r < hi) return true;
+  function pruneTowardResonance(k, capRatio){
+    const arr = series.get(k);
+    if(!arr || arr.length===0) return;
+    const r = Number(capRatio);
+    const eps = 1e-9;
+    if(r < 1.0){
+      // remove points closer to 1 on left: (r, 1)
+      for(let i=arr.length-1;i>=0;i--){
+        const pr = arr[i].ratio;
+        if(pr < 1.0 && pr > r + eps) arr.splice(i,1);
       }
-      return false;
-    }catch(_e){
-      return false;
+    } else if(r > 1.0){
+      // remove points closer to 1 on right: (1, r)
+      for(let i=arr.length-1;i>=0;i--){
+        const pr = arr[i].ratio;
+        if(pr > 1.0 && pr < r - eps) arr.splice(i,1);
+      }
     }
   }
 
-  function splitIntoSegments(sortedData, bKey){
-    const segs = [];
-    let cur = [];
-    for(let i=0;i<sortedData.length;i++){
-      const p = sortedData[i];
-      if(cur.length===0){ cur.push(p); continue; }
-      const prev = cur[cur.length-1];
-      if(hasForbiddenBetween(bKey, prev.ratio, p.ratio)){
-        if(cur.length) segs.push(cur);
-        cur = [p];
-      } else {
-        cur.push(p);
-      }
-    }
-    if(cur.length) segs.push(cur);
-    return segs;
-  }
-function resetExtrema(){
+  function resetExtrema(){
     maxList.length = 0;
     minList.length = 0;
     xMin = Infinity;
@@ -4453,7 +4433,6 @@ function resetExtrema(){
     stable = false;
     lastX = null;
     lastSign = 0;
-    exceedHold = 0;
   }
 
   function drawPlot(){
@@ -4584,22 +4563,6 @@ function drawSmoothMonotone(data){
 
   ctx.stroke();
 }
-        const driveA = (Number.isFinite(driverAmpMeters) ? Math.abs(driverAmpMeters) : 0);
-// γραμμή σύγκρισης: πλάτος διεγέρτη
-    if (driveA > 0) {
-      const yy = Y(driveA);
-      ctx.strokeStyle = 'rgba(0,220,255,0.65)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6,4]);
-      ctx.beginPath();
-      ctx.moveTo(x0, yy);
-      ctx.lineTo(x1, yy);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(0,220,255,0.85)';
-      ctx.fillText('A_drive', x0 + 6, yy - 6);
-    }
-
     // curves
     const keys = Array.from(series.keys()).sort((a,b)=>a-b);
     keys.forEach((k, idx)=>{
@@ -4610,7 +4573,10 @@ function drawSmoothMonotone(data){
       ctx.strokeStyle=`hsla(${hue},80%,60%,0.85)`;
       ctx.fillStyle=`hsla(${hue},80%,60%,0.95)`;
       ctx.lineWidth=2;
-      splitIntoSegments(data).forEach(seg=>drawSmoothMonotone(seg));
+            const leftLine = data.filter(p=>p.ratio < 1.0);
+      const rightLine = data.filter(p=>p.ratio > 1.0);
+      if(leftLine.length>=2) drawSmoothMonotone(leftLine);
+      if(rightLine.length>=2) drawSmoothMonotone(rightLine);
 data.forEach(p=>{
         const xx=X(p.ratio);
         const yy=Y(p.A);
@@ -4641,7 +4607,7 @@ data.forEach(p=>{
     elStable.style.borderColor = stable ? 'rgba(0,255,140,0.35)' : 'rgba(255,255,255,0.25)';
   }
 
-  function update({ xMeters, dt, fHz, fRatio, bKgPerS, driveAmpMeters }){
+  function update({ xMeters, dt, fHz, fRatio, bKgPerS }){
     if(!Number.isFinite(xMeters) || !Number.isFinite(dt) || dt<=0) return;
     bind();
 
@@ -4661,43 +4627,12 @@ data.forEach(p=>{
 
     const k = ensureSeries(bKgPerS);
 
-    if (Number.isFinite(driveAmpMeters)) {
-      driveA = Math.max(0, driveAmpMeters);
-      yMaxAuto = Math.max(yMaxAuto, driveA * 1.25);
-    }
-
     // warmup gate: μην επιτρέπεις “stable→record” πριν περάσουν αρκετοί κύκλοι
     const warmupSec = Math.max(MIN_WARMUP_SEC, WARMUP_CYCLES / Math.max(0.001, fHz));
 
     // running min/max for the current window
     xMin = Math.min(xMin, xMeters);
     xMax = Math.max(xMax, xMeters);
-
-    // --- dynamic forbid: αν το πλάτος ξεφύγει, απαγορεύουμε ΑΜΕΣΑ το (b,f) ---
-    const bKeyNow = bKeyFrom(bKgPerS);
-    const ratioStrNow = (Number.isFinite(fRatio) ? fRatio : 1).toFixed(2);
-    const Acur = (xMax - xMin) / 2;
-    if(Number.isFinite(Acur) && Acur > A_LIMIT){
-      exceedHold += dt;
-    } else {
-      exceedHold = 0;
-    }
-    if(exceedHold >= EXCEED_HOLD_SEC){
-      markForbiddenPair(bKeyNow, ratioStrNow);
-      // auto-switch σε ασφαλή συχνότητα (ώστε να μην "καταστρέφει" το σύστημα)
-      if(elDriveRatio){
-        const sel = elDriveRatio.options[elDriveRatio.selectedIndex];
-        if(sel && sel.disabled){
-          autoPickSafeRatio();
-        }
-      }
-      // reset ώστε να ξεκινήσει νέο παράθυρο μέτρησης
-      resetExtrema();
-      lastParamChangeT = t;
-      lastSeenRatio = fRatio;
-      lastSeenBKey  = bKeyNow;
-      return;
-    }
 
     // velocity sign to detect extrema
     if(lastX === null){
@@ -4725,34 +4660,47 @@ data.forEach(p=>{
       stable = false;
     } else {
       stableHold = nowStable ? (stableHold + dt) : 0;
-      stable = nowStable;
+      
+    // --- hard safety: αν το στιγμιαίο πλάτος βγαίνει > 5m (μετά το warmup), κάνουμε cap point & κόβουμε προς f0 ΜΟΝΟ στην ίδια πλευρά ---
+    const Ainst = 0.5 * (xMax - xMin);
+    if((t - lastParamChangeT) >= warmupSec && Number.isFinite(Ainst) && Ainst > AMP_LIMIT_METERS){
+      overLimitHold += dt;
+    } else {
+      overLimitHold = 0;
+    }
+
+    if(overLimitHold >= 0.25 && (t - lastRecordStamp) >= 0.25){
+      // cap point (A=5) στο τρέχον ratio και τερματισμός κλάδου
+      recordPoint(k, fRatio, AMP_LIMIT_METERS, true);
+      pruneTowardResonance(k, fRatio);
+      if(typeof applyCapForCurrentBF === 'function') applyCapForCurrentBF(bKgPerS, fRatio);
+      lastRecordStamp = t;
+
+      // reset extrema για καθαρή νέα μέτρηση
+      resetExtrema();
+      xMin = Infinity; xMax = -Infinity;
+      stableHold = 0;
+      stable = false;
+      overLimitHold = 0;
+
+      updateHUD(xMeters, fHz, fRatio, bKgPerS);
+      drawPlot();
+      return;
+    }
+
+stable = nowStable;
     }
 
     if(stable && (t - lastParamChangeT) >= warmupSec && stableHold >= STABLE_HOLD_SEC && (t - lastRecordStamp) >= MIN_RECORD_GAP){
       const Aavg = Aset.reduce((s,v)=>s+v,0)/Aset.length;
-      const ratioStr = (Number.isFinite(fRatio) ? fRatio : 1).toFixed(2);
-
-      // αν έχει ήδη απαγορευτεί αυτό το (b,f), μην ξαναγράφεις τίποτα
-      if(isForbiddenPair(k, ratioStr)){
-        lastRecordStamp = t;
-        stableHold = 0;
-      } else if(Number.isFinite(Aavg) && Aavg > A_LIMIT){
-        // απαγόρευση (b,f) γιατί ξεπερνά φυσικά όρια (A>5m)
-        markForbiddenPair(k, ratioStr);
-        lastRecordStamp = t;
-        stableHold = 0;
-
-        // αν αυτό ήταν το ενεργό ratio, πήγαινε σε ασφαλές
-        if(elDriveRatio){
-          const sel = elDriveRatio.options[elDriveRatio.selectedIndex];
-          if(sel && sel.disabled){
-            autoPickSafeRatio();
-          }
-        }
+            if(Aavg > AMP_LIMIT_METERS){
+        recordPoint(k, fRatio, AMP_LIMIT_METERS, true);
+        pruneTowardResonance(k, fRatio);
+        if(typeof applyCapForCurrentBF === 'function') applyCapForCurrentBF(bKgPerS, fRatio);
       } else {
         recordPoint(k, fRatio, Aavg);
-        lastRecordStamp = t;
       }
+      lastRecordStamp = t;
 
       // reset window so the live xmin/xmax reflect the next steady-state segment
       xMin = Infinity;
