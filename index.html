@@ -4325,6 +4325,10 @@ const AFRecorder = (() => {
   let lastX = null;
   let lastSign = 0;
 
+  // dynamic forbid hold: μην κάνεις forbid με την πρώτη αιχμή (transient)
+  let exceedHold = 0;
+  const EXCEED_HOLD_SEC = 0.25;
+
   let xMin = Infinity;
   let xMax = -Infinity;
 
@@ -4406,15 +4410,31 @@ const AFRecorder = (() => {
   }
 
   
-  function splitIntoSegments(sortedData){
-    const gap = 0.12; // αν λείπουν ενδιάμεσες συχνότητες (forbidden), μην ενώνεις τους κλάδους
+  function hasForbiddenBetween(bKey, a, b){
+    // Σπάσε την καμπύλη ΜΟΝΟ όταν υπάρχει ρητά "forbidden" ratio ανάμεσα (όχι με βάση "gap").
+    // Αυτό κρατάει ενωμένη την καμπύλη για sparse sets (π.χ. 0.60→0.75→0.90...) αλλά κόβει γύρω από τον συντονισμό όταν απαγορευτούν ενδιάμεσα ratios.
+    try{
+      const s = (typeof forbiddenByB !== 'undefined') ? forbiddenByB.get(bKey) : null;
+      if(!s || s.size===0) return false;
+      const lo = Math.min(a,b), hi = Math.max(a,b);
+      for(const v of s){
+        const r = parseFloat(v);
+        if(Number.isFinite(r) && r > lo && r < hi) return true;
+      }
+      return false;
+    }catch(_e){
+      return false;
+    }
+  }
+
+  function splitIntoSegments(sortedData, bKey){
     const segs = [];
     let cur = [];
     for(let i=0;i<sortedData.length;i++){
       const p = sortedData[i];
       if(cur.length===0){ cur.push(p); continue; }
       const prev = cur[cur.length-1];
-      if(Math.abs(p.ratio - prev.ratio) > gap){
+      if(hasForbiddenBetween(bKey, prev.ratio, p.ratio)){
         if(cur.length) segs.push(cur);
         cur = [p];
       } else {
@@ -4424,7 +4444,6 @@ const AFRecorder = (() => {
     if(cur.length) segs.push(cur);
     return segs;
   }
-
 function resetExtrema(){
     maxList.length = 0;
     minList.length = 0;
@@ -4434,6 +4453,7 @@ function resetExtrema(){
     stable = false;
     lastX = null;
     lastSign = 0;
+    exceedHold = 0;
   }
 
   function drawPlot(){
@@ -4658,6 +4678,11 @@ data.forEach(p=>{
     const ratioStrNow = (Number.isFinite(fRatio) ? fRatio : 1).toFixed(2);
     const Acur = (xMax - xMin) / 2;
     if(Number.isFinite(Acur) && Acur > A_LIMIT){
+      exceedHold += dt;
+    } else {
+      exceedHold = 0;
+    }
+    if(exceedHold >= EXCEED_HOLD_SEC){
       markForbiddenPair(bKeyNow, ratioStrNow);
       // auto-switch σε ασφαλή συχνότητα (ώστε να μην "καταστρέφει" το σύστημα)
       if(elDriveRatio){
