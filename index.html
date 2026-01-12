@@ -345,7 +345,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     #afCanvas{
       position:absolute;
       left:16px;
-      bottom:16px;
+      top:120px; /* θα γίνει fine-tune via JS ώστε να κάτσει στην αριστερή κουρτίνα */
       z-index:9998;
       border-radius:10px;
       background:rgba(0,0,0,0.45);
@@ -1025,6 +1025,7 @@ const m   = 70;
 const T   = 6.0;
 const A_m = 3.0;
 const pxPerMeter = 50;
+let driverAmpMeters = 0; // πλάτος διεγέρτη (m)
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
@@ -1693,6 +1694,9 @@ function applyDriverTransform(){
   // Κλιμάκωση (τα PNG κλιμακώνονται με CSS width).
   const scale = (drvWheel.offsetWidth || W) / W;
 
+  // Amplitude διεγέρτη σε μέτρα (για οριζόντια γραμμή σύγκρισης στο γράφημα A–f)
+  driverAmpMeters = (e0 * scale) / pxPerMeter;
+
   // Slider motion (Scotch yoke):
   // Κανόνας: (slotCenterX + dx) == pinCenterX  ⇒  dx = (pinX - slotCX)*scale
   // Έτσι το κέντρο του πείρου μένει κεντραρισμένο στη σχισμή σε όλο τον κύκλο.
@@ -1749,7 +1753,30 @@ function updateRuler(){
     if(mTick===0) lbl.style.transform = 'translateX(0)';
     rulerEl.appendChild(lbl);
   }
+
+  layoutAFCanvas();
 }
+
+function layoutAFCanvas(){
+  const cvs = document.getElementById('afCanvas');
+  if(!cvs || !stage) return;
+  const leftCurt = stage.querySelector('.curtain-side.left');
+  if(!leftCurt) return;
+
+  const lRect = leftCurt.getBoundingClientRect();
+
+  // Ιδανικά: πλάτος ίσο με το πλάτος της αριστερής κουρτίνας (χώρος για νόμους/γραφήματα).
+  const targetW = Math.max(200, Math.round(lRect.width)); // μικρό minimum για να μην γίνει υπερβολικά στενό
+  const targetH = 330; // (προηγούμενο μέγεθος: 260×330)
+
+  if(cvs.width !== targetW) cvs.width = targetW;
+  if(cvs.height !== targetH) cvs.height = targetH;
+
+  // Τοποθέτηση πάνω στην αριστερή κουρτίνα (viewport coords, αφού είναι absolute στο body).
+  cvs.style.left = Math.round(lRect.left + 10) + 'px';
+  cvs.style.top  = Math.round(lRect.top + 90) + 'px';
+}
+
 
 /* ---------- Δειγματοληψία t–x (πίνακας + βιβλίο) ---------- */
 
@@ -4319,13 +4346,11 @@ const AFRecorder = (() => {
     ctx.fillStyle='rgba(255,255,255,0.85)';
     ctx.font='12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.fillText('A–f', x0, 12);
-    ctx.fillText('f (Hz)', x1-34, H-10);
+    ctx.fillText('f/f₀', x1-34, H-10);
     ctx.fillText('A (m)', 6, y0+10);
 
-    const f0Hz = omega / (2*Math.PI);
-    const FXRANGE = [XRANGE[0]*f0Hz, XRANGE[1]*f0Hz];
-    function X(fHz){
-      const u=(fHz-FXRANGE[0])/(FXRANGE[1]-FXRANGE[0]);
+    function X(r){
+      const u=(r-XRANGE[0])/(XRANGE[1]-XRANGE[0]);
       return x0 + u*w;
     }
     function Y(A){
@@ -4333,32 +4358,22 @@ const AFRecorder = (() => {
       return y1 - u*h;
     }
     // x grid/ticks (αναλογική κλίμακα, όχι “κουμπωμένη” στις επιλογές)
-    // x grid/ticks (αναλογική κλίμακα Hz)
-    // Θέλουμε λίγες “καθαρές” ετικέτες για να μη μπουκώνει το στενό γράφημα.
-    const spanHz = (FXRANGE[1]-FXRANGE[0]);
-    const niceSteps = [0.005,0.01,0.02,0.025,0.05,0.1,0.2];
-    const target = spanHz/4; // ~4 μεγάλα διαστήματα
-    let xTickStepHz = niceSteps.find(s=>s>=target) || 0.05;
-    const xTickStartHz = FXRANGE[0];
-    const xTickEndHz   = FXRANGE[1];
+    const xTickStep = 0.10;
+    const xTickStart = Math.ceil(XRANGE[0] / xTickStep) * xTickStep;
+    const xTickEnd   = XRANGE[1];
 
-    // minor grid
-    const minorStepHz = xTickStepHz/2;
-    for(let fHz = xTickStartHz; fHz <= xTickEndHz + 1e-9; fHz += minorStepHz){
-      const xx = X(fHz);
-      const isMajor = Math.abs(((fHz-xTickStartHz)/xTickStepHz) - Math.round((fHz-xTickStartHz)/xTickStepHz)) < 1e-6;
-      ctx.strokeStyle = isMajor ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.05)';
+    for(let tr = xTickStart; tr <= xTickEnd + 1e-9; tr += xTickStep){
+      const trR = Math.round(tr * 100) / 100; // 2 δεκαδικά χωρίς float σκουπίδια
+      const xx  = X(trR);
+
+      ctx.strokeStyle='rgba(255,255,255,0.10)';
       ctx.beginPath(); ctx.moveTo(xx,y1); ctx.lineTo(xx,y0); ctx.stroke();
-    }
 
-    // major labels
-    for(let fHz = xTickStartHz; fHz <= xTickEndHz + 1e-9; fHz += xTickStepHz){
-      const xx = X(fHz);
       ctx.fillStyle='rgba(255,255,255,0.6)';
-      ctx.fillText(fHz.toFixed(2), xx-12, y1+16);
+      ctx.fillText(trR.toFixed(2), xx-12, y1+16);
     }
 
-// y grid/ticks
+    // y grid/ticks
     for(let i=0;i<=4;i++){
       const A=(yMaxAuto*i)/4;
       const yy=Y(A);
@@ -4370,11 +4385,11 @@ const AFRecorder = (() => {
 
 
 // smooth (monotone cubic Hermite / PCHIP-like) for nicer A–f curves (visual only)
-function drawSmoothMonotone(data, f0Hz){
+function drawSmoothMonotone(data){
   const n = data.length;
   if(n < 2) return;
 
-  const xs = data.map(p=>p.ratio * f0Hz);
+  const xs = data.map(p=>p.ratio);
   const ys = data.map(p=>p.A);
 
   if(n === 2){
@@ -4416,7 +4431,7 @@ function drawSmoothMonotone(data, f0Hz){
     const m0 = m[i], m1 = m[i+1];
 
     const pxSpan = Math.abs(X(x1) - X(x0));
-    const steps = Math.max(12, Math.min(60, Math.round(pxSpan/6)));
+    const steps = Math.max(8, Math.min(40, Math.round(pxSpan/8)));
 
     for(let s=1;s<=steps;s++){
       const t = s/steps;
@@ -4436,6 +4451,21 @@ function drawSmoothMonotone(data, f0Hz){
 
   ctx.stroke();
 }
+    // γραμμή σύγκρισης: πλάτος διεγέρτη
+    if (driveA > 0) {
+      const yy = Y(driveA);
+      ctx.strokeStyle = 'rgba(0,220,255,0.65)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6,4]);
+      ctx.beginPath();
+      ctx.moveTo(x0, yy);
+      ctx.lineTo(x1, yy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(0,220,255,0.85)';
+      ctx.fillText('A_drive', x0 + 6, yy - 6);
+    }
+
     // curves
     const keys = Array.from(series.keys()).sort((a,b)=>a-b);
     keys.forEach((k, idx)=>{
@@ -4446,9 +4476,9 @@ function drawSmoothMonotone(data, f0Hz){
       ctx.strokeStyle=`hsla(${hue},80%,60%,0.85)`;
       ctx.fillStyle=`hsla(${hue},80%,60%,0.95)`;
       ctx.lineWidth=2;
-      drawSmoothMonotone(data, f0Hz);
+      drawSmoothMonotone(data);
 data.forEach(p=>{
-        const xx=X(p.ratio * f0Hz);
+        const xx=X(p.ratio);
         const yy=Y(p.A);
         ctx.beginPath();
         ctx.arc(xx,yy,3,0,Math.PI*2);
@@ -4477,7 +4507,7 @@ data.forEach(p=>{
     elStable.style.borderColor = stable ? 'rgba(0,255,140,0.35)' : 'rgba(255,255,255,0.25)';
   }
 
-  function update({ xMeters, dt, fHz, fRatio, bKgPerS }){
+  function update({ xMeters, dt, fHz, fRatio, bKgPerS, driveAmpMeters }){
     if(!Number.isFinite(xMeters) || !Number.isFinite(dt) || dt<=0) return;
     bind();
 
@@ -4496,6 +4526,11 @@ data.forEach(p=>{
     }
 
     const k = ensureSeries(bKgPerS);
+
+    if (Number.isFinite(driveAmpMeters)) {
+      driveA = Math.max(0, driveAmpMeters);
+      yMaxAuto = Math.max(yMaxAuto, driveA * 1.25);
+    }
 
     // warmup gate: μην επιτρέπεις “stable→record” πριν περάσουν αρκετοί κύκλοι
     const warmupSec = Math.max(MIN_WARMUP_SEC, WARMUP_CYCLES / Math.max(0.001, fHz));
@@ -4573,7 +4608,7 @@ data.forEach(p=>{
     </div>
     <div class="mh-note">Ορισμός: A = (xmax − xmin)/2. Καταγραφή όταν το peak-to-peak σταθεροποιείται.</div>
   </div>
-  <canvas id="afCanvas" width="130" height="495" aria-hidden="true"></canvas>
+  <canvas id="afCanvas" width="260" height="330" aria-hidden="true"></canvas>
 
 </body>
 </html>
