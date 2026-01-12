@@ -1618,14 +1618,14 @@ function syncDriveUI(){
 // Αν b < 10: “κόβουμε” συχνότητες κοντά στον συντονισμό για να μη βγει το σύστημα εκτός ορίων.
 // (Διατηρούμε τη δυνατότητα να δοκιμάσεις μικρότερο b, αλλά μόνο με ασφαλείς ratios.)
 // =========================
-// Dynamic forbid ανά b με cap στο A=5m (χωρίς “κόψιμο” και από τις δύο πλευρές ταυτόχρονα)
+// Dynamic forbid ανά b με cap στο A=6.5m (χωρίς “κόψιμο” και από τις δύο πλευρές ταυτόχρονα)
 //
 // Ιδέα:
 // - Για κάθε b κρατάμε capLeft/capRight (όριο ratio όπου το Α “σκάει” > 5m).
 // - Αν “σκάσει” στη μια πλευρά, απαγορεύονται ΜΟΝΟ τα ratios προς το f0 στην ίδια πλευρά.
-// - Στο γράφημα, η καμπύλη τερματίζει με τεχνητό σημείο A=5 στο ratio που σκάει.
+// - Στο γράφημα, η καμπύλη τερματίζει με τεχνητό σημείο A=6.5 στο ratio που σκάει.
 // =========================
-const AMP_LIMIT_METERS = 5.0;
+const AMP_LIMIT_METERS = 6.5;
 
 // coarse list (για b>=10) — κρατάμε το “σφιχτό” παιχνίδι
 const DRIVE_RATIOS_COARSE = [0.60, 0.75, 0.90, 1.00, 1.10, 1.20, 1.50];
@@ -4670,7 +4670,7 @@ data.forEach(p=>{
     }
 
     if(overLimitHold >= 0.25 && (t - lastRecordStamp) >= 0.25){
-      // cap point (A=5) στο τρέχον ratio και τερματισμός κλάδου
+      // cap point (A=6.5) στο τρέχον ratio και τερματισμός κλάδου
       recordPoint(k, fRatio, AMP_LIMIT_METERS, true);
       pruneTowardResonance(k, fRatio);
       if(typeof applyCapForCurrentBF === 'function') applyCapForCurrentBF(bKgPerS, fRatio);
