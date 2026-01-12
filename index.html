@@ -1592,9 +1592,15 @@ const elDriveFreqVal = document.getElementById('driveFreqVal');
 const elDriveBVal    = document.getElementById('driveBVal');
 
 function updateDriveFreqLabel(){
-  const f0 = omega / (2*Math.PI);
   const f  = (driverOmega / (2*Math.PI));
-  if(elDriveFreqVal) elDriveFreqVal.textContent = `${driveRatio.toFixed(2)} f₀ · ${f.toFixed(2)} Hz`;
+  if(!elDriveFreqVal) return;
+
+  // Για b<10 δεν “προβάλλουμε” το f0 ως έξτρα χαρακτηριστικό (μένει μόνο λόγος r)
+  if(driveB < DRIVE_B_SAFE_MIN){
+    elDriveFreqVal.textContent = `r=${driveRatio.toFixed(2)} · ${f.toFixed(2)} Hz`;
+  } else {
+    elDriveFreqVal.textContent = `${driveRatio.toFixed(2)} f₀ · ${f.toFixed(2)} Hz`;
+  }
 }
 
 function syncDriveUI(){
@@ -1634,7 +1640,9 @@ const DRIVE_RATIOS_COARSE = [0.60, 0.75, 0.90, 1.00, 1.10, 1.20, 1.50];
 const DRIVE_RATIOS_DENSE = (() => {
   const a = [];
   for(let r=0.60; r<=1.500001; r+=0.05){
-    a.push(Math.round(r*100)/100);
+    const rr = Math.round(r*100)/100;
+    if(rr === 1.00) continue; // για b<10 δεν δείχνουμε ποτέ f0 ως επιλογή
+    a.push(rr);
   }
   return a;
 })();
@@ -4565,14 +4573,26 @@ function drawSmoothMonotone(data){
 }
     // curves
     const keys = Array.from(series.keys()).sort((a,b)=>a-b);
+
+    // Χρώματα καμπυλών — υψηλή αντίθεση, όχι “παραπλήσια hue”
+    const SERIES_COLORS = [
+      {stroke:'rgba(255, 80, 80, 0.90)', fill:'rgba(255, 80, 80, 0.95)', text:'rgba(255, 120, 120, 0.95)'},
+      {stroke:'rgba(80, 200, 255, 0.90)', fill:'rgba(80, 200, 255, 0.95)', text:'rgba(140, 230, 255, 0.95)'},
+      {stroke:'rgba(120, 255, 120, 0.90)', fill:'rgba(120, 255, 120, 0.95)', text:'rgba(170, 255, 170, 0.95)'},
+      {stroke:'rgba(255, 210, 80, 0.90)', fill:'rgba(255, 210, 80, 0.95)', text:'rgba(255, 235, 150, 0.95)'},
+      {stroke:'rgba(200, 120, 255, 0.90)', fill:'rgba(200, 120, 255, 0.95)', text:'rgba(225, 170, 255, 0.95)'},
+      {stroke:'rgba(255, 120, 210, 0.90)', fill:'rgba(255, 120, 210, 0.95)', text:'rgba(255, 170, 230, 0.95)'},
+      {stroke:'rgba(80, 255, 220, 0.90)', fill:'rgba(80, 255, 220, 0.95)', text:'rgba(150, 255, 240, 0.95)'},
+      {stroke:'rgba(255, 150, 80, 0.90)', fill:'rgba(255, 150, 80, 0.95)', text:'rgba(255, 190, 140, 0.95)'}
+    ];
     keys.forEach((k, idx)=>{
       const data = series.get(k);
       if(!data || data.length===0) return;
 
-      const hue=(idx*57)%360;
-      ctx.strokeStyle=`hsla(${hue},80%,60%,0.85)`;
-      ctx.fillStyle=`hsla(${hue},80%,60%,0.95)`;
-      ctx.lineWidth=2;
+      const col = SERIES_COLORS[idx % SERIES_COLORS.length];
+      ctx.strokeStyle = col.stroke;
+      ctx.fillStyle = col.fill;
+      ctx.lineWidth = 2;
             const leftLine = data.filter(p=>p.ratio < 1.0);
       const rightLine = data.filter(p=>p.ratio > 1.0);
       if(leftLine.length>=2) drawSmoothMonotone(leftLine);
@@ -4585,9 +4605,12 @@ data.forEach(p=>{
         ctx.fill();
       });
 
-      // legend
-      ctx.fillStyle=`hsla(${hue},80%,70%,0.9)`;
-      ctx.fillText(`b=${k} kg/s`, x1-110, y0+14+idx*14);
+      // legend (δεξί περιθώριο)
+      ctx.save();
+      ctx.textAlign = 'right';
+      ctx.fillStyle = col.text;
+      ctx.fillText(`b=${k} kg/s`, x1-4, y0+14+idx*14);
+      ctx.restore();
     });
   }
 
@@ -4599,7 +4622,11 @@ data.forEach(p=>{
     elXmin.textContent = `${fmt(xMin,3)} m`;
     elXmax.textContent = `${fmt(xMax,3)} m`;
     elA.textContent = `${fmt((xMax-xMin)/2,3)} m`;
-    elF.textContent = `${fmt(fHz,3)} Hz  (${fmt(ratio,2)} f₀)`;
+    if(b < DRIVE_B_SAFE_MIN){
+      elF.textContent = `${fmt(fHz,3)} Hz  (r=${fmt(ratio,2)})`;
+    } else {
+      elF.textContent = `${fmt(fHz,3)} Hz  (${fmt(ratio,2)} f₀)`;
+    }
     elB.textContent = `${fmt(b,1)} kg/s`;
 
     elStable.textContent = stable ? 'stable' : 'unstable';
