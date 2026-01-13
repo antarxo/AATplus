@@ -476,15 +476,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
   <div class="drive-controls" id="driveCtrl" aria-label="ρυθμίσεις διεγέρτη">
     <div class="dc-row">
       <span class="dc-lbl">f</span>
-      <select id="driveRatio" aria-label="συχνότητα διεγέρτη ως πολλαπλάσιο της ιδιοσυχνότητας">
-        <option value="0.60">0.60 f₀</option>
-        <option value="0.75">0.75 f₀</option>
-        <option value="0.90">0.90 f₀</option>
-        <option value="1.00">1.00 f₀</option>
-        <option value="1.10">1.10 f₀</option>
-        <option value="1.20">1.20 f₀</option>
-        <option value="1.50">1.50 f₀</option>
-      </select>
+      <input id="driveRatio" type="range" min="0.60" max="1.45" step="0.01" value="1.00" />
       <span class="dc-val" id="driveFreqVal">1.00 f₀ · – Hz</span>
     </div>
     <div class="dc-row">
@@ -1704,54 +1696,62 @@ function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
   return best;
 }
 
-function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
+
+// Continuous drive frequency ratio control (0.60..1.45)
+// For range input we can't "disable options", so we SNAP away from forbidden intervals per-b.
+function enforceDriveRatioConstraints(bKgPerS, preferSide=null){
   if(!elDriveRatio) return;
 
+  // bounds & resolution
+  elDriveRatio.min  = '0.60';
+  elDriveRatio.max  = '1.45';
+  elDriveRatio.step = '0.01';
+
   const bKey = bKeyFromB(bKgPerS);
-  let ratios;
-  if(bKey === 6){
-    ratios = [0.60, 0.75, 0.90, 0.95, 1.05, 1.15, 1.30, 1.45];
-  } else {
-    ratios = (bKgPerS < DRIVE_B_SAFE_MIN) ? DRIVE_RATIOS_DENSE : DRIVE_RATIOS_COARSE;
+
+  let r = parseFloat(elDriveRatio.value);
+  if(!Number.isFinite(r)) r = driveRatio || 1.00;
+
+  // hard clamp to allowed global range
+  r = Math.max(0.60, Math.min(1.45, r));
+
+  // For b<10: never "promote" f0 as special, and avoid landing exactly at 1.00 (small nudge)
+  if(bKgPerS < DRIVE_B_SAFE_MIN && Math.abs(r - 1.00) < 0.005){
+    if(preferSide === 'right') r = 1.01;
+    else if(preferSide === 'left') r = 0.99;
+    else r = (driveRatio >= 1.0) ? 1.01 : 0.99;
   }
 
-  const prev = String(elDriveRatio.value || '');
-  elDriveRatio.innerHTML = '';
-
-  for(const r of ratios){
-    const opt = document.createElement('option');
-    const v = r.toFixed(2);
-    opt.value = v;
-    opt.textContent = `${v} f₀`;
-    opt.disabled = isRatioDisabledForB(bKey, v);
-    elDriveRatio.appendChild(opt);
+  // Snap away from forbidden intervals (towards safe side)
+  if(isDisabledRatioForB(bKey, r)){
+    const c = getCaps(bKey);
+    const eps = 0.01;
+    if(r < 1.0 && c.leftCap != null){
+      r = Math.max(0.60, c.leftCap - eps);
+    } else if(r > 1.0 && c.rightCap != null){
+      r = Math.min(1.45, c.rightCap + eps);
+    } else {
+      // if we're exactly at 1.00 or caps are weird, jump far away on requested side
+      if(preferSide === 'right') r = 1.45;
+      else if(preferSide === 'left') r = 0.60;
+      else r = (driveRatio >= 1.0) ? 1.45 : 0.60;
+    }
   }
 
-  // προσπάθησε να κρατήσεις την προηγούμενη επιλογή αν επιτρέπεται
-  const canKeep = Array.from(elDriveRatio.options).some(o => o.value === prev && !o.disabled);
-  if(canKeep){
-    elDriveRatio.value = prev;
-    return;
-  }
+  // write back (quantized to slider step)
+  r = Math.round(r * 100) / 100;
+  elDriveRatio.value = r.toFixed(2);
 
-  // αλλιώς διάλεξε αυτόματα
-  const best = pickBestEnabledRatio(Array.from(elDriveRatio.options), preferSide);
-  if(best != null){
-    elDriveRatio.value = best.toFixed(2);
-
-    // ενημέρωση κινητήρα (χωρίς να βασιζόμαστε στο 'change' event)
-    const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
-    driveRatio = r;
-    driverOmega = omega * driveRatio;
-    updateDriveFreqLabel();
-    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
-  }
+  driveRatio = r;
+  driverOmega = driveRatio * omega0;
+  updateDriveFreqLabel();
 }
 
-// αντικαθιστά το παλιό “κόψιμο” συχνοτήτων
+// Back-compat wrapper (old name used elsewhere)
 function applyFrequencySafetyByB(bKgPerS){
-  rebuildDriveRatioOptions(bKgPerS, null);
+  enforceDriveRatioConstraints(bKgPerS, null);
 }
+
 
 // Καλείται από τον recorder όταν “σκάσει” ένα (b,f): θέτει cap + ανανεώνει επιλογές
 function applyCapForCurrentBF(bKgPerS, fRatio){
@@ -1763,15 +1763,12 @@ function applyCapForCurrentBF(bKgPerS, fRatio){
 
   // Αν έσκασε στην αριστερή πλευρά, προτίμησε δεξιά (και αντίστροφα)
   const prefer = (r < 1.0) ? 'right' : (r > 1.0 ? 'left' : null);
-  rebuildDriveRatioOptions(bKgPerS, prefer);
+  enforceDriveRatioConstraints(bKgPerS, prefer);
 }
 
 if(elDriveRatio){
-  elDriveRatio.addEventListener('change', () => {
-    const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
-    driveRatio = r;
-    driverOmega = omega * driveRatio;
-    updateDriveFreqLabel();
+  elDriveRatio.addEventListener('input', () => {
+    enforceDriveRatioConstraints(driveB, null);
     if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
   });
 }
@@ -4353,7 +4350,7 @@ const AFRecorder = (() => {
   const STABLE_ABS_TOL = 0.003;  // 3 mm (ώστε να μην κολλάει όταν A είναι μικρό)
   const STABLE_HOLD_SEC = 0.5;   // seconds stable before recording
   const MIN_RECORD_GAP = 0.5;    // seconds between recordings
-  const XRANGE = [0.60, 1.50];
+  const XRANGE = [0.60, 1.45];
     const XTICKS = [0.60,0.75,0.90,1.00,1.10,1.20,1.50];
   // warmup (αποφυγή πρόωρης καταγραφής πριν “κάτσει” το πλάτος — ειδικά κοντά στον συντονισμό)
   const WARMUP_CYCLES = 6;       // πόσοι κύκλοι διέγερσης να περάσουν πριν επιτρέψουμε καταγραφή
@@ -4454,7 +4451,28 @@ const AFRecorder = (() => {
     bind();
     if(!ctx || !cvs) return;
 
-    const W=cvs.width, H=cvs.height;
+    // Fit plot strictly inside the LEFT curtain (used for laws/graphs)
+    const leftCurt = document.querySelector('.curtain-side.left');
+    if(leftCurt){
+      const rect = leftCurt.getBoundingClientRect();
+      const cssW = Math.max(220, Math.floor(rect.width));  // minimum to keep readable
+      const cssH = 330;
+      // keep crisp enough but never overflow the curtain
+      const dpr = window.devicePixelRatio || 1;
+      const needW = Math.floor(cssW * dpr);
+      const needH = Math.floor(cssH * dpr);
+      if(cvs.width !== needW || cvs.height !== needH){
+        cvs.width  = needW;
+        cvs.height = needH;
+      }
+      if(cvs.style.width !== cssW+'px')  cvs.style.width  = cssW+'px';
+      if(cvs.style.height !== cssH+'px') cvs.style.height = cssH+'px';
+      // draw in CSS pixel coordinates
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+
+    const W = (cvs.style.width ? parseInt(cvs.style.width,10) : cvs.width);
+    const H = (cvs.style.height ? parseInt(cvs.style.height,10) : cvs.height);
     ctx.clearRect(0,0,W,H);
 
     const padL=44, padR=10, padT=18, padB=28;
@@ -4611,22 +4629,22 @@ function drawSmoothMonotone(data){
     // curves
     const keys = Array.from(series.keys()).sort((a,b)=>a-b);
 
-    // Χρώματα καμπυλών — υψηλή αντίθεση, όχι “παραπλήσια hue”
-    const SERIES_COLORS = [
-      {stroke:'rgba(255, 80, 80, 0.90)', fill:'rgba(255, 80, 80, 0.95)', text:'rgba(255, 120, 120, 0.95)'},
-      {stroke:'rgba(80, 200, 255, 0.90)', fill:'rgba(80, 200, 255, 0.95)', text:'rgba(140, 230, 255, 0.95)'},
-      {stroke:'rgba(120, 255, 120, 0.90)', fill:'rgba(120, 255, 120, 0.95)', text:'rgba(170, 255, 170, 0.95)'},
-      {stroke:'rgba(255, 210, 80, 0.90)', fill:'rgba(255, 210, 80, 0.95)', text:'rgba(255, 235, 150, 0.95)'},
-      {stroke:'rgba(200, 120, 255, 0.90)', fill:'rgba(200, 120, 255, 0.95)', text:'rgba(225, 170, 255, 0.95)'},
-      {stroke:'rgba(255, 120, 210, 0.90)', fill:'rgba(255, 120, 210, 0.95)', text:'rgba(255, 170, 230, 0.95)'},
-      {stroke:'rgba(80, 255, 220, 0.90)', fill:'rgba(80, 255, 220, 0.95)', text:'rgba(150, 255, 240, 0.95)'},
-      {stroke:'rgba(255, 150, 80, 0.90)', fill:'rgba(255, 150, 80, 0.95)', text:'rgba(255, 190, 140, 0.95)'}
-    ];
+    // Χρώματα καμπυλών — “φυσικά”/καθαρά: κόκκινο, πράσινο, ανοιχτό μπλε, κίτρινο
+    const SERIES_COLOR_BY_B = {
+      6:  {stroke:'rgba(255, 0, 0, 0.90)',   fill:'rgba(255, 0, 0, 0.95)',   text:'rgba(255, 80, 80, 0.95)'},
+      10: {stroke:'rgba(0, 190, 0, 0.90)',   fill:'rgba(0, 190, 0, 0.95)',   text:'rgba(80, 230, 80, 0.95)'},
+      20: {stroke:'rgba(80, 180, 255, 0.90)',fill:'rgba(80, 180, 255, 0.95)',text:'rgba(140, 220, 255, 0.95)'},
+      30: {stroke:'rgba(255, 215, 0, 0.90)', fill:'rgba(255, 215, 0, 0.95)', fill2:'rgba(255, 215, 0, 0.95)', text:'rgba(255, 235, 120, 0.95)'},
+    };
+    function seriesColorForB(k){
+      return SERIES_COLOR_BY_B[k] || {stroke:'rgba(230,230,230,0.85)', fill:'rgba(230,230,230,0.92)', text:'rgba(230,230,230,0.92)'};
+    }
+
     keys.forEach((k, idx)=>{
       const data = series.get(k);
       if(!data || data.length===0) return;
 
-      const col = SERIES_COLORS[idx % SERIES_COLORS.length];
+      const col = seriesColorForB(k);
       ctx.strokeStyle = col.stroke;
       ctx.fillStyle = col.fill;
       ctx.lineWidth = 2;
@@ -4637,7 +4655,9 @@ function drawSmoothMonotone(data){
       // Για b=6 θέλουμε “ασυμπτωτική” αίσθηση κοντά στο f0:
       // προσθέτουμε 2 *εικονικά* σημεία (δεν σχεδιάζονται ως κουκίδες),
       // στα 0.97 και 1.03 με A>8, ώστε οι κλάδοι να “τραβάνε” προς τα πάνω.
+      const ENABLE_VIRTUAL_ASYMPTOTE = false;
       const addAsymptoteVirtuals = (line, side) => {
+        if(!ENABLE_VIRTUAL_ASYMPTOTE) return line;
         if(k !== 6) return line;
         // left side anchor: 0.95 -> add 0.97 with A=8.2
         if(side === 'L' && line.some(p => Math.abs(p.ratio - 0.95) < 1e-6)) {
@@ -4677,7 +4697,7 @@ data.forEach(p=>{
         const xx=X(p.ratio);
         const yy=Y(p.A);
         ctx.beginPath();
-        ctx.arc(xx,yy,3,0,Math.PI*2);
+        ctx.arc(xx,yy,2,0,Math.PI*2);
         ctx.fill();
       });
 
