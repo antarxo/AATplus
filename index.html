@@ -1597,21 +1597,16 @@ function updateDriveFreqLabel(){
 }
 
 function syncDriveUI(){
-  if(elDriveRatio){
-    // προσπαθούμε να "κουμπώσουμε" σε υπάρχουσα επιλογή
-    const v = driveRatio.toFixed(2);
-    const opt = Array.from(elDriveRatio.options).find(o => (parseFloat(o.value).toFixed(2) === v));
-    if(opt) elDriveRatio.value = opt.value;
+  // driveRatio είναι πλέον range slider (0.60..1.45, step 0.01)
+  const r = Number(elDriveRatio?.value);
+  if (Number.isFinite(r) && elDriveFreqVal){
+    elDriveFreqVal.textContent = `r=${r.toFixed(2)} f₀`;
   }
-  updateDriveFreqLabel();
-
-  if(elDriveB){
-    elDriveB.value = String(Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB))));
-    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
+  // b label
+  if (elDriveBVal){
+    const b = Number(elDriveB?.value);
+    if (Number.isFinite(b)) elDriveBVal.textContent = `${b.toFixed(0)} kg/s`;
   }
-  // ασφάλεια συχνοτήτων όταν b < 10
-  applyFrequencySafetyByB(driveB);
-
 }
 
 // Αν b < 10: “κόβουμε” συχνότητες κοντά στον συντονισμό για να μη βγει το σύστημα εκτός ορίων.
@@ -1699,57 +1694,22 @@ function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
 
 // Continuous drive frequency ratio control (0.60..1.45)
 // For range input we can't "disable options", so we SNAP away from forbidden intervals per-b.
-function enforceDriveRatioConstraints(bKgPerS, preferSide=null){
+function enforceDriveRatioConstraints(){
+  // Με continuous slider δεν αποκλείουμε ratios.
+  // Απλώς clamp στο επιτρεπτό εύρος του slider.
   if(!elDriveRatio) return;
-
-  // bounds & resolution
-  elDriveRatio.min  = '0.60';
-  elDriveRatio.max  = '1.45';
-  elDriveRatio.step = '0.01';
-
-  const bKey = bKeyFromB(bKgPerS);
-
-  let r = parseFloat(elDriveRatio.value);
-  if(!Number.isFinite(r)) r = driveRatio || 1.00;
-
-  // hard clamp to allowed global range
-  r = Math.max(0.60, Math.min(1.45, r));
-
-  // For b<10: never "promote" f0 as special, and avoid landing exactly at 1.00 (small nudge)
-  if(bKgPerS < DRIVE_B_SAFE_MIN && Math.abs(r - 1.00) < 0.005){
-    if(preferSide === 'right') r = 1.01;
-    else if(preferSide === 'left') r = 0.99;
-    else r = (driveRatio >= 1.0) ? 1.01 : 0.99;
-  }
-
-  // Snap away from forbidden intervals (towards safe side)
-  if(isDisabledRatioForB(bKey, r)){
-    const c = getCaps(bKey);
-    const eps = 0.01;
-    if(r < 1.0 && c.leftCap != null){
-      r = Math.max(0.60, c.leftCap - eps);
-    } else if(r > 1.0 && c.rightCap != null){
-      r = Math.min(1.45, c.rightCap + eps);
-    } else {
-      // if we're exactly at 1.00 or caps are weird, jump far away on requested side
-      if(preferSide === 'right') r = 1.45;
-      else if(preferSide === 'left') r = 0.60;
-      else r = (driveRatio >= 1.0) ? 1.45 : 0.60;
-    }
-  }
-
-  // write back (quantized to slider step)
-  r = Math.round(r * 100) / 100;
+  let r = Number(elDriveRatio.value);
+  if(!Number.isFinite(r)) r = 1.00;
+  if (r < 0.60) r = 0.60;
+  if (r > 1.45) r = 1.45;
   elDriveRatio.value = r.toFixed(2);
-
-  driveRatio = r;
-  driverOmega = driveRatio * omega0;
-  updateDriveFreqLabel();
 }
 
 // Back-compat wrapper (old name used elsewhere)
-function applyFrequencySafetyByB(bKgPerS){
-  enforceDriveRatioConstraints(bKgPerS, null);
+function applyFrequencySafetyByB(){
+  // Δεν κάνουμε “forbid” με λίστες εδώ. Για b<10 κρατάμε το ίδιο slider συχνότητας.
+  // Τα όρια προστασίας γίνονται μέσω AMP_LIMIT_METERS + cap στο γράφημα, όχι μέσω UI αποκλεισμών.
+  enforceDriveRatioConstraints();
 }
 
 
