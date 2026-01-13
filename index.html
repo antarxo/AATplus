@@ -1710,7 +1710,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   const bKey = bKeyFromB(bKgPerS);
   let ratios;
   if(bKey === 6){
-    ratios = [0.60, 0.75, 0.90, 0.95, 1.02, 1.05, 1.15, 1.30, 1.45];
+    ratios = [0.60, 0.75, 0.90, 0.95, 1.05, 1.15, 1.30, 1.45];
   } else {
     ratios = (bKgPerS < DRIVE_B_SAFE_MIN) ? DRIVE_RATIOS_DENSE : DRIVE_RATIOS_COARSE;
   }
@@ -4633,14 +4633,46 @@ function drawSmoothMonotone(data){
             const caps = getCaps(k);
       const hasCap = (caps.leftCap != null) || (caps.rightCap != null);
 
+      // --- γραμμές καμπύλης ---
+      // Για b=6 θέλουμε “ασυμπτωτική” αίσθηση κοντά στο f0:
+      // προσθέτουμε 2 *εικονικά* σημεία (δεν σχεδιάζονται ως κουκίδες),
+      // στα 0.97 και 1.03 με A>8, ώστε οι κλάδοι να “τραβάνε” προς τα πάνω.
+      const addAsymptoteVirtuals = (line, side) => {
+        if(k !== 6) return line;
+        // left side anchor: 0.95 -> add 0.97 with A=8.2
+        if(side === 'L' && line.some(p => Math.abs(p.ratio - 0.95) < 1e-6)) {
+          line = line.concat([{ratio: 0.97, A: 8.2, virtual: true}]);
+        }
+        // right side anchor: 1.05 -> add 1.03 with A=8.2
+        if(side === 'R' && line.some(p => Math.abs(p.ratio - 1.05) < 1e-6)) {
+          line = line.concat([{ratio: 1.03, A: 8.2, virtual: true}]);
+        }
+        // sort by ratio
+        line.sort((a,b)=>a.ratio-b.ratio);
+        return line;
+      };
+
       if(!hasCap){
-        if(data.length>=2) drawSmoothMonotone(data);
+        if(k === 6){
+          let leftLine = data.filter(p=>p.ratio < 1.0);
+          let rightLine = data.filter(p=>p.ratio > 1.0);
+          leftLine = addAsymptoteVirtuals(leftLine,'L');
+          rightLine = addAsymptoteVirtuals(rightLine,'R');
+          if(leftLine.length>=2) drawSmoothMonotone(leftLine);
+          if(rightLine.length>=2) drawSmoothMonotone(rightLine);
+        } else {
+          if(data.length>=2) drawSmoothMonotone(data);
+        }
       } else {
-        const leftLine = data.filter(p=>p.ratio < 1.0);
-        const rightLine = data.filter(p=>p.ratio > 1.0);
+        let leftLine = data.filter(p=>p.ratio < 1.0);
+        let rightLine = data.filter(p=>p.ratio > 1.0);
+        leftLine = addAsymptoteVirtuals(leftLine,'L');
+        rightLine = addAsymptoteVirtuals(rightLine,'R');
         if(leftLine.length>=2) drawSmoothMonotone(leftLine);
         if(rightLine.length>=2) drawSmoothMonotone(rightLine);
       }
+
+      // κουκίδες μόνο για πραγματικά σημεία (όχι virtual)
 data.forEach(p=>{
         const xx=X(p.ratio);
         const yy=Y(p.A);
