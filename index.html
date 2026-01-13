@@ -1597,16 +1597,17 @@ function updateDriveFreqLabel(){
 }
 
 function syncDriveUI(){
-  // driveRatio είναι πλέον range slider (0.60..1.45, step 0.01)
-  const r = Number(elDriveRatio?.value);
-  if (Number.isFinite(r) && elDriveFreqVal){
-    elDriveFreqVal.textContent = `r=${r.toFixed(2)} f₀`;
+  // Συγχρονίζει UI ←→ state χωρίς να χαλάει labels/φυσική
+  if (elDriveRatio){
+    elDriveRatio.value = Number(driveRatio).toFixed(2);
   }
-  // b label
+  if (elDriveB){
+    elDriveB.value = String(Math.round(driveB));
+  }
   if (elDriveBVal){
-    const b = Number(elDriveB?.value);
-    if (Number.isFinite(b)) elDriveBVal.textContent = `${b.toFixed(0)} kg/s`;
+    elDriveBVal.textContent = `${Math.round(driveB)} kg/s`;
   }
+  updateDriveFreqLabel();
 }
 
 // Αν b < 10: “κόβουμε” συχνότητες κοντά στον συντονισμό για να μη βγει το σύστημα εκτός ορίων.
@@ -1703,6 +1704,11 @@ function enforceDriveRatioConstraints(){
   if (r < 0.60) r = 0.60;
   if (r > 1.45) r = 1.45;
   elDriveRatio.value = r.toFixed(2);
+
+  // ενημέρωση της φυσικής
+  driveRatio = r;
+  driverOmega = omega * driveRatio;
+  updateDriveFreqLabel();
 }
 
 // Back-compat wrapper (old name used elsewhere)
@@ -1728,7 +1734,7 @@ function applyCapForCurrentBF(bKgPerS, fRatio){
 
 if(elDriveRatio){
   elDriveRatio.addEventListener('input', () => {
-    enforceDriveRatioConstraints(driveB, null);
+    enforceDriveRatioConstraints();
     if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
   });
 }
@@ -1737,6 +1743,7 @@ if(elDriveB){
   elDriveB.addEventListener('input', () => {
     driveB = Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, parseFloat(elDriveB.value) || DRIVE_B_HARD_MIN));
     applyFrequencySafetyByB(driveB);
+    updateDriveFreqLabel();
     if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
     if (typeof AFRecorder !== 'undefined') AFRecorder.onBChange();
   });
@@ -4435,7 +4442,7 @@ const AFRecorder = (() => {
     const H = (cvs.style.height ? parseInt(cvs.style.height,10) : cvs.height);
     ctx.clearRect(0,0,W,H);
 
-    const padL=44, padR=10, padT=18, padB=28;
+    const padL=24, padR=10, padT=18, padB=28;
     const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
     const w=x1-x0, h=y1-y0;
 
@@ -4456,7 +4463,7 @@ const AFRecorder = (() => {
     ctx.font='12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.fillText('A–f', x0, 12);
     ctx.fillText('f/f₀', x1-34, H-10);
-    ctx.fillText('A (m)', 6, y0+10);
+    ctx.fillText('A (m)', 4, y0+10);
 
     function X(r){
       const u=(r-XRANGE[0])/(XRANGE[1]-XRANGE[0]);
@@ -4514,7 +4521,7 @@ const AFRecorder = (() => {
       ctx.strokeStyle='rgba(255,255,255,0.08)';
       ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
       ctx.fillStyle='rgba(255,255,255,0.55)';
-      ctx.fillText(A.toFixed(0), 6, yy+4);
+      ctx.fillText(A.toFixed(0), 4, yy+4);
     }
     ctx.restore();
 
