@@ -1560,6 +1560,7 @@ let driverOmega = omega * driveRatio;     // rad/s
 
 let driverDx  = 0;   // τρέχον translateX του slider (px, στο ίδιο σύστημα με το placement)
 let driverDx0 = 0;   // translateX στην αρχική στάση (για σωστό κούμπωμα)
+let driverAmpPx = 0; // πλάτος διεγέρτη (amplitude του dx) σε px
 
 // =========================
 // Driven oscillator (Phase 3) — με b (kg/s), όχι β.
@@ -1707,7 +1708,12 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   if(!elDriveRatio) return;
 
   const bKey = bKeyFromB(bKgPerS);
-  const ratios = (bKgPerS < DRIVE_B_SAFE_MIN) ? DRIVE_RATIOS_DENSE : DRIVE_RATIOS_COARSE;
+  let ratios;
+  if(bKey === 6){
+    ratios = [0.60, 0.75, 0.90, 0.95, 1.02, 1.05, 1.15, 1.30, 1.45];
+  } else {
+    ratios = (bKgPerS < DRIVE_B_SAFE_MIN) ? DRIVE_RATIOS_DENSE : DRIVE_RATIOS_COARSE;
+  }
 
   const prev = String(elDriveRatio.value || '');
   elDriveRatio.innerHTML = '';
@@ -1819,6 +1825,7 @@ function applyDriverTransform(){
   const pinX = wheelCX + e0 * Math.cos(phi0 + driverTheta);
   const dx = (pinX - slotCX) * scale;
   driverDx = dx;
+  driverAmpPx = e0 * scale;
 
   // Εφαρμογή transforms (pin πάνω από slider παραμένει λόγω z-index).
   drvWheel.style.transform  = 'rotate(' + driverTheta + 'rad)';
@@ -4338,7 +4345,7 @@ const AFRecorder = (() => {
 
   // per-b curves
   const series = new Map(); // bKey -> [{ratio, A}]
-  let yMaxAuto = 0.5;
+  let yMaxAuto = 8.0; // σταθερή κλίμακα 0..8
 
   // tuning
   const EXTREMA_NEED = 2;
@@ -4409,8 +4416,8 @@ const AFRecorder = (() => {
     if(!force && alreadyRecorded(k, ratio)) return;
     arr.push({ ratio, A });
     arr.sort((a,b)=>a.ratio - b.ratio);
-    yMaxAuto = Math.max(yMaxAuto, A*1.25);
-  }
+    // yMaxAuto σταθερό (0..8)
+}
 
   function pruneTowardResonance(k, capRatio){
     const arr = series.get(k);
@@ -4454,6 +4461,10 @@ const AFRecorder = (() => {
     const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
     const w=x1-x0, h=y1-y0;
 
+    // legend slots (σταθερές θέσεις για b=6,10,20,30)
+    const B_SLOTS = {6:0, 10:1, 20:2, 30:3};
+    const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
+
     // axes
     ctx.strokeStyle='rgba(255,255,255,0.35)';
     ctx.lineWidth=1;
@@ -4477,31 +4488,57 @@ const AFRecorder = (() => {
       const u=A/yMaxAuto;
       return y1 - u*h;
     }
-    // x grid/ticks (αναλογική κλίμακα, όχι “κουμπωμένη” στις επιλογές)
-    const xTickStep = 0.10;
+    // x grid/ticks (βήμα 0.2, 1 δεκαδικό)
+    ctx.save();
+    ctx.font='10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    const xTickStep = 0.20;
     const xTickStart = Math.ceil(XRANGE[0] / xTickStep) * xTickStep;
     const xTickEnd   = XRANGE[1];
 
     for(let tr = xTickStart; tr <= xTickEnd + 1e-9; tr += xTickStep){
-      const trR = Math.round(tr * 100) / 100; // 2 δεκαδικά χωρίς float σκουπίδια
+      const trR = Math.round(tr * 10) / 10; // 1 δεκαδικό
       const xx  = X(trR);
 
       ctx.strokeStyle='rgba(255,255,255,0.10)';
       ctx.beginPath(); ctx.moveTo(xx,y1); ctx.lineTo(xx,y0); ctx.stroke();
 
-      ctx.fillStyle='rgba(255,255,255,0.6)';
-      ctx.fillText(trR.toFixed(2), xx-12, y1+16);
+      ctx.fillStyle='rgba(255,255,255,0.60)';
+      ctx.fillText(trR.toFixed(1), xx-10, y1+16);
+    }
+    ctx.restore();
+
+    // A_drive (πλάτος διεγέρτη) — γραμμή σύγκρισης
+    if(typeof pxPerMeter === 'number' && pxPerMeter > 0){
+      const driveA = Math.abs(driverAmpPx) / pxPerMeter; // σε m
+      const yy = Y(driveA);
+      if(Number.isFinite(yy)){
+        ctx.save();
+        ctx.setLineDash([6,4]);
+        ctx.strokeStyle='rgba(255,255,255,0.55)';
+        ctx.lineWidth=1.5;
+        ctx.beginPath();
+        ctx.moveTo(x0,yy); ctx.lineTo(x1,yy);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle='rgba(255,255,255,0.75)';
+        ctx.font='10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+        ctx.textAlign='right';
+        ctx.fillText('A_drive', x1-4, yy-4);
+        ctx.restore();
+      }
     }
 
-    // y grid/ticks
-    for(let i=0;i<=4;i++){
-      const A=(yMaxAuto*i)/4;
+    // y grid/ticks (σταθερά 0..8 ανά 2)
+    ctx.save();
+    ctx.font='10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    for(let A=0; A<=8.0001; A+=2){
       const yy=Y(A);
       ctx.strokeStyle='rgba(255,255,255,0.08)';
       ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
       ctx.fillStyle='rgba(255,255,255,0.55)';
-      ctx.fillText(A.toFixed(2), 6, yy+4);
+      ctx.fillText(A.toFixed(0), 6, yy+4);
     }
+    ctx.restore();
 
 
 // smooth (monotone cubic Hermite / PCHIP-like) for nicer A–f curves (visual only)
@@ -4616,7 +4653,7 @@ data.forEach(p=>{
       ctx.save();
       ctx.textAlign = 'right';
       ctx.fillStyle = col.text;
-      ctx.fillText(`b=${k} kg/s`, x1-4, y0+14+idx*14);
+      ctx.fillText(`b=${k} kg/s`, x1-4, legendY(k));
       ctx.restore();
     });
   }
@@ -4662,7 +4699,10 @@ data.forEach(p=>{
     const k = ensureSeries(bKgPerS);
 
     // warmup gate: μην επιτρέπεις “stable→record” πριν περάσουν αρκετοί κύκλοι
-    const warmupSec = Math.max(MIN_WARMUP_SEC, WARMUP_CYCLES / Math.max(0.001, fHz));
+    const warmCycles = (bKey === 6) ? 10 : WARMUP_CYCLES;
+    const minWarmSec = (bKey === 6) ? 5.0 : MIN_WARMUP_SEC;
+    const stableHoldSec = (bKey === 6) ? 0.9 : STABLE_HOLD_SEC;
+    const warmupSec = Math.max(minWarmSec, warmCycles / Math.max(0.001, fHz));
 
     // running min/max for the current window
     xMin = Math.min(xMin, xMeters);
@@ -4725,7 +4765,7 @@ data.forEach(p=>{
 stable = nowStable;
     }
 
-    if(stable && (t - lastParamChangeT) >= warmupSec && stableHold >= STABLE_HOLD_SEC && (t - lastRecordStamp) >= MIN_RECORD_GAP){
+    if(stable && (t - lastParamChangeT) >= warmupSec && stableHold >= stableHoldSec && (t - lastRecordStamp) >= MIN_RECORD_GAP){
       const Aavg = Aset.reduce((s,v)=>s+v,0)/Aset.length;
             if(Aavg > AMP_LIMIT_METERS){
         recordPoint(k, fRatio, AMP_LIMIT_METERS, true);
