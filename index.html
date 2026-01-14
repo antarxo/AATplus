@@ -4437,6 +4437,9 @@ const AFRecorder = (() => {
   let xMin = Infinity;
   let xMax = -Infinity;
 
+  // Live extrema (τελευταίο max/min) για οπτική συμφωνία με χάρακα/γράφημα
+  let liveMin = null;
+  let liveMax = null;
   const maxList = [];
   const minList = [];
 
@@ -4795,9 +4798,13 @@ data.forEach(p=>{
     if(!elX) return;
 
     elX.textContent = `${fmt(x,3)} m`;
-    elXmin.textContent = `${fmt(xMin,3)} m`;
-    elXmax.textContent = `${fmt(xMax,3)} m`;
-    elA.textContent = `${fmt((xMax-xMin)/2,3)} m`;
+    const xminShow = (Number.isFinite(liveMin) ? liveMin : xMin);
+    const xmaxShow = (Number.isFinite(liveMax) ? liveMax : xMax);
+    const aShow = (Number.isFinite(xminShow) && Number.isFinite(xmaxShow)) ? 0.5*(xmaxShow-xminShow) : null;
+
+    elXmin.textContent = (Number.isFinite(xminShow) ? `${fmt(xminShow,3)} m` : '—');
+    elXmax.textContent = (Number.isFinite(xmaxShow) ? `${fmt(xmaxShow,3)} m` : '—');
+    elA.textContent    = (aShow!==null ? `${fmt(aShow,3)} m` : '—');
     if(b < DRIVE_B_SAFE_MIN){
       elF.textContent = `${fmt(fHz,3)} Hz  (r=${fmt(ratio,2)})`;
     } else {
@@ -4855,6 +4862,10 @@ data.forEach(p=>{
     if(lastSign === 1 && sign === -1) pushMax(lastX);
     if(lastSign === -1 && sign === 1) pushMin(lastX);
 
+
+    // update live extrema όταν πιάσουμε νέο ακρότατο
+    if(maxList.length) liveMax = maxList[maxList.length-1];
+    if(minList.length) liveMin = minList[minList.length-1];
     lastX = xMeters;
     lastSign = sign;
 
