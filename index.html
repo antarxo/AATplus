@@ -490,6 +490,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="dc-row">
       <span class="dc-lbl">b</span>
       <select id="driveB">
+  <option value="0">0</option>
   <option value="6">6</option>
   <option value="12">12</option>
   <option value="24">24</option>
@@ -1587,14 +1588,14 @@ let baseRefX  = null;  // px (y0)
 
 let driveB = 12;       // kg/s  (b στη δύναμη -b·v)
 
-const DRIVE_B_HARD_MIN = 6;   // επιτρέπουμε κάτω από 10 μόνο με “ασφάλεια” (βλ. applyFrequencySafetyByB)
+const DRIVE_B_HARD_MIN = 0;   // επιτρέπουμε και b=0 (αμείωτη/χωρίς απόσβεση)
 const DRIVE_B_SAFE_MIN = 10;  // φυσικό/λειτουργικό κατώφλι του συστήματος
 const DRIVE_B_MAX = 50;
 
 
 
 function snapBToPresets(v){
-  const presets = [6,12,24,30];
+  const presets = [0,6,12,24,30];
   let best = presets[0], bestd = Infinity;
   for(const p of presets){
     const d = Math.abs(p - v);
@@ -1612,6 +1613,11 @@ const elDriveBVal    = document.getElementById('driveBVal');
 function updateDriveFreqLabel(){
   const f  = (driverOmega / (2*Math.PI));
   if(!elDriveFreqVal) return;
+
+  if(driveRatio <= 0){
+    elDriveFreqVal.textContent = `OFF · ${f.toFixed(2)} Hz`;
+    return;
+  }
 
   // Για b<10 δεν “προβάλλουμε” το f0 ως έξτρα χαρακτηριστικό (μένει μόνο λόγος r)
   if(driveB < DRIVE_B_SAFE_MIN){
@@ -1706,8 +1712,11 @@ function isDisabledRatioForB(bKey, ratio){
 
 
 function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
-  const enabled = options.filter(o => !o.disabled).map(o => Number(o.value)).filter(Number.isFinite);
+  let enabled = options.filter(o => !o.disabled).map(o => Number(o.value)).filter(Number.isFinite);
   if(!enabled.length) return null;
+
+  // Μην επιλέγεις αυτόματα το OFF (0.00) αν υπάρχουν άλλες διαθέσιμες επιλογές.
+  if(enabled.length > 1) enabled = enabled.filter(v => Math.abs(v) > 1e-12);
 
   let pool = enabled;
   if(preferSide === 'right'){
@@ -1733,7 +1742,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   const bKey = bKeyFromB(bKgPerS);
 
   // Σταθερές προεπιλεγμένες τιμές συχνοτήτων για ΟΛΑ τα b
-  const ratios = [0.60, 0.75, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.45];
+  const ratios = [0.00, 0.60, 0.75, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.45];
 
   const prev = String(elDriveRatio.value || '');
   elDriveRatio.innerHTML = '';
@@ -1741,7 +1750,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   for(const r of ratios){
     const opt = document.createElement('option');
     opt.value = r.toFixed(2);
-    opt.textContent = (r*100).toFixed(0) + '%';
+    opt.textContent = (r === 0 ? 'OFF' : (r*100).toFixed(0) + '%');
 
     // Dynamic forbid (cap) για το συγκεκριμένο b + ειδικός κανόνας: για b=6 απενεργοποιείται το 100%
     opt.disabled = isDisabledRatioForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
@@ -1762,7 +1771,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
     elDriveRatio.value = best.toFixed(2);
 
     // ενημέρωση κινητήρα (χωρίς να βασιζόμαστε στο 'change' event)
-    const rr = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
+    const rr = Math.max(0.0, parseFloat(elDriveRatio.value) || 0.0);
     driveRatio = rr;
     driverOmega = omega * driveRatio;
     updateDriveFreqLabel();
@@ -1790,7 +1799,7 @@ function applyCapForCurrentBF(bKgPerS, fRatio){
 
 if(elDriveRatio){
   elDriveRatio.addEventListener('change', () => {
-    const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
+    const r = Math.max(0.0, parseFloat(elDriveRatio.value) || 0.0);
     driveRatio = r;
     driverOmega = omega * driveRatio;
     updateDriveFreqLabel();
@@ -3309,7 +3318,8 @@ function showDynBubble(ev){
       const el = document.getElementById('driveRatio');
       if(!el) return;
       // ratio is numeric like 0.95, 1.15 etc
-      el.value = String(action.ratio ?? action.value);
+      const raw = Number(action.ratio ?? action.value);
+      el.value = (Number.isFinite(raw) ? raw.toFixed(2) : String(action.ratio ?? action.value));
       _dispatchChange(el);
       return;
     }
