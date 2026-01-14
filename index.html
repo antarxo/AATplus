@@ -476,12 +476,25 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
   <div class="drive-controls" id="driveCtrl" aria-label="ρυθμίσεις διεγέρτη">
     <div class="dc-row">
       <span class="dc-lbl">f</span>
-      <input id="driveRatio" type="range" min="0.60" max="1.45" step="0.01" value="1.00" />
+      <select id="driveRatio" aria-label="συχνότητα διεγέρτη ως πολλαπλάσιο της ιδιοσυχνότητας">
+        <option value="0.60">0.60 f₀</option>
+        <option value="0.75">0.75 f₀</option>
+        <option value="0.90">0.90 f₀</option>
+        <option value="1.00">1.00 f₀</option>
+        <option value="1.10">1.10 f₀</option>
+        <option value="1.20">1.20 f₀</option>
+        <option value="1.50">1.50 f₀</option>
+      </select>
       <span class="dc-val" id="driveFreqVal">1.00 f₀ · – Hz</span>
     </div>
     <div class="dc-row">
       <span class="dc-lbl">b</span>
-      <input id="driveB" type="range" min="3" max="50" step="1" value="20" />
+      <select id="driveB">
+  <option value="6">6</option>
+  <option value="12">12</option>
+  <option value="24">24</option>
+  <option value="30">30</option>
+</select>
       <span class="dc-val" id="driveBVal">20 kg/s</span>
     </div>
   </div>
@@ -1572,11 +1585,23 @@ let basePrevX = null;  // px
 let basePrevV = null;  // px/s
 let baseRefX  = null;  // px (y0)
 
-let driveB = 20;       // kg/s  (b στη δύναμη -b·v)
+let driveB = 12;       // kg/s  (b στη δύναμη -b·v)
 
 const DRIVE_B_HARD_MIN = 6;   // επιτρέπουμε κάτω από 10 μόνο με “ασφάλεια” (βλ. applyFrequencySafetyByB)
 const DRIVE_B_SAFE_MIN = 10;  // φυσικό/λειτουργικό κατώφλι του συστήματος
 const DRIVE_B_MAX = 50;
+
+
+
+function snapBToPresets(v){
+  const presets = [6,12,24,30];
+  let best = presets[0], bestd = Infinity;
+  for(const p of presets){
+    const d = Math.abs(p - v);
+    if(d < bestd){ bestd = d; best = p; }
+  }
+  return best;
+}
 
 // --- Driver controls hookup (f as ratio, b as kg/s) ---
 const elDriveRatio   = document.getElementById('driveRatio');
@@ -1597,17 +1622,21 @@ function updateDriveFreqLabel(){
 }
 
 function syncDriveUI(){
-  // Συγχρονίζει UI ←→ state χωρίς να χαλάει labels/φυσική
-  if (elDriveRatio){
-    elDriveRatio.value = Number(driveRatio).toFixed(2);
-  }
-  if (elDriveB){
-    elDriveB.value = String(Math.round(driveB));
-  }
-  if (elDriveBVal){
-    elDriveBVal.textContent = `${Math.round(driveB)} kg/s`;
+  if(elDriveRatio){
+    // προσπαθούμε να "κουμπώσουμε" σε υπάρχουσα επιλογή
+    const v = driveRatio.toFixed(2);
+    const opt = Array.from(elDriveRatio.options).find(o => (parseFloat(o.value).toFixed(2) === v));
+    if(opt) elDriveRatio.value = opt.value;
   }
   updateDriveFreqLabel();
+
+  if(elDriveB){
+    elDriveB.value = String(Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB))));
+    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
+  }
+  // ασφάλεια συχνοτήτων όταν b < 10
+  applyFrequencySafetyByB(driveB);
+
 }
 
 // Αν b < 10: “κόβουμε” συχνότητες κοντά στον συντονισμό για να μη βγει το σύστημα εκτός ορίων.
@@ -1692,32 +1721,53 @@ function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
   return best;
 }
 
-
-// Continuous drive frequency ratio control (0.60..1.45)
-// For range input we can't "disable options", so we SNAP away from forbidden intervals per-b.
-function enforceDriveRatioConstraints(){
-  // Με continuous slider δεν αποκλείουμε ratios.
-  // Απλώς clamp στο επιτρεπτό εύρος του slider.
+function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   if(!elDriveRatio) return;
-  let r = Number(elDriveRatio.value);
-  if(!Number.isFinite(r)) r = 1.00;
-  if (r < 0.60) r = 0.60;
-  if (r > 1.45) r = 1.45;
-  elDriveRatio.value = r.toFixed(2);
 
-  // ενημέρωση της φυσικής
-  driveRatio = r;
-  driverOmega = omega * driveRatio;
-  updateDriveFreqLabel();
+  const bKey = bKeyFromB(bKgPerS);
+
+  // Σταθερές προεπιλεγμένες τιμές συχνοτήτων για ΟΛΑ τα b
+  const ratios = [0.60, 0.75, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.45];
+
+  const prev = String(elDriveRatio.value || '');
+  elDriveRatio.innerHTML = '';
+
+  for(const r of ratios){
+    const opt = document.createElement('option');
+    opt.value = r.toFixed(2);
+    opt.textContent = (r*100).toFixed(0) + '%';
+
+    // Dynamic forbid (cap) για το συγκεκριμένο b + ειδικός κανόνας: για b=6 απενεργοποιείται το 100%
+    opt.disabled = isDisabledRatioForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
+
+    elDriveRatio.appendChild(opt);
+  }
+
+  // προσπάθησε να κρατήσεις την προηγούμενη επιλογή αν επιτρέπεται
+  const canKeep = Array.from(elDriveRatio.options).some(o => o.value === prev && !o.disabled);
+  if(canKeep){
+    elDriveRatio.value = prev;
+    return;
+  }
+
+  // αλλιώς διάλεξε αυτόματα
+  const best = pickBestEnabledRatio(Array.from(elDriveRatio.options), preferSide);
+  if(best != null){
+    elDriveRatio.value = best.toFixed(2);
+
+    // ενημέρωση κινητήρα (χωρίς να βασιζόμαστε στο 'change' event)
+    const rr = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
+    driveRatio = rr;
+    driverOmega = omega * driveRatio;
+    updateDriveFreqLabel();
+    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
+  }
 }
 
-// Back-compat wrapper (old name used elsewhere)
-function applyFrequencySafetyByB(){
-  // Δεν κάνουμε “forbid” με λίστες εδώ. Για b<10 κρατάμε το ίδιο slider συχνότητας.
-  // Τα όρια προστασίας γίνονται μέσω AMP_LIMIT_METERS + cap στο γράφημα, όχι μέσω UI αποκλεισμών.
-  enforceDriveRatioConstraints();
+// αντικαθιστά το παλιό “κόψιμο” συχνοτήτων
+function applyFrequencySafetyByB(bKgPerS){
+  rebuildDriveRatioOptions(bKgPerS, null);
 }
-
 
 // Καλείται από τον recorder όταν “σκάσει” ένα (b,f): θέτει cap + ανανεώνει επιλογές
 function applyCapForCurrentBF(bKgPerS, fRatio){
@@ -1729,22 +1779,26 @@ function applyCapForCurrentBF(bKgPerS, fRatio){
 
   // Αν έσκασε στην αριστερή πλευρά, προτίμησε δεξιά (και αντίστροφα)
   const prefer = (r < 1.0) ? 'right' : (r > 1.0 ? 'left' : null);
-  enforceDriveRatioConstraints(bKgPerS, prefer);
+  rebuildDriveRatioOptions(bKgPerS, prefer);
 }
 
 if(elDriveRatio){
-  elDriveRatio.addEventListener('input', () => {
-    enforceDriveRatioConstraints();
+  elDriveRatio.addEventListener('change', () => {
+    const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
+    driveRatio = r;
+    driverOmega = omega * driveRatio;
+    updateDriveFreqLabel();
     if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
   });
 }
 
 if(elDriveB){
-  elDriveB.addEventListener('input', () => {
-    driveB = Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, parseFloat(elDriveB.value) || DRIVE_B_HARD_MIN));
+  elDriveB.addEventListener('change', () => {
+    const raw = parseFloat(elDriveB.value);
+    driveB = snapBToPresets(Number.isFinite(raw) ? raw : 12);
+    elDriveB.value = String(driveB);
     applyFrequencySafetyByB(driveB);
-    updateDriveFreqLabel();
-    if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
+    if(elDriveBVal) elDriveBVal.textContent = `${driveB} kg/s`;
     if (typeof AFRecorder !== 'undefined') AFRecorder.onBChange();
   });
 }
@@ -3121,19 +3175,35 @@ function showBubbleForEvent(ev){
     const typeMs =ev.typeMs  || 2500;
     const pauseMs=ev.pauseMs || 800;
 
-    typeWriterHTML(bubbleTextEl,html,typeMs,()=>{
-      TM.setTimeout(()=>{
-        bubbleEl.classList.add('closing');
-        TM.setTimeout(()=>{
-          bubbleEl.classList.remove('active','closing');
-          bubbleEl.style.display='none';
-          hideSpeakerChip();
-          hideAllViewerAvatars();
-          resolve();
-        },200);
-      },pauseMs);
-    });
+    const when = (ev && ev.actionsWhen) ? String(ev.actionsWhen) : 'afterType';
+    const doActions = async ()=>{
+      try{
+        if(ev && Array.isArray(ev.actions)) await window.AAT?.actions(ev.actions);
+      }catch(e){ console.error(e); }
+    };
+
+    const startTyping = ()=>{
+      typeWriterHTML(bubbleTextEl,html,typeMs,()=>{
+        const chain = (when === 'afterType') ? doActions() : Promise.resolve();
+        chain.then(()=>{
+          TM.setTimeout(()=>{
+            bubbleEl.classList.add('closing');
+            TM.setTimeout(()=>{
+              bubbleEl.classList.remove('active','closing');
+              bubbleEl.style.display='none';
+              hideSpeakerChip();
+              hideAllViewerAvatars();
+              resolve();
+            },200);
+          },pauseMs);
+        });
+      });
+    };
+
+    if(when === 'beforeType') doActions().then(startTyping);
+    else startTyping();
   });
+}
 }
 
 /* Δυναμικό κείμενο με {A},{T},{omega},{x0},{phi0},{vSignSymbol},{vSignWord} */
@@ -3199,6 +3269,70 @@ function showDynBubble(ev){
     });
   });
 }
+
+
+/* ---------- Dialog Actions (minimal, JSON-friendly) ----------
+   Optional per-dialog-line field:
+     "actions": [ { "type":"setB", "value":12 }, { "type":"setF", "ratio":0.95 } ]
+   Runs AFTER the bubble text is typed (default), unless you set:
+     "actionsWhen": "beforeType"
+-------------------------------------------------------------- */
+
+(function(){
+  const AAT = (window.AAT = window.AAT || {});
+
+  function _dispatchChange(el){
+    if(!el) return;
+    try{ el.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){}
+    try{ el.dispatchEvent(new Event('input',{bubbles:true})); }catch(e){}
+  }
+
+  AAT.action = async function(action){
+    if(!action || typeof action !== 'object') return;
+    const type = action.type;
+
+    // Forced oscillator controls (Phase 3)
+    if(type === 'setB'){
+      const el = document.getElementById('driveB');
+      if(!el) return;
+      el.value = String(action.value);
+      _dispatchChange(el);
+      return;
+    }
+
+    if(type === 'setF' || type === 'setRatio'){
+      const el = document.getElementById('driveRatio');
+      if(!el) return;
+      // ratio is numeric like 0.95, 1.15 etc
+      el.value = String(action.ratio ?? action.value);
+      _dispatchChange(el);
+      return;
+    }
+
+    if(type === 'setParams'){
+      if(action.b!=null) await AAT.action({type:'setB', value: action.b});
+      if(action.ratio!=null) await AAT.action({type:'setF', ratio: action.ratio});
+      return;
+    }
+
+    if(type === 'sleep'){
+      const ms = Math.max(0, (action.ms|0));
+      await TM.sleep(ms);
+      return;
+    }
+
+    // future-proof no-ops (won't crash old dialogues)
+    if(type === 'setMode' || type === 'record' || type === 'mark'){
+      return;
+    }
+  };
+
+  AAT.actions = async function(actions){
+    if(!Array.isArray(actions)) return;
+    for(const a of actions) await AAT.action(a);
+  };
+})();
+
 
 /* ---------- Act 1 / Act 2 ---------- */
 
@@ -4418,36 +4552,24 @@ const AFRecorder = (() => {
     bind();
     if(!ctx || !cvs) return;
 
-    // Fit plot strictly inside the LEFT curtain (used for laws/graphs)
-    const leftCurt = document.querySelector('.curtain-side.left');
-    if(leftCurt){
-      const rect = leftCurt.getBoundingClientRect();
-      const cssW = Math.max(220, Math.floor(rect.width));  // minimum to keep readable
-      const cssH = 330;
-      // keep crisp enough but never overflow the curtain
-      const dpr = window.devicePixelRatio || 1;
-      const needW = Math.floor(cssW * dpr);
-      const needH = Math.floor(cssH * dpr);
-      if(cvs.width !== needW || cvs.height !== needH){
-        cvs.width  = needW;
-        cvs.height = needH;
-      }
-      if(cvs.style.width !== cssW+'px')  cvs.style.width  = cssW+'px';
-      if(cvs.style.height !== cssH+'px') cvs.style.height = cssH+'px';
-      // draw in CSS pixel coordinates
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-    }
-
-    const W = (cvs.style.width ? parseInt(cvs.style.width,10) : cvs.width);
-    const H = (cvs.style.height ? parseInt(cvs.style.height,10) : cvs.height);
+    const W=cvs.width, H=cvs.height;
     ctx.clearRect(0,0,W,H);
 
-    const padL=24, padR=10, padT=18, padB=28;
+    const padL=44, padR=10, padT=18, padB=28;
     const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
     const w=x1-x0, h=y1-y0;
 
-    // legend slots (σταθερές θέσεις για b=6,10,20,30)
-    const B_SLOTS = {6:0, 10:1, 20:2, 30:3};
+    // legend slots (σταθερές θέσεις για b=6,12,24,30)
+    const B_SLOTS = {6:0, 12:1, 24:2, 30:3};
+
+const B_COL = {
+  6:  'rgba(255,0,0,0.90)',       // κόκκινο
+  12: 'rgba(0,200,0,0.90)',       // πράσινο
+  24: 'rgba(80,180,255,0.90)',    // ανοιχτό μπλε
+  30: 'rgba(255,215,0,0.90)'      // κίτρινο
+};
+function colorForB(k){ return B_COL[k] || 'rgba(230,230,230,0.85)'; }
+
     const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
 
     // axes
@@ -4463,7 +4585,7 @@ const AFRecorder = (() => {
     ctx.font='12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.fillText('A–f', x0, 12);
     ctx.fillText('f/f₀', x1-34, H-10);
-    ctx.fillText('A (m)', 4, y0+10);
+    ctx.fillText('A (m)', 6, y0+10);
 
     function X(r){
       const u=(r-XRANGE[0])/(XRANGE[1]-XRANGE[0]);
@@ -4521,7 +4643,7 @@ const AFRecorder = (() => {
       ctx.strokeStyle='rgba(255,255,255,0.08)';
       ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
       ctx.fillStyle='rgba(255,255,255,0.55)';
-      ctx.fillText(A.toFixed(0), 4, yy+4);
+      ctx.fillText(A.toFixed(0), 6, yy+4);
     }
     ctx.restore();
 
@@ -4595,23 +4717,11 @@ function drawSmoothMonotone(data){
 }
     // curves
     const keys = Array.from(series.keys()).sort((a,b)=>a-b);
-
-    // Χρώματα καμπυλών — “φυσικά”/καθαρά: κόκκινο, πράσινο, ανοιχτό μπλε, κίτρινο
-    const SERIES_COLOR_BY_B = {
-      6:  {stroke:'rgba(255, 0, 0, 0.90)',   fill:'rgba(255, 0, 0, 0.95)',   text:'rgba(255, 80, 80, 0.95)'},
-      10: {stroke:'rgba(0, 190, 0, 0.90)',   fill:'rgba(0, 190, 0, 0.95)',   text:'rgba(80, 230, 80, 0.95)'},
-      20: {stroke:'rgba(80, 180, 255, 0.90)',fill:'rgba(80, 180, 255, 0.95)',text:'rgba(140, 220, 255, 0.95)'},
-      30: {stroke:'rgba(255, 215, 0, 0.90)', fill:'rgba(255, 215, 0, 0.95)', fill2:'rgba(255, 215, 0, 0.95)', text:'rgba(255, 235, 120, 0.95)'},
-    };
-    function seriesColorForB(k){
-      return SERIES_COLOR_BY_B[k] || {stroke:'rgba(230,230,230,0.85)', fill:'rgba(230,230,230,0.92)', text:'rgba(230,230,230,0.92)'};
-    }
-
     keys.forEach((k, idx)=>{
       const data = series.get(k);
       if(!data || data.length===0) return;
 
-      const col = seriesColorForB(k);
+      const col = colorForB(k);
       ctx.strokeStyle = col.stroke;
       ctx.fillStyle = col.fill;
       ctx.lineWidth = 2;
@@ -4622,9 +4732,7 @@ function drawSmoothMonotone(data){
       // Για b=6 θέλουμε “ασυμπτωτική” αίσθηση κοντά στο f0:
       // προσθέτουμε 2 *εικονικά* σημεία (δεν σχεδιάζονται ως κουκίδες),
       // στα 0.97 και 1.03 με A>8, ώστε οι κλάδοι να “τραβάνε” προς τα πάνω.
-      const ENABLE_VIRTUAL_ASYMPTOTE = false;
       const addAsymptoteVirtuals = (line, side) => {
-        if(!ENABLE_VIRTUAL_ASYMPTOTE) return line;
         if(k !== 6) return line;
         // left side anchor: 0.95 -> add 0.97 with A=8.2
         if(side === 'L' && line.some(p => Math.abs(p.ratio - 0.95) < 1e-6)) {
@@ -4664,7 +4772,7 @@ data.forEach(p=>{
         const xx=X(p.ratio);
         const yy=Y(p.A);
         ctx.beginPath();
-        ctx.arc(xx,yy,2,0,Math.PI*2);
+        ctx.arc(xx,yy,3,0,Math.PI*2);
         ctx.fill();
       });
 
