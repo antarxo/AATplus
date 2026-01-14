@@ -1699,6 +1699,12 @@ function isRatioDisabledForB(bKey, ratio){
   return false;
 }
 
+// backward-compatible alias (παλιό όνομα που χρησιμοποιούν κάποια σημεία)
+function isDisabledRatioForB(bKey, ratio){
+  return isRatioDisabledForB(bKey, ratio);
+}
+
+
 function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
   const enabled = options.filter(o => !o.disabled).map(o => Number(o.value)).filter(Number.isFinite);
   if(!enabled.length) return null;
