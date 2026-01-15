@@ -1423,10 +1423,34 @@ function updateMarbleTrack(){
   // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
   const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
 
-  // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
+  // Οριζόντια έκταση μαρμάρου:
+  // - Ελεύθερη αμείωτη (b=0, f=OFF): κλασικό μήκος 6 m (±3 m γύρω από το 10 m)
+  // - Όλες οι άλλες περιπτώσεις: στρώνεται σε όλο το άνοιγμα της σκηνής (μεταξύ κουρτινών) + χρωματική μετατόπιση ανά b
+  const pure = isPureUndampedMode();
   const cx = centerX();
-  const leftPx  = cx - 3*pxPerMeter;
-  const rightPx = cx + 3*pxPerMeter;
+
+  let leftPx, rightPx;
+  if(pure){
+    leftPx  = cx - 3*pxPerMeter;
+    rightPx = cx + 3*pxPerMeter;
+    track.style.filter = '';
+  }else{
+    const csL = document.querySelector('.curtain-side.left');
+    const csR = document.querySelector('.curtain-side.right');
+    const lRect = csL ? csL.getBoundingClientRect() : null;
+    const rRect = csR ? csR.getBoundingClientRect() : null;
+
+    const openLeft  = lRect ? ((lRect.right - stageRect.left) / s) : 0;
+    const openRight = rRect ? ((rRect.left  - stageRect.left) / s) : stage.clientWidth;
+
+    leftPx  = Math.max(0, Math.min(stage.clientWidth, openLeft));
+    rightPx = Math.max(0, Math.min(stage.clientWidth, openRight));
+    if(rightPx < leftPx){ const tmp=leftPx; leftPx=rightPx; rightPx=tmp; }
+
+    const hue = Math.round(Math.max(0, Math.min(80, (Math.abs(driveB)/30)*80)));
+    track.style.filter = `hue-rotate(${hue}deg) saturate(1.15) brightness(1.02)`;
+  }
+
   track.style.left   = leftPx + 'px';
   track.style.width  = Math.max(0, rightPx - leftPx) + 'px';
   track.style.bottom = bottomPx + 'px';
@@ -1434,7 +1458,11 @@ function updateMarbleTrack(){
   track.style.display = (h>0) ? 'block' : 'none';
 
   // Ghost “δοκός”/μάρμαρο: από -5 έως +5, μόνο όταν ο ghost είναι ορατός.
+  // (το κρατάμε μόνο στην αμείωτη για να μη μπερδεύει οπτικά στις άλλες περιπτώσεις)
   if(trackGhost){
+    if(!isPureUndampedMode()){
+      trackGhost.style.display = 'none';
+    }else{
     const gVis = (typeof ghostVisibility==='number') ? ghostVisibility : 0;
     if(phase==='act2' && gVis>0.02 && h>0){
       const gLeft  = cx - 5*pxPerMeter;
@@ -1447,6 +1475,7 @@ function updateMarbleTrack(){
       trackGhost.style.opacity = Math.min(0.65, 0.15 + 0.5*gVis).toString();
     }else{
       trackGhost.style.display = 'none';
+    }
     }
   }
 }
@@ -1842,6 +1871,7 @@ if(elDriveRatio){
     driverOmega = omega * driveRatio;
     updateDriveFreqLabel();
     if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
+    maybeResetOnPureUndamped();
   });
 }
 
@@ -1853,11 +1883,55 @@ if(elDriveB){
     applyFrequencySafetyByB(driveB);
     if(elDriveBVal) elDriveBVal.textContent = `${driveB} kg/s`;
     if (typeof AFRecorder !== 'undefined') AFRecorder.onBChange();
+    maybeResetOnPureUndamped();
   });
+}
+
+/* === Pure free undamped reset: (b=0, f=OFF) δεν κουβαλάει “μνήμη” === */
+let _wasPureUndamped = null;
+function isPureUndampedMode(){
+  return (Math.round(driveB)===0 && (!driveRatio || driveRatio<=0.0001));
+}
+function resetDynamicsForPureUndamped(){
+  // επαναφορά χρόνου και κατάστασης ταλαντωτή/διεγέρτη
+  playbackTime = 0;
+  try{ lastFrame = performance.now()/1000; }catch(_e){}
+  driveInited = false;
+  baseRefX = null;
+  basePrevX = null;
+  basePrevV = null;
+  driveU = 0;
+  driveUd = 0;
+
+  driverTheta = DRIVER_THETA0;
+  driverDx = 0;
+  driverDx0 = 0;
+
+  // καθάρισμα buffer overlay x–t
+  if(Array.isArray(xtOverlayBuf)) xtOverlayBuf.length = 0;
+
+  // καθάρισμα marks/tails
+  if(typeof xtMarkState === 'object' && xtMarkState){
+    xtMarkState.active = false;
+    xtMarkState.showTail = false;
+  }
+
+  // καθάρισμα recorder (άκρα/σταθερότητα)
+  if (typeof AFRecorder !== 'undefined'){
+    AFRecorder.onBChange();
+    AFRecorder.onFChange();
+  }
+}
+function maybeResetOnPureUndamped(){
+  const now = isPureUndampedMode();
+  if(now && _wasPureUndamped === false) resetDynamicsForPureUndamped();
+  if(_wasPureUndamped === null && now) resetDynamicsForPureUndamped();
+  _wasPureUndamped = now;
 }
 
 // αρχικοποίηση UI από τις τρέχουσες τιμές
 syncDriveUI();
+maybeResetOnPureUndamped();
 
 function applyDriverTransform(){
   if(!drvWheel || !drvPin || !drvSlider) return;
