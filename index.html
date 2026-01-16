@@ -1630,6 +1630,8 @@ let driverTheta = DRIVER_THETA0;          // ξεκινάμε στο κέντρ�
 // Για να φαίνεται καθαρά ο συντονισμός, αλλάζουμε τη συχνότητα σε (υπο)πολλαπλάσια της ιδιοσυχνότητας f0.
 let driveRatio = 1.00;                    // f = driveRatio · f0
 let driverOmega = omega * driveRatio;     // rad/s
+let purePhaseTimeOffset = 0;              // s: φάση εκκίνησης για καθαρή αμείωτη (b=0, f=OFF)
+
 
 let driverDx  = 0;   // τρέχον translateX του slider (px, στο ίδιο σύστημα με το placement)
 let driverDx0 = 0;   // translateX στην αρχική στάση (για σωστό κούμπωμα)
@@ -1894,6 +1896,7 @@ function isPureUndampedMode(){
 }
 function resetDynamicsForPureUndamped(){
   // επαναφορά χρόνου και κατάστασης ταλαντωτή/διεγέρτη
+  purePhaseTimeOffset = (T*0.25);
   playbackTime = 0;
   try{ lastFrame = performance.now()/1000; }catch(_e){}
   driveInited = false;
@@ -1924,6 +1927,9 @@ function resetDynamicsForPureUndamped(){
 }
 function maybeResetOnPureUndamped(){
   const now = isPureUndampedMode();
+  // Στην καθαρή αμείωτη θέλουμε να ξεκινά από μέγιστη απομάκρυνση (x=+A, v=0)
+  purePhaseTimeOffset = now ? (T*0.25) : 0;
+
   if(now && _wasPureUndamped === false) resetDynamicsForPureUndamped();
   if(_wasPureUndamped === null && now) resetDynamicsForPureUndamped();
   _wasPureUndamped = now;
@@ -2422,14 +2428,31 @@ function xtOverlayLocalRect(){
 
   bottomLocal = Math.max(40, Math.min(stageH, bottomLocal));
 
-  return { left:0, right:(stage.clientWidth||0), top:0, bottom:bottomLocal };
+  let leftLocal = 0;
+  let rightLocal = (stage.clientWidth||0);
+
+  const cL = stage.querySelector('.curtain-side.left');
+  const cR = stage.querySelector('.curtain-side.right');
+  if(cL && cR){
+    const rl = cL.getBoundingClientRect();
+    const rr = cR.getBoundingClientRect();
+    leftLocal  = (rl.right - stageRect.left) / s;
+    rightLocal = (rr.left  - stageRect.left) / s;
+  }
+
+  // μικρό padding ώστε να μη "γλείφει" τις κουρτίνες
+  const pad = 8;
+  leftLocal  = Math.max(0, leftLocal + pad);
+  rightLocal = Math.min((stage.clientWidth||0), rightLocal - pad);
+
+  return { left:leftLocal, right:rightLocal, top:0, bottom:bottomLocal };
 }
 
 function xtOverlayPushSample(tObs, uMeters){
   if(!xtOverlayEnabled || !xtOverlayCan) return;
   if(!isFinite(tObs) || !isFinite(uMeters)) return;
 
-  const span = Math.max(12, 24*T); // ~24 περίοδοι (1 περίοδος στο 1/4 του πλάτους)
+  const span = Math.max(12, 48*T); // ~24 περίοδοι (1 περίοδος στο 1/4 του πλάτους)
   xtOverlayBuf.push({t:tObs, u:uMeters});
 
   const cutoff = tObs - (span + 2*T);
@@ -2486,7 +2509,7 @@ function xtOverlayDraw(dt){
   const pyT = yTop + marginT;
   const pyB = yBot - marginB;
 
-  const span = Math.max(12, 24*T);
+  const span = Math.max(12, 48*T);
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
@@ -3039,17 +3062,20 @@ function ensureXSinChart(){
 /* ---------- Παράμετροι ΑΑΤ & helpers για βιβλίο ---------- */
 
 function x0Val(){
-  return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
+  const extra = isPureUndampedMode() ? purePhaseTimeOffset : 0;
+  return A_m*Math.sin(omega*(0 + obsStartPlaybackOffset + extra));
 }
 
 function getPhi0Deg(){
-  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  const extra = isPureUndampedMode() ? purePhaseTimeOffset : 0;
+  const phi0deg = (((omega*(obsStartPlaybackOffset + extra))*180/Math.PI)+360)%360;
   return phi0deg;
 }
 
 function getV0(){
   // v(0) = ω A cos(ω(0+offset))
-  const v0 = omega*A_m*Math.cos(omega*(0+obsStartPlaybackOffset));
+  const extra = isPureUndampedMode() ? purePhaseTimeOffset : 0;
+  const v0 = omega*A_m*Math.cos(omega*(0 + obsStartPlaybackOffset + extra));
   return v0;
 }
 
@@ -4695,8 +4721,9 @@ function animate(now){
   // Initialize so we don't "jump" when switching from the old SHM demo
   if(!driveInited){
     // Start from the same SHM state used in the original AAT demo, referenced to the ruler zero (cx).
-    const x0 = cx + A_px*Math.sin(omega*playbackTime);
-    const v0 = A_px*omega*Math.cos(omega*playbackTime);
+    const tInit = playbackTime + purePhaseTimeOffset;
+    const x0 = cx + A_px*Math.sin(omega*tInit);
+    const v0 = A_px*omega*Math.cos(omega*tInit);
 
     // Lock y0 at entry and define L0 so that the equilibrium aligns with the ruler zero.
     if(baseRefX === null) baseRefX = baseX; // y0
