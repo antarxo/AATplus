@@ -2369,7 +2369,7 @@ let xtOverlayCan = null;
 let xtOverlayBuf = [];
 let xtOverlayT0 = 0;
 let xtOverlayLastNow = null;
-let xtOverlayURange = 3.5;
+let xtOverlayURange = 6.5;
 
 function getStageScale(){
   const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
@@ -2400,7 +2400,7 @@ function setXTOverlay(on){
   xtOverlayBuf = [];
   xtOverlayT0 = 0;
   xtOverlayLastNow = null;
-  xtOverlayURange = 3.5;
+  xtOverlayURange = 6.5;
 }
 
 function xtOverlayLocalRect(){
@@ -2429,7 +2429,7 @@ function xtOverlayPushSample(tObs, uMeters){
   if(!xtOverlayEnabled || !xtOverlayCan) return;
   if(!isFinite(tObs) || !isFinite(uMeters)) return;
 
-  const span = Math.max(12, 6*T); // ~6 περίοδοι
+  const span = Math.max(12, 24*T); // ~24 περίοδοι (1 περίοδος στο 1/4 του πλάτους)
   xtOverlayBuf.push({t:tObs, u:uMeters});
 
   const cutoff = tObs - (span + 2*T);
@@ -2486,7 +2486,7 @@ function xtOverlayDraw(dt){
   const pyT = yTop + marginT;
   const pyB = yBot - marginB;
 
-  const span = Math.max(12, 6*T);
+  const span = Math.max(12, 24*T);
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
@@ -2503,17 +2503,8 @@ function xtOverlayDraw(dt){
   const t0 = xtOverlayT0;
   const t1 = t0 + span;
 
-  // Υ-κλίμακα: από τα δείγματα μέσα στο παράθυρο, αλλά με smoothing για να μη "τρεμοπαίζει".
-  let maxAbs = 0;
-  for(const p of xtOverlayBuf){
-    if(p.t < t0 || p.t > t1) continue;
-    const a = Math.abs(p.u);
-    if(a>maxAbs) maxAbs=a;
-  }
-  const targetUR = Math.max(1.15*maxAbs, 3.2);
-  const beta = Math.min(1, Math.max(0.03, (dt||0.016)*0.25));
-  xtOverlayURange = xtOverlayURange + (targetUR - xtOverlayURange)*beta;
-  const uRange = xtOverlayURange;
+  // Υ-κλίμακα: ΣΤΑΘΕΡΗ, για να φαίνονται καθαρά οι διαφορές (±6.5 m)
+  const uRange = 6.5;
 
   function tToX(t){
     return pxL + (t - t0) / (t1 - t0) * (pxR - pxL);
@@ -2531,7 +2522,9 @@ function xtOverlayDraw(dt){
 
   // time ticks: αραιά labels για να μη τρελαίνουν
   let step = 1;
-  if(span > 28) step = 6;
+  if(span > 120) step = 24;
+  else if(span > 60) step = 12;
+  else if(span > 28) step = 6;
   else if(span > 16) step = 4;
   else if(span > 10) step = 2;
 
@@ -4985,7 +4978,7 @@ window.AFRecorder = (() => {
 
   // per-b curves
   const series = new Map(); // bKey -> [{ratio, A}]
-  let yMaxAuto = 8.0; // σταθερή κλίμακα 0..8
+  let yMaxAuto = AMP_LIMIT_METERS; // σταθερή κλίμακα 0..6.5
 
   // tuning
   const EXTREMA_NEED = 2;
@@ -5105,12 +5098,12 @@ window.AFRecorder = (() => {
     const B_SLOTS = {6:0, 12:1, 24:2, 30:3};
 
 const B_COL = {
-  6:  'rgba(255,0,0,0.90)',       // κόκκινο
-  12: 'rgba(0,200,0,0.90)',       // πράσινο
-  24: 'rgba(80,180,255,0.90)',    // ανοιχτό μπλε
-  30: 'rgba(255,215,0,0.90)'      // κίτρινο
+  6:  { stroke: 'rgba(255,0,0,0.90)',       fill: 'rgba(255,0,0,0.55)',       text: 'rgba(255,0,0,0.90)' },
+  12: { stroke: 'rgba(0,200,0,0.90)',       fill: 'rgba(0,200,0,0.55)',       text: 'rgba(0,200,0,0.90)' },
+  24: { stroke: 'rgba(80,180,255,0.90)',    fill: 'rgba(80,180,255,0.55)',    text: 'rgba(80,180,255,0.90)' },
+  30: { stroke: 'rgba(255,215,0,0.92)',     fill: 'rgba(255,215,0,0.55)',     text: 'rgba(255,215,0,0.92)' }
 };
-function colorForB(k){ return B_COL[k] || 'rgba(230,230,230,0.85)'; }
+function colorForB(k){ return B_COL[k] || { stroke:'rgba(230,230,230,0.85)', fill:'rgba(230,230,230,0.45)', text:'rgba(230,230,230,0.85)' }; }
 
     const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
 
@@ -5177,16 +5170,33 @@ function colorForB(k){ return B_COL[k] || 'rgba(230,230,230,0.85)'; }
       }
     }
 
-    // y grid/ticks (σταθερά 0..8 ανά 2)
+    // y grid/ticks (σταθερά 0..6.5)
     ctx.save();
     ctx.font='10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.textAlign='right';
-    for(let A=0; A<=8.0001; A+=2){
+    for(let A=0; A<=6.0001; A+=2){
       const yy=Y(A);
       ctx.strokeStyle='rgba(255,255,255,0.08)';
       ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
       ctx.fillStyle='rgba(255,255,255,0.55)';
       ctx.fillText(A.toFixed(0), x0-6, yy+4);
+    }
+    // top tick στο όριο (6.5 m)
+    {
+      const A = AMP_LIMIT_METERS;
+      const yy=Y(A);
+      ctx.strokeStyle='rgba(255,255,255,0.08)';
+      ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,0.55)';
+      ctx.fillText(A.toFixed(1), x0-6, yy+4);
+    }
+    // τελικό tick στο yMaxAuto (π.χ. 6.5)
+    if(Math.abs(yMaxAuto - Math.round(yMaxAuto/2)*2) > 1e-6){
+      const yy=Y(yMaxAuto);
+      ctx.strokeStyle='rgba(255,255,255,0.08)';
+      ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,0.55)';
+      ctx.fillText(yMaxAuto.toFixed(1), x0-6, yy+4);
     }
     ctx.restore();
 
