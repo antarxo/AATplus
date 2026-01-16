@@ -1898,7 +1898,7 @@ function resetDynamicsForPureUndamped(){
   // επαναφορά χρόνου και κατάστασης ταλαντωτή/διεγέρτη
   purePhaseTimeOffset = (T*0.25);
   playbackTime = 0;
-  try{ lastFrame = performance.now()/1000; }catch(_e){}
+  try{ lastFrame = performance.now(); }catch(_e){} 
   driveInited = false;
   baseRefX = null;
   basePrevX = null;
