@@ -1068,6 +1068,76 @@ const RULER_CENTER_M = 10;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
+// --- Κλιμάκωση ηθοποιού σε μέτρα (ώστε να μην βγαίνει "τρίμετρος") ---
+// Κρατάμε το pxPerMeter για τον χάρακα και προσαρμόζουμε το ύψος του ηθοποιού.
+// Με αυτό, ο οπτικός "ανθρωπάκος" αντιστοιχεί ~σε κανονικό ύψος (και όχι 3m).
+const ACTOR_HEIGHT_M = 1.80;
+let _actorCalLoadHooked = false;
+function calibrateActorToMeters(){
+  if(!actor) return;
+  const actorImg = actor.querySelector('img');
+  if(!actorImg) return;
+
+  const desiredH = ACTOR_HEIGHT_M * pxPerMeter; // design px
+
+  // Override CSS defaults: κλειδώνουμε ύψος σε px που αντιστοιχεί σε ACTOR_HEIGHT_M.
+  actor.style.height = desiredH + 'px';
+  actor.style.width  = 'auto';
+  actor.style.maxWidth = 'none';
+
+  // Το img να ακολουθεί το ύψος και να κρατάει αναλογία (όχι "ξεχείλισμα").
+  actorImg.style.height = '100%';
+  actorImg.style.width  = 'auto';
+  actorImg.style.maxWidth = 'none';
+  actorImg.style.transformOrigin = 'center bottom';
+  actorImg.style.transform = 'none';
+
+  // Αν δεν έχει φορτώσει ακόμη, ξαναδοκίμασε στο load.
+  if(!_actorCalLoadHooked){
+    _actorCalLoadHooked = true;
+    if(!actorImg.complete){
+      actorImg.addEventListener('load', ()=>{
+        calibrateActorToMeters();
+        try{ calibrateRigToMeters(); }catch(e){}
+        try{ updateDriverPlacement(); }catch(e){}
+        try{ updateMarbleTrack(); }catch(e){}
+      }, {once:true});
+    }
+  }
+}
+
+// --- Κλιμάκωση ελατηρίου + μηχανισμού διεγέρτη ώστε να "δένουν" με την κλίμακα του ηθοποιού/χάρακα ---
+// Λογική: κρατάμε την κλίμακα του χάρακα (pxPerMeter) και φέρνουμε τα γραφικά (spring/driver)
+// στο ίδιο "οπτικό σύστημα" με βάση αναφοράς την αρχική CSS σχεδίαση (actor ~96px ύψος).
+const _REF_ACTOR_H_PX   = 96;   // όπως ήταν στο CSS
+const _REF_SPRING_H_PX  = 96;   // όπως ήταν στο CSS
+const _REF_DRIVER_W_PX  = 227;  // όπως ήταν στο CSS (driver-mech img width)
+function calibrateRigToMeters(){
+  const desiredActorH = ACTOR_HEIGHT_M * pxPerMeter;
+  const s = desiredActorH / _REF_ACTOR_H_PX;
+
+  // Spring thickness/height
+  if(springEl){
+    springEl.style.height = (_REF_SPRING_H_PX * s) + 'px';
+    springEl.style.width  = 'auto';
+    springEl.style.maxWidth = 'none';
+  }
+  if(ghostSpring){
+    ghostSpring.style.height = (_REF_SPRING_H_PX * s) + 'px';
+    ghostSpring.style.width  = 'auto';
+    ghostSpring.style.maxWidth = 'none';
+  }
+
+  // Driver mech overall scale (τα 4 PNG έχουν ίδιο canvas -> ίδιο width)
+  const drvW = (_REF_DRIVER_W_PX * s);
+  const imgs = [drvTable, drvWheel, drvSlider, drvPin].filter(Boolean);
+  imgs.forEach(img=>{
+    img.style.width  = drvW + 'px';
+    img.style.height = 'auto';
+    img.style.maxWidth = 'none';
+  });
+}
+
 /* συνολικός χρόνος άξονα x–t: 2T */
 const XT_TOTAL_T = 2*T;
 
@@ -2065,6 +2135,12 @@ function updateRuler(){
     if(mTick===0) lbl.style.transform = 'translateX(0)';
     rulerEl.appendChild(lbl);
   }
+
+  // Κράτα τον ηθοποιό σε λογική κλίμακα σε σχέση με τη μετροταινία
+  try{ calibrateActorToMeters(); }catch(e){}
+  try{ calibrateRigToMeters(); }catch(e){}
+  try{ updateDriverPlacement(); }catch(e){}
+  try{ updateMarbleTrack(); }catch(e){}
 
   fitAFCanvasToCurtain();
 }
