@@ -1842,7 +1842,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
     driveRatio = rr;
     driverOmega = omega * driveRatio;
     updateDriveFreqLabel();
-    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
+    if (window.AFRecorder) window.AFRecorder.onFChange();
   }
 }
 
@@ -1870,7 +1870,7 @@ if(elDriveRatio){
     driveRatio = r;
     driverOmega = omega * driveRatio;
     updateDriveFreqLabel();
-    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
+    if (window.AFRecorder) window.AFRecorder.onFChange();
     maybeResetOnPureUndamped();
   });
 }
@@ -1882,7 +1882,7 @@ if(elDriveB){
     elDriveB.value = String(driveB);
     applyFrequencySafetyByB(driveB);
     if(elDriveBVal) elDriveBVal.textContent = `${driveB} kg/s`;
-    if (typeof AFRecorder !== 'undefined') AFRecorder.onBChange();
+    if (window.AFRecorder) window.AFRecorder.onBChange();
     maybeResetOnPureUndamped();
   });
 }
@@ -1917,9 +1917,9 @@ function resetDynamicsForPureUndamped(){
   }
 
   // καθάρισμα recorder (άκρα/σταθερότητα)
-  if (typeof AFRecorder !== 'undefined'){
-    AFRecorder.onBChange();
-    AFRecorder.onFChange();
+  if (window.AFRecorder){
+    window.AFRecorder.onBChange();
+    window.AFRecorder.onFChange();
   }
 }
 function maybeResetOnPureUndamped(){
@@ -2012,8 +2012,8 @@ function fitAFCanvasToCurtain(){
   cvs.height = targetH;
 
   // redraw if recorder is present
-  if(typeof AFRecorder !== 'undefined' && AFRecorder){
-    try{ AFRecorder.onBChange(); }catch(e){}
+  if(window.AFRecorder){
+    try{ window.AFRecorder && window.AFRecorder.onBChange(); }catch(e){}
   }
 }
 
@@ -4750,7 +4750,7 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const xMeters=(hookX-rulerZeroX)/pxPerMeter;
   const fHz = (driverOmega / (2*Math.PI));
   const fRatio = driveRatio;
-  if (typeof AFRecorder !== 'undefined') AFRecorder.update({ xMeters, dt, fHz, fRatio, bKgPerS: driveB });
+  if (window.AFRecorder) window.AFRecorder.update({ xMeters, dt, fHz, fRatio, bKgPerS: driveB });
   logMeasurement(tObs,xMeters);
   xtOverlayPushSample(tObs, driveU/pxPerMeter);
   xtOverlayDraw(dt);
@@ -4945,7 +4945,7 @@ window.addEventListener('load',async ()=>{
    - xMeters uses the same ruler scale (0 at rulerZeroX)
    - b has units kg/s in force -b*v, so beta = b/(2m)
    ========================================================= */
-const AFRecorder = (() => {
+window.AFRecorder = (() => {
   // Lazy-bind UI nodes because this script executes before the HUD/canvas exist in the DOM.
   let elX=null, elXmin=null, elXmax=null, elA=null, elF=null, elB=null, elStable=null;
   let cvs=null, ctx=null;
