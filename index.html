@@ -4890,11 +4890,18 @@ function initViewersAvatars(){
 
 async function loadDialogs(){
   try{
-    const url=(currentLang==='en')?'dialogs-en.json':'dialogs-gr.json';
-    const resp=await fetch(url,{cache:'no-store'});
-    if(!resp.ok){
-      console.error('Δε βρέθηκε '+url);
-      return;
+    const base=(currentLang==='en')?'dialogs-en.json':'dialogs-gr.json';
+    const alt =(currentLang==='en')?'dialogs-en.actions.json':'dialogs-gr.actions.json';
+
+    // Δοκιμαστικό: αν υπάρχει το dialogs-*.actions.json, προτιμάται αυτό.
+    // Αλλιώς πέφτουμε πίσω στο κλασικό dialogs-*.json.
+    let resp=await fetch(alt,{cache:'no-store'}).catch(()=>null);
+    if(!resp || !resp.ok){
+      resp=await fetch(base,{cache:'no-store'});
+      if(!resp.ok){
+        console.error('Δε βρέθηκε '+base+' (ούτε '+alt+')');
+        return;
+      }
     }
     const data=await resp.json();
     VIEWERS=data.viewers || [];
