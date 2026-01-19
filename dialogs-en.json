@@ -619,6 +619,256 @@
       "pauseMs": 800,
       "left": "Which expresses Newton’s 2nd law for SHM:\n<b>“A body performs SHM if and only if the net force on it is proportional to its displacement and directed opposite to it.”</b>",
       "right": ""
+    },
+    {
+      "marker": "RES_START_MARKER",
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 0,
+          "ratio": 0.0
+        }
+      ],
+      "left": "OK. So far we saw SHM (ideal). To start cleanly, I set <b>f=OFF</b> and <b>b=0</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "If the system is truly ideal, the amplitude should stay at <b>A=3 m</b>. (Reality, of course, laughs.)",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 6,
+          "ratio": 0.0
+        }
+      ],
+      "left": "Now let’s do reality: <b>damping</b>. I set <b>b=6</b> with <b>f=OFF</b>. That’s <b>damped oscillation</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3000,
+      "pauseMs": 900,
+      "left": "Key point: amplitude <b>decays</b>, but the system’s “own” frequency doesn’t vanish. Energy just leaks out.",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 6,
+          "ratio": 0.6
+        },
+        {
+          "type": "sleep",
+          "ms": 500
+        }
+      ],
+      "left": "And now… <b>driving</b>. Keep <b>b=6</b> and set <b>f≠0</b> with frequency ratio <b>f/f₀=0.60</b>. (Forced oscillations begin.)",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "You’ll see a transient, then it settles into a steady amplitude. That final amplitude depends strongly on <b>f/f₀</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Let’s hunt it properly: change frequency and build the <b>resonance curve</b> A–(f/f₀).",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.75
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Step 1: <b>f/f₀=0.75</b>. Let a few cycles pass so the amplitude stabilizes and a point gets recorded.",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.9
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Step 2: <b>f/f₀=0.90</b>. Getting close…",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.0
+        },
+        {
+          "type": "sleep",
+          "ms": 3500
+        }
+      ],
+      "left": "Step 3: <b>f/f₀=1.00</b>. The main resonance party (as far as damping allows).",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.1
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Step 4: <b>f/f₀=1.10</b>. Past the peak, amplitude drops again.",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.2
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Step 5: <b>f/f₀=1.20</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3600,
+      "pauseMs": 900,
+      "left": "Now change <b>b</b> to see what damping does to resonance: larger b makes the peak <b>lower</b> and the curve <b>wider</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 12
+        },
+        {
+          "type": "sleep",
+          "ms": 400
+        }
+      ],
+      "left": "I increase damping to <b>b=12</b> (driving stays on). Watch how the amplitude around 1.00 drops.",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.0
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Again <b>f/f₀=1.00</b> with larger b. Resonance is still there, just “trimmed”.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "And that’s the whole path: <b>undamped → damped → forced → resonance curves</b>, driven by the dialogue itself.",
+      "right": ""
     }
   ],
   "foyer": [
