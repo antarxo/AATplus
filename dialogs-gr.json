@@ -57,7 +57,7 @@
       "avatarDy": 110,
       "avatarScale": 0.32,
       "chipDx": 55,
-      "chipDy":18,
+      "chipDy": 18,
       "img": "viewer3.png"
     },
     {
@@ -229,7 +229,7 @@
       "xtMarkTail": true,
       "xtZeroMark": true
     },
-     {
+    {
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2500,
@@ -323,7 +323,7 @@
       "left": "Χμμμ...<b>Μένει όμως να δούμε, πώς τα καταφέρνει ο m₁D₁ και πραγματοποιεί Α.Α.Τ!</b>",
       "right": ""
     },
-        {
+    {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
@@ -618,6 +618,256 @@
       "typeMs": 2500,
       "pauseMs": 800,
       "left": "Η οποία αναδιατυπώνει τον 2ο Νόμο του Νεύτωνα για την ΑΑΤ.:\n<b>\"ένα σώμα εκτελεί ΑΑΤ αν και μόνο αν η συνισταμένη των δυνάμεων που ασκούνται σ αυτό είναι ανάλογη της θέσης τους και αντίθετης κατεύθυνσης από αυτήν\"</b>",
+      "right": ""
+    },
+    {
+      "marker": "RES_START_MARKER",
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2500,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 0,
+          "ratio": 0.0
+        }
+      ],
+      "left": "OK. Μέχρι εδώ είδαμε ΑΑΤ (ιδανική). Για να ξεκινήσουμε καθαρά, βάζω <b>f=OFF</b> και <b>b=0</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "Τώρα, αν το σύστημα είναι όντως ιδανικό, πρέπει να βλέπουμε πλάτος <b>A=3 m</b> να μένει σταθερό. (Ναι, το ξέρουμε: τέτοιο ιδανικό δεν υπάρχει IRL.)",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 6,
+          "ratio": 0.0
+        }
+      ],
+      "left": "Πάμε τώρα στην πραγματικότητα: <b>τριβές</b>. Βάζω <b>b=6</b> με <b>f=OFF</b>. Αυτό είναι <b>φθίνουσα ταλάντωση</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3000,
+      "pauseMs": 900,
+      "left": "Κράτα στο μυαλό σου το βασικό: το πλάτος <b>πέφτει</b> με τον χρόνο, αλλά η <b>ιδιοσυχνότητα</b> του (m,D) δεν “εξαφανίζεται”. Απλά το σύστημα χάνει ενέργεια.",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 6,
+          "ratio": 0.6
+        },
+        {
+          "type": "sleep",
+          "ms": 500
+        }
+      ],
+      "left": "Και τώρα… <b>διέγερση</b>. Κρατάμε <b>b=6</b> και βάζουμε <b>f≠0</b> με λόγο συχνότητας <b>f/f₀=0.60</b>. (Εδώ αρχίζει η <b>εξαναγκασμένη</b>.)",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Θα δεις μεταβατικό και μετά “κάθεται” σε σταθερό πλάτος. Αυτό το τελικό πλάτος εξαρτάται έντονα από το <b>f/f₀</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Πάμε να το κυνηγήσουμε σαν άνθρωποι και όχι σαν PDF: θα αλλάζουμε τη συχνότητα και θα “χτίζουμε” την <b>καμπύλη συντονισμού</b> A–(f/f₀).",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.75
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Βήμα 1: <b>f/f₀=0.75</b>. Αφήνουμε λίγες περιόδους να περάσουν για να σταθεροποιηθεί το πλάτος και να “γραφτεί” σημείο.",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.9
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Βήμα 2: <b>f/f₀=0.90</b>. Πλησιάζουμε…",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.0
+        },
+        {
+          "type": "sleep",
+          "ms": 3500
+        }
+      ],
+      "left": "Βήμα 3: <b>f/f₀=1.00</b>. Εδώ είναι το μεγάλο πάρτι του συντονισμού (όσο σε αφήνει η απόσβεση).",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.1
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Βήμα 4: <b>f/f₀=1.10</b>. Πέρα από το μέγιστο, το πλάτος ξαναπέφτει.",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.2
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Βήμα 5: <b>f/f₀=1.20</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3600,
+      "pauseMs": 900,
+      "left": "Τώρα αλλάζουμε <b>b</b> για να δούμε τι κάνει στον συντονισμό: όσο μεγαλώνει το b, η κορυφή <b>χαμηλώνει</b> και η καμπύλη <b>πλαταίνει</b>.",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 12
+        },
+        {
+          "type": "sleep",
+          "ms": 400
+        }
+      ],
+      "left": "Ανεβάζω την απόσβεση σε <b>b=12</b> (η διέγερση μένει). Δες πώς πέφτει το πλάτος γύρω από το 1.00.",
+      "right": ""
+    },
+    {
+      "viewer": 5,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.0
+        },
+        {
+          "type": "sleep",
+          "ms": 2500
+        }
+      ],
+      "left": "Ξανά <b>f/f₀=1.00</b> με μεγαλύτερο b. Συντονισμός υπάρχει, αλλά “κουρεύεται”.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "Και κάπως έτσι, με απλά βήματα, οι διάλογοι μπορούν να σε πάνε: <b>αμείωτη → φθίνουσα → εξαναγκασμένη → καμπύλες συντονισμού</b>.",
       "right": ""
     }
   ],
