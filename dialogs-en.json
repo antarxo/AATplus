@@ -92,72 +92,38 @@
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "m₁D₁ was <b>already in motion!</b>",
-      "right": ""
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "We start clean: <b>free undamped</b> (ideal).",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 0,
+          "ratio": 0.0
+        },
+        {
+          "type": "hideAF"
+        }
+      ]
     },
     {
       "viewer": 2,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...important! We record the curtain opening as the moment <b>t₀=0</b>!",
-      "right": ""
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...this motion is <b>straight-line and back-and-forth!</b>",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...and repeating, periodic, <b>so it’s an oscillation!</b>",
-      "right": ""
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Could it be <b>Simple Harmonic Motion?</b>",
-      "right": ""
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Amplitude <b>A</b> is the maximum displacement from equilibrium.",
+      "right": "<b>A = max|x|</b>"
     },
     {
       "viewer": 2,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...but if it *is* SHM, then the values we measure should satisfy <b>x=A·sin(ωt+φ₀)</b>, right?",
-      "right": ""
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...so if we draw an <b>x–t graph</b>, could it confirm it?",
-      "right": ""
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Hmm, yes and no. Still, let’s do it, because <b>a graph usually reveals things!</b>",
+      "typeMs": 3000,
+      "pauseMs": 900,
+      "left": "Ruler shows x. The x–t plot shows the same x, but over time.",
       "right": "",
       "graph": "xt"
     },
@@ -165,182 +131,19 @@
       "viewer": 3,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "param": "A",
-      "left": "...Anyway, if it’s SHM, it should have amplitude <b>A={A} m</b>!",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "param": "Tw",
-      "left": "...and period <b>T={T} s</b>! so in that case it also has <b>ω={omega} rad/s</b>!",
-      "right": ""
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "If the motion is SHM, then the points on a plot of <b>x ... versus sin(ωt+φ₀)</b> must lie on a straight line with slope A!",
-      "right": "",
-      "viewer": 3
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Exactly! So if the curve <b>x=A·sin(ωt+φ₀)</b> ... and the graph <b>x–sin(ωt+φ₀)</b> is a straight line, then it’s proven to be SHM!",
-      "right": "",
-      "viewer": 5
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Sure… but it looks like there’s an unknown initial phase φ₀, which makes that check impossible for now…",
-      "right": "",
-      "viewer": 4
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "But if we find on the x–t graph the time t₁ ... where <b>x=A·sin(ωt)</b>, more precisely <b>x=A·sin(ω(t−t₁))</b>",
-      "right": "",
-      "viewer": 3
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "...exactly! and then the problem becomes simple. Look what we can do: <b>t₁={tZero}s</b> where the <b>red arrow</b> points on x–t...",
-      "right": "",
-      "viewer": 2,
-      "xtMark": true,
-      "xtMarkTail": true,
-      "xtZeroMark": true
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "...So we get the <b>red curve</b> that corresponds ... and for <b>x=A·sin(ωt)</b> we can say, from there on! ...",
-      "right": "",
-      "viewer": 3,
-      "xtMark": true,
-      "xtMarkTail": true,
-      "xtZeroMark": true
+      "typeMs": 3000,
+      "pauseMs": 900,
+      "left": "Period T: time for one full repeat.",
+      "right": "<b>T</b>: repeat"
     },
     {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 400,
-      "param": "phi",
-      "left": "Perfect!\n1) We see that the two curves match perfectly, and\n2) the graph <b>x–sin(ωt)</b> is indeed a straight line with slope A!",
-      "right": "",
-      "plot": "xsin"
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "...so the motion is SHM! And since <b>x₀={x0} m</b>, ... <b>φ₀={phi0}°={phi0rad}rad</b>. Haha—one down! Moving on!</b>",
-      "right": "<b>x=A·sin(ωt+φ₀) (1)</b>",
-      "param": true,
-      "alsoParams": true
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "",
-      "right": "",
-      "xtMark": false,
-      "xtMarkTail": false,
-      "xtZeroMark": false
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "...so the velocity is given by the law <b>v=ωA·cos(ωt+φ₀)!</b>",
-      "right": "<b>v=ωA·cos(ωt+φ₀) (2)</b>",
-      "plot": "v"
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "...and the acceleration by the law <b>a=−ω²A·sin(ωt+φ₀)!</b>",
-      "right": "<b>a=−ω²A·sin(ωt+φ₀) (3)</b>\n\n<b>a=−ω²x (4)</b>",
-      "plot": "a"
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "But the relation <b>x=A·sin(ωt+φ₀) (1)</b> is contained in (3)...! So the new law can also be written as <b>a(x)=−ω²x</b>",
-      "right": "<b>ΣF=−mω²A·sin(ωt+φ₀) (5)</b>\n\n<b>ΣF=−mω²x (6)</b>",
-      "plot": "ax"
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "<b>Perfect! The full set of SHM laws!</b>",
+      "typeMs": 2400,
+      "pauseMs": 1200,
+      "left": "Now let’s add reality: damping.",
       "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Hmm… <b>Now we need to see how m₁D₁ pulls off SHM!</b>",
-      "right": ""
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Ok, what did we achieve so far—and with what tools?\n1. We used exclusively the <b>measurements x and t</b>\n2. From the features of periodic motion we formed the <b>hypothesis that the motion is SHM</b>\n3. <b>We proved, through a chain of reasoning, that it is SHM</b>\n4. We brought out <b>all the laws</b> of this motion!",
-      "right": ""
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
-      "close": true
     }
   ],
   "act2": [
@@ -348,360 +151,31 @@
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Whoa! m₁D₁ is tied to a spring!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Look! The titles now reveal the mass: <b>m₁={m1}Kg!</b> ... and on the spring there’s the label <b>D₁</b>.",
-      "right": ""
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "<b>...I’ve seen this exact m₁D₁ before</b> dragging a mass–spring setup in another show, <b>but with a different producer!</b>",
-      "right": "",
-      "gStart": true,
-      "gStop": false
-    },
-    {
-      "viewer": 4,
-      "xShift": 1,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...yeah, and even there he moved obsessively <b>with the same period T={T}s</b>, <b>but with a bigger amplitude A=5m!</b>",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Anyway—let’s see <b>what exactly he’s doing here, and more importantly: why?</b>",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Hmm… I’m getting the vibe that the <b>Protagonist</b> is probably the moving actor *and* his tools together!",
-      "right": "",
-      "gStart": false,
-      "gStop": true
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Now it makes sense why they don’t call him m₁ but m₁,D₁!…",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "…m₁ is the actor’s mass but, as an <b>oscillator</b>... there is also the <b>elastic cause–force</b>, which is what that <b>D₁</b> seems to stand for!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "…so m₁ and D₁ go everywhere as a package deal! and <b>the two together are the oscillator—the protagonist!</b>",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...meaning every oscillator is characterized\n1. by its mass m and\n2. by the elastic cause–force, which sets the timing (T) of the oscillation!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...I’m starting to get why its “signature name” is <b>mD</b> and not just <b>m!</b>...",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "So the uniqueness of each oscillator—its “obsession”, i.e. the characteristic period T (and thus f and ω)—must be due to...\n1. the <b>“body type”</b> of the oscillator, i.e. its mass m\n2. and the <b>elastic cause</b> (that D in its name)!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Daaamn, guys. That’s a lot of talking. Drop it and let’s move on…!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Alright. So how do we write Newton’s 2nd law for the oscillator case?",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "…uh, <b>no big deal: ΣF = m·a</b>, but... here, using (3): <b>ΣF = −mω²A·sin(ωt+φ₀) (5)!</b>",
-      "right": "<b>ΣF = −mω²A·sin(ωt+φ₀) (5)</b>",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "...and based on (4) it can also be written as <b>ΣF = −mω²x (6)!</b>",
-      "right": "<b>ΣF(x)=−mω²x (6)</b>",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Notice that (6) contains the actor’s two constants—if we may:\n<b>the “body type” (m) and the “obsession” (ω)</b>!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "<b>Should we combine those two constants into one and call it D = mω² (6’)</b>? Does that make sense?",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Great idea!\n1. Let’s give the symbol D to the elastic cause–force.\n2. That way we eliminate a symbol from our formulas.\n3. It also gets a “face” because D is <b>written on the spring</b>.\n4. And it makes it clear that D belongs to the “tool” that forces the actor to oscillate.\n5. In general we’ll call D the oscillator’s “elastic constant”.",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...okay, and this also explains why <b>the actor, no matter the spring or the producer, “obsessively” keeps his period constant</b>?",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "",
-      "right": ""
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "...Exactly! (6’) <b>D = mω²</b> shows it: since m and D are constant, then <b>ω=√(D/m)</b> is also constant for the moving actor!",
-      "right": "<b>D=mω² (6')</b>",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "…so, rightly, they call the <b>protagonist–oscillator (=actor + elastic cause) (m,D)</b>!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "And we can, with a simple numerical substitution, compute D₁ for our m₁D₁:\n<b>D₁=m₁ω²={D1}N/m</b>",
-      "right": "",
-      "viewer": 1
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "…and (6)—don’t forget—becomes <b>ΣF = −D·x (7)!</b>",
-      "right": "<b>ΣF = −D·x (7)</b>",
-      "viewer": 5
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Which expresses Newton’s 2nd law for SHM:\n<b>“A body performs SHM if and only if the net force on it is proportional to its displacement and directed opposite to it.”</b>",
-      "right": ""
-    },
-    {
-      "marker": "RES_START_MARKER",
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 900,
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setParams",
-          "b": 0,
-          "ratio": 0.0
-        }
-      ],
-      "left": "OK. So far we saw SHM (ideal). To start cleanly, I set <b>f=OFF</b> and <b>b=0</b>.",
-      "right": ""
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
       "typeMs": 2600,
       "pauseMs": 900,
-      "left": "If the system is truly ideal, the amplitude should stay at <b>A=3 m</b>. (Reality, of course, laughs.)",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2600,
-      "pauseMs": 900,
+      "left": "Act 2: <b>damped</b>. Same system, with friction.",
+      "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
           "type": "setParams",
           "b": 6,
           "ratio": 0.0
+        },
+        {
+          "type": "hideAF"
         }
-      ],
-      "left": "Now let’s do reality: <b>damping</b>. I set <b>b=6</b> with <b>f=OFF</b>. That’s <b>damped oscillation</b>.",
-      "right": ""
+      ]
     },
     {
-      "viewer": 1,
+      "viewer": 2,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 3000,
       "pauseMs": 900,
-      "left": "Key point: amplitude <b>decays</b>, but the system’s “own” frequency doesn’t vanish. Energy just leaks out.",
-      "right": ""
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2600,
-      "pauseMs": 900,
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setParams",
-          "b": 6,
-          "ratio": 0.6
-        },
-        {
-          "type": "sleep",
-          "ms": 500
-        }
-      ],
-      "left": "And now… <b>driving</b>. Keep <b>b=6</b> and set <b>f≠0</b> with frequency ratio <b>f/f₀=0.60</b>. (Forced oscillations begin.)",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 3200,
-      "pauseMs": 900,
-      "left": "You’ll see a transient, then it settles into a steady amplitude. That final amplitude depends strongly on <b>f/f₀</b>.",
-      "right": ""
+      "left": "Amplitude decays with time. Energy is lost.",
+      "right": "",
+      "graph": "xt"
     },
     {
       "viewer": 1,
@@ -709,124 +183,37 @@
       "yOffset": 0,
       "typeMs": 3200,
       "pauseMs": 900,
-      "left": "Let’s hunt it properly: change frequency and build the <b>resonance curve</b> A–(f/f₀).",
-      "right": ""
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2400,
-      "pauseMs": 900,
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.75
-        },
-        {
-          "type": "sleep",
-          "ms": 2500
-        }
-      ],
-      "left": "Step 1: <b>f/f₀=0.75</b>. Let a few cycles pass so the amplitude stabilizes and a point gets recorded.",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2400,
-      "pauseMs": 900,
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.9
-        },
-        {
-          "type": "sleep",
-          "ms": 2500
-        }
-      ],
-      "left": "Step 2: <b>f/f₀=0.90</b>. Getting close…",
+      "left": "b=6 → b=12 → b=24 (watch the decay speed).",
       "right": ""
     },
     {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 2400,
-      "pauseMs": 900,
+      "typeMs": 2000,
+      "pauseMs": 500,
+      "left": "b=6.",
+      "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
-          "type": "setRatio",
-          "ratio": 1.0
+          "type": "setB",
+          "value": 6
         },
         {
           "type": "sleep",
-          "ms": 3500
+          "ms": 1200
         }
-      ],
-      "left": "Step 3: <b>f/f₀=1.00</b>. The main resonance party (as far as damping allows).",
-      "right": ""
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2400,
-      "pauseMs": 900,
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 1.1
-        },
-        {
-          "type": "sleep",
-          "ms": 2500
-        }
-      ],
-      "left": "Step 4: <b>f/f₀=1.10</b>. Past the peak, amplitude drops again.",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2400,
-      "pauseMs": 900,
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 1.2
-        },
-        {
-          "type": "sleep",
-          "ms": 2500
-        }
-      ],
-      "left": "Step 5: <b>f/f₀=1.20</b>.",
-      "right": ""
+      ]
     },
     {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 3600,
-      "pauseMs": 900,
-      "left": "Now change <b>b</b> to see what damping does to resonance: larger b makes the peak <b>lower</b> and the curve <b>wider</b>.",
-      "right": ""
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2600,
-      "pauseMs": 900,
+      "typeMs": 2000,
+      "pauseMs": 500,
+      "left": "b=12.",
+      "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
@@ -835,43 +222,68 @@
         },
         {
           "type": "sleep",
-          "ms": 400
+          "ms": 1200
         }
-      ],
-      "left": "I increase damping to <b>b=12</b> (driving stays on). Watch how the amplitude around 1.00 drops.",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2600,
-      "pauseMs": 900,
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 1.0
-        },
-        {
-          "type": "sleep",
-          "ms": 2500
-        }
-      ],
-      "left": "Again <b>f/f₀=1.00</b> with larger b. Resonance is still there, just “trimmed”.",
-      "right": ""
+      ]
     },
     {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
+      "typeMs": 2000,
+      "pauseMs": 700,
+      "left": "b=24.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 24
+        },
+        {
+          "type": "sleep",
+          "ms": 1400
+        }
+      ]
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 2600,
-      "pauseMs": 900,
-      "left": "And that’s the whole path: <b>undamped → damped → forced → resonance curves</b>, driven by the dialogue itself.",
+      "pauseMs": 1100,
+      "left": "Question: if friction eats energy… who gives it back?",
       "right": ""
     }
   ],
   "foyer": [
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2400,
+      "pauseMs": 700,
+      "left": "Welcome. We won’t cram everything into one show. Pick an Act based on what you want to see.",
+      "right": ""
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "<b>Act 1:</b> Ideal SHM (free, undamped).\n<b>Act 2:</b> Damped oscillation.\n<b>Act 3:</b> Driven oscillation — ending with resonance curves.",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 1100,
+      "left": "Tip: Jumping straight to Act 3 is fine — it will set (b,f) before the sweep.",
+      "right": ""
+    },
     {
       "viewer": 1,
       "xShift": 0,
@@ -1181,32 +593,261 @@
   ],
   "uiTitles": {
     "act1": {
-      "signTitle": "Act 1: Kinematics… in Algebra!",
+      "signTitle": "Act 1: Ideal SHM (free, undamped)",
       "signLineA": "Starring the oscillator (m₁, D₁) and the actors(*)",
       "signLineB": "in the monologue <span class=\"hl\">“endless back-and-forth”</span>… on stage!",
       "signLineC": "Production–Direction: Emech Energeioulis",
       "signLineD": "(*) … you"
     },
     "act2": {
-      "signTitle": "Act 2: Dynamics… in Algebra!",
+      "signTitle": "Act 2: Damped oscillation",
       "signLineA": "Starring the oscillator (m₁, D₁) and the actors",
       "signLineB": "in the monologue <span class=\"hl\">“endless back-and-forth”</span>… on stage!",
       "signLineC": "m₁={m1} kg",
       "signLineD": ""
     },
     "act3": {
-      "signTitle": "Act 3: Energy… in Algebra!",
+      "signTitle": "Act 3: Driven & resonance",
       "signLineA": "Starring the oscillator (m₁, D₁) and the actors",
       "signLineB": "in the monologue <span class=\"hl\">“endless back-and-forth”</span>… on stage!",
       "signLineC": "m₁={m1} kg , D₁={D1} N/m , E<sub>mech</sub>={Emech} J",
       "signLineD": ""
     },
     "foyer": {
-      "signTitle": "Foyer: Free discussion zone!",
+      "signTitle": "Foyer: Pick a show",
       "signLineA": "Waiting for Act 3 to start: Energy… in Algebra!",
       "signLineB": "",
       "signLineC": "",
       "signLineD": ""
     }
-  }
+  },
+  "act3": [
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "Act 3: <b>driven</b>. The driver feeds energy.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 6,
+          "ratio": 0.9
+        },
+        {
+          "type": "showAF"
+        }
+      ]
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "We measure amplitude after transients fade — so we pause between steps.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: set <b>f/f₀ = 0.60</b>, wait for steady state.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.6
+        },
+        {
+          "type": "sleep",
+          "ms": 1800
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: set <b>f/f₀ = 0.75</b>, wait for steady state.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.75
+        },
+        {
+          "type": "sleep",
+          "ms": 1800
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: set <b>f/f₀ = 0.90</b>, wait for steady state.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.9
+        },
+        {
+          "type": "sleep",
+          "ms": 1800
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: set <b>f/f₀ = 1.00</b>, wait for steady state.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.0
+        },
+        {
+          "type": "sleep",
+          "ms": 1800
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: set <b>f/f₀ = 1.10</b>, wait for steady state.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.1
+        },
+        {
+          "type": "sleep",
+          "ms": 1800
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: set <b>f/f₀ = 1.25</b>, wait for steady state.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.25
+        },
+        {
+          "type": "sleep",
+          "ms": 1800
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: set <b>f/f₀ = 1.45</b>, wait for steady state.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.45
+        },
+        {
+          "type": "sleep",
+          "ms": 1800
+        }
+      ]
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3000,
+      "pauseMs": 900,
+      "left": "Increase damping and compare near resonance.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2000,
+      "pauseMs": 500,
+      "left": "Set b=12.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 12
+        },
+        {
+          "type": "sleep",
+          "ms": 1500
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2000,
+      "pauseMs": 800,
+      "left": "f/f₀=1.00",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.0
+        },
+        {
+          "type": "sleep",
+          "ms": 2000
+        }
+      ]
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 1200,
+      "left": "That’s the resonance package: driver + damping + A(f).",
+      "right": ""
+    }
+  ]
 }
