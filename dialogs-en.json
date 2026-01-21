@@ -274,8 +274,7 @@
         },
         {
           "label": "Show 3: Forced/Resonance",
-          "start": "act3",
-          "disabled": true
+          "start": "act3"
         }
       ],
       "waitForChoice": true
