@@ -370,7 +370,31 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       display:none;
     }
 
-  </style>
+  
+/* ---- Foyer choices ---- */
+.foyer-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:12px;
+  align-items:flex-start;
+}
+.foyer-choice-btn{
+  border:1px solid rgba(255,255,255,0.25);
+  background:rgba(0,0,0,0.35);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:700;
+  letter-spacing:0.2px;
+  transition:transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+.foyer-choice-btn:hover{ transform:translateY(-1px); background:rgba(0,0,0,0.45); border-color:rgba(255,255,255,0.35); }
+.foyer-choice-btn:active{ transform:translateY(0px); }
+.foyer-choice-btn[disabled]{ opacity:0.45; cursor:not-allowed; transform:none; }
+
+</style>
 
 </head>
 <body class="intro-open">
@@ -757,6 +781,24 @@ function closeIntro(){
   document.body.classList.remove('intro-open');
 }
 
+function startDefaultFoyer(){
+  // Default entry: always start at the foyer (menu), unless bootFromQuery already started a specific act.
+  if(phase !== 'idle') return;
+
+  // Hide any splash overlays
+  if(startBreak) startBreak.style.display='none';
+  if(countdownOverlay) countdownOverlay.style.display='none';
+  if(actBreak) actBreak.style.display='none';
+  if(foyerBreak) foyerBreak.style.display='none';
+  if(navBreak) navBreak.style.display='none';
+
+  // Clear queued timers/typewriters so foyer is clean
+  TM.clearAll();
+  countdownState.active = false;
+
+  runFoyer();
+}
+
 async function initIntro(){
   let res;
   try{
@@ -838,7 +880,7 @@ introPoster.alt = _altPick;
     });
   }
 
-  introContinue.onclick = closeIntro;
+  introContinue.onclick = ()=>{ closeIntro(); startDefaultFoyer(); };
 }
 
 // τρέχει αμέσως (η σκηνή από κάτω φορτώνει κανονικά)
@@ -4107,6 +4149,7 @@ function typeWriterBoard(el,text,totalMs,done){
   })();
 }
 
+
 function addFoyerRow(item){
   return new Promise(resolve=>{
     const viewer=item.viewer || 1;
@@ -4152,22 +4195,63 @@ function addFoyerRow(item){
     const typeMs =item.typeMs  || 4000;
     const pauseMs=item.pauseMs || 1500;
 
+    const finalizeRow = ()=>{
+      // Optional choice buttons (backward compatible: ignore if absent)
+      const btns = Array.isArray(item.buttons) ? item.buttons : null;
+      if(btns && btns.length){
+        const host = ((item.right||'').trim().length>0) ? r : l;
+        const box = document.createElement('div');
+        box.className = 'foyer-buttons';
+
+        btns.forEach(b=>{
+          const btn=document.createElement('button');
+          btn.type='button';
+          btn.className='foyer-choice-btn';
+          btn.textContent = String(b.label || '');
+          if(b.disabled) btn.disabled = true;
+
+          btn.addEventListener('click',()=>{
+            if(btn.disabled) return;
+            const start = String(b.start || '').trim();
+            if(start){
+              navReload(start);
+              return;
+            }
+            // fallback: resolve if no navigation
+            resolve();
+          });
+
+          box.appendChild(btn);
+        });
+
+        host.appendChild(box);
+
+        // If we wait for choice, do not auto-advance
+        if(item.waitForChoice){
+          return;
+        }
+      }
+
+      TM.setTimeout(resolve, pauseMs);
+    };
+
     typeWriterBoard(lText,item.left||'',typeMs,()=>{
       if((item.right||'').trim().length>0){
-        typeWriterBoard(rText,item.right||'',typeMs,()=>{
-          TM.setTimeout(resolve,pauseMs);
-        });
+        typeWriterBoard(rText,item.right||'',typeMs,finalizeRow);
       }else{
-        TM.setTimeout(resolve,pauseMs);
+        finalizeRow();
       }
     });
   });
 }
 
+
 async function runFoyer(){
   phase='foyer';
   applySignboardForPhase('foyer');
   setAudienceLights(true);
+  stage.classList.add('open');
+  initShowBase();
   foyerEl.style.display='block';
   setFoyerTitles();
   if(startBreak) startBreak.style.display='none';
@@ -4970,6 +5054,11 @@ window.addEventListener('load',async ()=>{
   resetShow();
   await loadDialogs();
   bootFromQuery();
+  // If no explicit start=... and intro is already hidden, default to foyer menu.
+  if(phase==='idle' && introOverlay.classList.contains('hidden')){
+    startDefaultFoyer();
+  }
+
 });
 
 /* =========================================================
