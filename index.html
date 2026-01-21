@@ -3821,6 +3821,16 @@ function showDynBubble(ev){
     }
 
 
+    if(type === 'gotoAct' || type === 'goAct' || type === 'goto' || type === 'nav'){
+      // Request a soft transition to another act/foyer, executed at the next safe boundary
+      const tgt = String(action.act ?? action.start ?? action.to ?? action.value ?? '').trim();
+      if(tgt){
+        window.__nextAct = tgt;
+      }
+      return;
+    }
+
+
     // future-proof no-ops (won't crash old dialogues)
     if(type === 'setMode' || type === 'record' || type === 'mark'){
       return;
@@ -3834,6 +3844,59 @@ function showDynBubble(ev){
 })();
 
 
+
+/* ---------- Soft Act jump (JSON-driven) ----------
+   Used by dialog action: { "type":"gotoAct", "act":"act2" }
+   Keeps backward compatibility: if not used, nothing changes.
+--------------------------------------------------- */
+
+async function softGotoAct(target){
+  const t = String(target || '').trim();
+  if(!t) return;
+
+  // Hard reset to avoid carrying transient state between acts
+  try{ resetShow(); }catch(_e){}
+
+  // Hide start UI immediately (resetShow shows it)
+  try{
+    if(startBreak) startBreak.style.display='none';
+    if(startBtn)   startBtn.style.display='none';
+    if(countdownOverlay) countdownOverlay.style.display='none';
+    if(actBreak)   actBreak.style.display='none';
+    if(foyerBreak) foyerBreak.style.display='none';
+    if(navBreak)   navBreak.style.display='none';
+  }catch(_e){}
+
+  // Normalize
+  try{ stage.classList.remove('open'); }catch(_e){}
+  try{ setAudienceLights(true); }catch(_e){}
+
+  if(t === 'foyer'){
+    return await runFoyer();
+  }
+  if(t === 'act1'){
+    stage.classList.add('open');
+    setAudienceLights(false);
+    initShowBase();
+    return await runAct1();
+  }
+  if(t === 'act2'){
+    return await runAct2();
+  }
+  if(t === 'act3'){
+    stage.classList.add('open');
+    setAudienceLights(false);
+    initShowBase();
+    return await runAct3();
+  }
+
+  // Fallback: allow "1"/"2"/"3"
+  if(t === '1') return await softGotoAct('act1');
+  if(t === '2') return await softGotoAct('act2');
+  if(t === '3') return await softGotoAct('act3');
+}
+
+
 /* ---------- Act 1 / Act 2 ---------- */
 
 async function runAct1(){
@@ -3842,6 +3905,8 @@ async function runAct1(){
   // Στην ΑΑΤ θέλουμε να φαίνεται το ελατήριο
   try{ const sp=document.getElementById('spring'); if(sp) sp.style.display='block'; }catch(_e){}
   for(const ev of ACT1){
+    if(window.__nextAct){ const t=window.__nextAct; window.__nextAct=null; return await softGotoAct(t); }
+
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
     if(ev.close){
@@ -3999,6 +4064,8 @@ async function runAct2(){
   markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
+    if(window.__nextAct){ const t=window.__nextAct; window.__nextAct=null; return await softGotoAct(t); }
+
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
     if(ev.gStart) ghostActive=true;
@@ -4072,6 +4139,8 @@ async function runAct3(){
   }catch(_e){}
 
   for(const ev of ACT3){
+    if(window.__nextAct){ const t=window.__nextAct; window.__nextAct=null; return await softGotoAct(t); }
+
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
     if(ev.clear)     clearAllBubbles();
