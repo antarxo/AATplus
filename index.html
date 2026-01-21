@@ -375,19 +375,21 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 .foyer-buttons{
   display:flex;
   flex-wrap:wrap;
-  gap:10px;
-  margin-top:12px;
+  gap:8px;
+  margin-top:8px;
   align-items:flex-start;
 }
 .foyer-choice-btn{
-  border:1px solid rgba(255,255,255,0.25);
-  background:rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.22);
+  background:rgba(0,0,0,0.30);
   color:#fff;
-  padding:10px 12px;
-  border-radius:10px;
+  padding:6px 9px;
+  border-radius:9px;
   cursor:pointer;
   font-weight:700;
-  letter-spacing:0.2px;
+  font-size:14px;
+  line-height:1.05;
+  letter-spacing:0.15px;
   transition:transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
 }
 .foyer-choice-btn:hover{ transform:translateY(-1px); background:rgba(0,0,0,0.45); border-color:rgba(255,255,255,0.35); }
@@ -647,6 +649,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 let VIEWERS = [];
 let ACT1    = [];
 let ACT2    = [];
+let ACT3    = [];
 let FOYER   = [];
 
 let foyerTBody = null;
@@ -3836,6 +3839,8 @@ function showDynBubble(ev){
 async function runAct1(){
   phase='act1';
   applySignboardForPhase('act1');
+  // Στην ΑΑΤ θέλουμε να φαίνεται το ελατήριο
+  try{ const sp=document.getElementById('spring'); if(sp) sp.style.display='block'; }catch(_e){}
   for(const ev of ACT1){
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
@@ -4043,6 +4048,50 @@ async function runAct2(){
   phase='between2andFoyer';
   TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
 }
+
+async function runAct3(){
+  ensureGhost();
+  ghostActive=false;
+  if(marbleTrackGhost) marbleTrackGhost.style.opacity='0';
+  if(ghostSpring) ghostSpring.style.opacity='0';
+
+  phase='act3';
+  applySignboardForPhase('act3');
+
+  // Στην εξαναγκασμένη, θέλουμε σίγουρα να φαίνονται: διεγέρτης + ελατήριο
+  try{ const sp=document.getElementById('spring'); if(sp) sp.style.display='block'; }catch(_e){}
+  try{
+    const drvTable=document.getElementById('drvTable');
+    const drvWheel=document.getElementById('drvWheel');
+    const drvSlider=document.getElementById('drvSlider');
+    const drvPin=document.getElementById('drvPin');
+    if(drvTable)  drvTable.style.display='block';
+    if(drvWheel)  drvWheel.style.display='block';
+    if(drvSlider) drvSlider.style.display='block';
+    if(drvPin)    drvPin.style.display='block';
+  }catch(_e){}
+
+  for(const ev of ACT3){
+    if(ev.uiPatch)   applySignPatch(ev.uiPatch);
+    if(ev.signPatch) applySignPatch(ev.signPatch);
+    if(ev.clear)     clearAllBubbles();
+    if(ev.wait)      await TM.wait(ev.wait);
+
+    // Actions (before typing)
+    if(ev.actionsWhen === 'beforeType' && Array.isArray(ev.actions)){
+      await window.AAT.actions(ev.actions);
+    }
+
+    await speakEvent(ev);
+
+    // Actions (after typing) default
+    if((!ev.actionsWhen || ev.actionsWhen === 'afterType') && Array.isArray(ev.actions)){
+      await window.AAT.actions(ev.actions);
+    }
+  }
+}
+
+
 
 /* ---------- Κουρτίνες / μεταβάσεις ---------- */
 
@@ -4423,6 +4472,15 @@ function bootFromQuery(){
 
   if(startQ === 'act2'){
     runAct2();
+    if(shouldClean) cleanUrl();
+    return;
+  }
+
+  if(startQ === 'act3'){
+    stage.classList.add('open');
+    setAudienceLights(false);
+    initShowBase();
+    runAct3();
     if(shouldClean) cleanUrl();
     return;
   }
@@ -5000,6 +5058,7 @@ async function loadDialogs(){
     VIEWERS=data.viewers || [];
     ACT1   =data.act1    || [];
     ACT2   =data.act2    || [];
+    ACT3   =data.act3    || [];
     FOYER  =data.foyer   || [];
 
     if(typeof data.actsAvatarOffset==='number'){
