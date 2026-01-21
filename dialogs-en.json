@@ -259,12 +259,26 @@
   "foyer": [
     {
       "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
       "typeMs": 2400,
-      "pauseMs": 700,
-      "left": "Welcome. We won’t cram everything into one show. Pick an Act based on what you want to see.",
-      "right": ""
+      "pauseMs": 600,
+      "left": "Welcome to the foyer. Here you pick a *show* — we don’t cram everything into one.\nChoose what you want to see, and I’ll take you to the right Act.",
+      "right": "(Buttons are user choices. Viewers just… steer the flow.)",
+      "buttons": [
+        {
+          "label": "Show 1: Undamped (SHM)",
+          "start": "act1"
+        },
+        {
+          "label": "Show 2: Damped",
+          "start": "act2"
+        },
+        {
+          "label": "Show 3: Forced/Resonance",
+          "start": "act3",
+          "disabled": true
+        }
+      ],
+      "waitForChoice": true
     },
     {
       "viewer": 2,
