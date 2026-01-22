@@ -3861,33 +3861,15 @@ async function runAct1(){
   for(const ev of ACT1){
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
+    if(ev.clear)     clearAllBubbles();
+    if(ev.wait)      await TM.wait(ev.wait);
+
     if(ev.close){
       await closeCurtainToAct2();
       return;
     }
 
-    if(ev.param){
-      await showDynBubble(ev);
-
-      if(ev.right){
-        addLaw(ev.right);
-        if(ev.alsoParams) showParamsBox();
-      }
-
-      if(ev.graph==='xt') initXTChart();
-      if(ev.plot ==='v') ensureVelocityChart();
-      if(ev.plot ==='a') ensureAccelerationChart();
-      if(ev.plot ==='ax')ensureAxChart();
-      if(ev.plot ==='xsin')ensureXSinChart();
-
-      if(ev.xtZeroMark){
-        initXTChart();
-        triggerXtZeroMark(ev);
-      }
-
-      continue;
-    }
-
+    // Show bubble (and run any JSON actions inside showBubbleForEvent)
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
@@ -3897,56 +3879,22 @@ async function runAct1(){
       }
 
       if(ev.graph==='xt') initXTChart();
-      if(ev.plot ==='v') ensureVelocityChart();
-      if(ev.plot ==='a') ensureAccelerationChart();
-      if(ev.plot ==='ax')ensureAxChart();
-      if(ev.plot ==='xsin')ensureXSinChart();
+      if(ev.plot ==='v') ensureVelociChart();
+      if(ev.plot ==='xsin') ensureXSinChart();
 
       if(ev.xtZeroMark){
         initXTChart();
         triggerXtZeroMark(ev);
       }
-
-      continue;
     }
 
-    if(ev.right){
-      addLaw(ev.right);
-      if(ev.alsoParams) showParamsBox();
-
-      if(ev.graph==='xt') initXTChart();
-      if(ev.plot ==='v') ensureVelocityChart();
-      if(ev.plot ==='a') ensureAccelerationChart();
-      if(ev.plot ==='ax')ensureAxChart();
-      if(ev.plot ==='xsin')ensureXSinChart();
-
-      if(ev.xtZeroMark){
-        initXTChart();
-        triggerXtZeroMark(ev);
-      }
-
-      await TM.sleep(600);
-      continue;
-    }
-
-    if(ev.graph==='xt') initXTChart();
-    if(ev.plot ==='v') ensureVelocityChart();
-    if(ev.plot ==='a') ensureAccelerationChart();
-    if(ev.plot ==='ax')ensureAxChart();
-    if(ev.plot ==='xsin')ensureXSinChart();
-
-    if(ev.xtZeroMark){
-      initXTChart();
-      triggerXtZeroMark(ev);
-    }
-  
     // Soft jump requested by JSON
     if(window.__nextAct){
       const t = window.__nextAct;
       window.__nextAct = null;
       return await softGotoAct(t);
     }
-}
+  }
 }
 
 /* Ghost / Act 2 */
@@ -4078,6 +4026,15 @@ async function runAct2(){
   setAudienceLights(true);
   phase='between2andFoyer';
   TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
+}
+
+
+// Speak an event bubble WITHOUT auto-running actions (Act3 handles actions explicitly)
+async function speakEvent(ev){
+  const tmp = Object.assign({}, ev);
+  delete tmp.actions;
+  delete tmp.actionsWhen;
+  return await showBubbleForEvent(tmp);
 }
 
 async function runAct3(){
