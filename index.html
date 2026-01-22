@@ -3858,6 +3858,8 @@ async function softGotoAct(target){
 async function runAct1(){
   phase='act1';
   applySignboardForPhase('act1');
+  // Spring visible in all acts
+  try{ const sp=document.getElementById('spring'); if(sp) sp.style.display='block'; }catch(_e){}
   for(const ev of ACT1){
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
@@ -3979,6 +3981,13 @@ async function runAct2(){
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
+      // Soft jump requested by JSON (must run even when this branch uses continue)
+      if(window.__nextAct){
+        const t = window.__nextAct;
+        window.__nextAct = null;
+        return await softGotoAct(t);
+      }
+
       if(ev.right){
         addLaw(ev.right);
         if(ev.alsoParams) showParamsBox();
@@ -4004,6 +4013,12 @@ async function runAct2(){
       if(ev.plot ==='xsin')ensureXSinChart();
 
       await TM.sleep(600);
+      // Soft jump requested by JSON
+      if(window.__nextAct){
+        const t = window.__nextAct;
+        window.__nextAct = null;
+        return await softGotoAct(t);
+      }
       continue;
     }
 
