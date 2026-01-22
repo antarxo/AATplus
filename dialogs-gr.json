@@ -170,7 +170,14 @@
       "typeMs": 2400,
       "pauseMs": 1200,
       "left": "Οκ. Τώρα πάμε στο «όπως είναι πραγματικά»: βάζουμε τριβές.",
-      "right": ""
+      "right": "",
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "act2"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ],
   "act2": [
@@ -289,7 +296,14 @@
       "typeMs": 2800,
       "pauseMs": 1100,
       "left": "Και τώρα το κρίσιμο ερώτημα: αν η τριβή τρώει ενέργεια… ποιος την ξαναδίνει;",
-      "right": ""
+      "right": "",
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "act3"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ],
   "foyer": [
@@ -954,7 +968,14 @@
       "typeMs": 2800,
       "pauseMs": 1200,
       "left": "Τέλος. Αυτό είναι το «πακέτο» συντονισμού: διεγέρτης + τριβές + καμπύλη A(f).",
-      "right": ""
+      "right": "",
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "foyer"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ]
 }
