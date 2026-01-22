@@ -143,7 +143,14 @@
       "typeMs": 2400,
       "pauseMs": 1200,
       "left": "Now let’s add reality: damping.",
-      "right": ""
+      "right": "",
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "act2"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ],
   "act2": [
@@ -253,7 +260,14 @@
       "typeMs": 2600,
       "pauseMs": 1100,
       "left": "Question: if friction eats energy… who gives it back?",
-      "right": ""
+      "right": "",
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "act3"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ],
   "foyer": [
@@ -860,7 +874,14 @@
       "typeMs": 2600,
       "pauseMs": 1200,
       "left": "That’s the resonance package: driver + damping + A(f).",
-      "right": ""
+      "right": "",
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "foyer"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ]
 }
