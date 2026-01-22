@@ -1394,8 +1394,8 @@ function updateMarbleTrack(){
 
   if(!track || !actorImg || !stage) return;
 
-  // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
-  const inActs = (phase==='act1' || phase==='act2');
+  // Το “μάρμαρο” χρησιμοποιείται σε όλες τις Πράξεις (ίδια σκηνική παρουσίαση).
+  const inActs = (phase==='act1' || phase==='act2' || phase==='act3');
   if(!inActs){
     track.style.display = 'none';
     if(trackGhost) trackGhost.style.display = 'none';
@@ -2372,6 +2372,8 @@ function drawXTChart(){
 /* ---------- XT OVERLAY (μεγάλο διάγραμμα x–t πάνω στη σκηνή) ---------- */
 
 let xtOverlayEnabled = false;
+let xtOverlayBottomOpenLocal = null; // cached bottom (open curtain) in stage-local px
+
 let xtOverlayCan = null;
 let xtOverlayBuf = [];
 let xtOverlayT0 = 0;
@@ -2393,7 +2395,7 @@ function ensureXTOverlay(){
   c.style.width = '100%';
   c.style.height = '100%';
   c.style.pointerEvents = 'none';
-  c.style.zIndex = '1500';
+  c.style.zIndex = '9996';
   c.style.display = 'none';
   stage.appendChild(c);
   xtOverlayCan = c;
@@ -2420,7 +2422,15 @@ function xtOverlayLocalRect(){
 
   let bottomLocal = 0;
   const ct = stage.querySelector('.curtain-top');
-  if(ct){
+  // When curtains are closed, .curtain-top may extend too low; we want the OPEN-curtain baseline.
+  // Cache the open baseline when stage is open, reuse it when stage is closed.
+  if(ct && stage.classList.contains('open')){
+    const r = ct.getBoundingClientRect();
+    bottomLocal = (r.bottom - stageRect.top) / s;
+    if(isFinite(bottomLocal) && bottomLocal>0) xtOverlayBottomOpenLocal = bottomLocal;
+  }else if(isFinite(xtOverlayBottomOpenLocal) && xtOverlayBottomOpenLocal){
+    bottomLocal = xtOverlayBottomOpenLocal;
+  }else if(ct){
     const r = ct.getBoundingClientRect();
     bottomLocal = (r.bottom - stageRect.top) / s;
   }else{
@@ -3186,7 +3196,7 @@ function showViewerAvatar(idx1based){
   if(!el) return;
   const base=parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom=base;
-  if(phase==='act1' || phase==='act2'){
+  if(phase==='act1' || phase==='act2' || phase==='act3'){
     bottom=base+ACTS_AVATAR_OFFSET;
   }
   el.style.bottom=bottom+'px';
@@ -3847,9 +3857,13 @@ async function softGotoAct(target){
     return await runAct1();
   }
   if(t === 'act2'){
+    // Ensure consistent stage baseline like Act1 (time runs, overlay works)
+    try{ initShowBase(); }catch(_e){}
     return await runAct2();
   }
   if(t === 'act3'){
+    // Act3 must look like a normal act (open stage, audience lights off)
+    try{ initShowBase(); }catch(_e){}
     return await runAct3();
   }
 }
@@ -3965,6 +3979,7 @@ async function runAct2(){
   actBreak.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
+  try{ if(!obsStarted) initShowBase(); }catch(_e){}
   phase='act2';
   applySignboardForPhase('act2');
 
@@ -4060,6 +4075,9 @@ async function runAct3(){
 
   phase='act3';
   applySignboardForPhase('act3');
+
+  // Keep stage in act-mode (not foyer): open curtains + audience lights off + running clock
+  try{ initShowBase(); }catch(_e){}
 
   // Στην εξαναγκασμένη, θέλουμε σίγουρα να φαίνονται: διεγέρτης + ελατήριο
   try{ const sp=document.getElementById('spring'); if(sp) sp.style.display='block'; }catch(_e){}
@@ -4605,6 +4623,7 @@ if (btnBook) {
 function initShowBase(){
   stage.classList.add('open');
   setAudienceLights(false);
+  try{ if(!obsStarted) initShowBase(); }catch(_e){}
   if(!obsStarted){
     obsStarted=true;
     obsStartPlaybackOffset=playbackTime;
