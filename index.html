@@ -370,33 +370,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       display:none;
     }
 
-  
-/* ---- Foyer choices ---- */
-.foyer-buttons{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:8px;
-  align-items:flex-start;
-}
-.foyer-choice-btn{
-  border:1px solid rgba(255,255,255,0.22);
-  background:rgba(0,0,0,0.30);
-  color:#fff;
-  padding:6px 9px;
-  border-radius:9px;
-  cursor:pointer;
-  font-weight:700;
-  font-size:14px;
-  line-height:1.05;
-  letter-spacing:0.15px;
-  transition:transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
-}
-.foyer-choice-btn:hover{ transform:translateY(-1px); background:rgba(0,0,0,0.45); border-color:rgba(255,255,255,0.35); }
-.foyer-choice-btn:active{ transform:translateY(0px); }
-.foyer-choice-btn[disabled]{ opacity:0.45; cursor:not-allowed; transform:none; }
-
-</style>
+  </style>
 
 </head>
 <body class="intro-open">
@@ -784,24 +758,6 @@ function closeIntro(){
   document.body.classList.remove('intro-open');
 }
 
-function startDefaultFoyer(){
-  // Default entry: always start at the foyer (menu), unless bootFromQuery already started a specific act.
-  if(phase !== 'idle') return;
-
-  // Hide any splash overlays
-  if(startBreak) startBreak.style.display='none';
-  if(countdownOverlay) countdownOverlay.style.display='none';
-  if(actBreak) actBreak.style.display='none';
-  if(foyerBreak) foyerBreak.style.display='none';
-  if(navBreak) navBreak.style.display='none';
-
-  // Clear queued timers/typewriters so foyer is clean
-  TM.clearAll();
-  countdownState.active = false;
-
-  runFoyer();
-}
-
 async function initIntro(){
   let res;
   try{
@@ -883,7 +839,7 @@ introPoster.alt = _altPick;
     });
   }
 
-  introContinue.onclick = ()=>{ closeIntro(); startDefaultFoyer(); };
+  introContinue.onclick = closeIntro;
 }
 
 // τρέχει αμέσως (η σκηνή από κάτω φορτώνει κανονικά)
@@ -3805,6 +3761,7 @@ function showDynBubble(ev){
       return;
     }
 
+
     if(type === 'showAF'){
       const cvs = document.getElementById('afCanvas');
       if(cvs){
@@ -3819,7 +3776,6 @@ function showDynBubble(ev){
       if(cvs) cvs.style.display = 'none';
       return;
     }
-
 
     if(type === 'gotoAct' || type === 'goAct' || type === 'goto' || type === 'nav'){
       // Request a soft transition to another act/foyer, executed at the next safe boundary
@@ -3847,17 +3803,27 @@ function showDynBubble(ev){
 
 /* ---------- Soft Act jump (JSON-driven) ----------
    Used by dialog action: { "type":"gotoAct", "act":"act2" }
-   Keeps backward compatibility: if not used, nothing changes.
+   Backward compatible: if not used, nothing changes.
 --------------------------------------------------- */
 
+function normalizeActTarget(t){
+  const s = String(t||'').trim().toLowerCase();
+  if(!s) return '';
+  if(s==='1' || s==='act1') return 'act1';
+  if(s==='2' || s==='act2') return 'act2';
+  if(s==='3' || s==='act3') return 'act3';
+  if(s==='foyer' || s==='lobby') return 'foyer';
+  return s; // allow future labels
+}
+
 async function softGotoAct(target){
-  const t = String(target || '').trim();
+  const t = normalizeActTarget(target);
   if(!t) return;
 
-  // Hard reset to avoid carrying transient state between acts
+  // hard reset to avoid carrying transient state between acts
   try{ resetShow(); }catch(_e){}
 
-  // Hide start UI immediately (resetShow shows it)
+  // hide start UI immediately (resetShow may reveal it)
   try{
     if(startBreak) startBreak.style.display='none';
     if(startBtn)   startBtn.style.display='none';
@@ -3867,9 +3833,9 @@ async function softGotoAct(target){
     if(navBreak)   navBreak.style.display='none';
   }catch(_e){}
 
-  // Normalize
-  try{ stage.classList.remove('open'); }catch(_e){}
+  // normalize
   try{ setAudienceLights(true); }catch(_e){}
+  try{ foyerEl.style.display='none'; }catch(_e){}
 
   if(t === 'foyer'){
     return await runFoyer();
@@ -3884,29 +3850,15 @@ async function softGotoAct(target){
     return await runAct2();
   }
   if(t === 'act3'){
-    stage.classList.add('open');
-    setAudienceLights(false);
-    initShowBase();
     return await runAct3();
   }
-
-  // Fallback: allow "1"/"2"/"3"
-  if(t === '1') return await softGotoAct('act1');
-  if(t === '2') return await softGotoAct('act2');
-  if(t === '3') return await softGotoAct('act3');
 }
-
-
 /* ---------- Act 1 / Act 2 ---------- */
 
 async function runAct1(){
   phase='act1';
   applySignboardForPhase('act1');
-  // Στην ΑΑΤ θέλουμε να φαίνεται το ελατήριο
-  try{ const sp=document.getElementById('spring'); if(sp) sp.style.display='block'; }catch(_e){}
   for(const ev of ACT1){
-    if(window.__nextAct){ const t=window.__nextAct; window.__nextAct=null; return await softGotoAct(t); }
-
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
     if(ev.close){
@@ -3987,7 +3939,14 @@ async function runAct1(){
       initXTChart();
       triggerXtZeroMark(ev);
     }
-  }
+  
+    // Soft jump requested by JSON
+    if(window.__nextAct){
+      const t = window.__nextAct;
+      window.__nextAct = null;
+      return await softGotoAct(t);
+    }
+}
 }
 
 /* Ghost / Act 2 */
@@ -4064,8 +4023,6 @@ async function runAct2(){
   markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
-    if(window.__nextAct){ const t=window.__nextAct; window.__nextAct=null; return await softGotoAct(t); }
-
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
     if(ev.gStart) ghostActive=true;
@@ -4107,7 +4064,14 @@ async function runAct2(){
     if(ev.plot ==='a') ensureAccelerationChart();
     if(ev.plot ==='ax')ensureAxChart();
     if(ev.plot ==='xsin')ensureXSinChart();
-  }
+  
+    // Soft jump requested by JSON
+    if(window.__nextAct){
+      const t = window.__nextAct;
+      window.__nextAct = null;
+      return await softGotoAct(t);
+    }
+}
 
   stage.classList.remove('open');
   updateMarbleTrack();
@@ -4139,8 +4103,6 @@ async function runAct3(){
   }catch(_e){}
 
   for(const ev of ACT3){
-    if(window.__nextAct){ const t=window.__nextAct; window.__nextAct=null; return await softGotoAct(t); }
-
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
     if(ev.clear)     clearAllBubbles();
@@ -4157,9 +4119,15 @@ async function runAct3(){
     if((!ev.actionsWhen || ev.actionsWhen === 'afterType') && Array.isArray(ev.actions)){
       await window.AAT.actions(ev.actions);
     }
+
+    // Soft jump requested by JSON
+    if(window.__nextAct){
+      const t = window.__nextAct;
+      window.__nextAct = null;
+      return await softGotoAct(t);
+    }
   }
 }
-
 
 
 /* ---------- Κουρτίνες / μεταβάσεις ---------- */
@@ -4267,7 +4235,6 @@ function typeWriterBoard(el,text,totalMs,done){
   })();
 }
 
-
 function addFoyerRow(item){
   return new Promise(resolve=>{
     const viewer=item.viewer || 1;
@@ -4313,63 +4280,22 @@ function addFoyerRow(item){
     const typeMs =item.typeMs  || 4000;
     const pauseMs=item.pauseMs || 1500;
 
-    const finalizeRow = ()=>{
-      // Optional choice buttons (backward compatible: ignore if absent)
-      const btns = Array.isArray(item.buttons) ? item.buttons : null;
-      if(btns && btns.length){
-        const host = ((item.right||'').trim().length>0) ? r : l;
-        const box = document.createElement('div');
-        box.className = 'foyer-buttons';
-
-        btns.forEach(b=>{
-          const btn=document.createElement('button');
-          btn.type='button';
-          btn.className='foyer-choice-btn';
-          btn.textContent = String(b.label || '');
-          if(b.disabled) btn.disabled = true;
-
-          btn.addEventListener('click',()=>{
-            if(btn.disabled) return;
-            const start = String(b.start || '').trim();
-            if(start){
-              navReload(start);
-              return;
-            }
-            // fallback: resolve if no navigation
-            resolve();
-          });
-
-          box.appendChild(btn);
-        });
-
-        host.appendChild(box);
-
-        // If we wait for choice, do not auto-advance
-        if(item.waitForChoice){
-          return;
-        }
-      }
-
-      TM.setTimeout(resolve, pauseMs);
-    };
-
     typeWriterBoard(lText,item.left||'',typeMs,()=>{
       if((item.right||'').trim().length>0){
-        typeWriterBoard(rText,item.right||'',typeMs,finalizeRow);
+        typeWriterBoard(rText,item.right||'',typeMs,()=>{
+          TM.setTimeout(resolve,pauseMs);
+        });
       }else{
-        finalizeRow();
+        TM.setTimeout(resolve,pauseMs);
       }
     });
   });
 }
 
-
 async function runFoyer(){
   phase='foyer';
   applySignboardForPhase('foyer');
   setAudienceLights(true);
-  stage.classList.add('open');
-  initShowBase();
   foyerEl.style.display='block';
   setFoyerTitles();
   if(startBreak) startBreak.style.display='none';
@@ -4546,9 +4472,6 @@ function bootFromQuery(){
   }
 
   if(startQ === 'act3'){
-    stage.classList.add('open');
-    setAudienceLights(false);
-    initShowBase();
     runAct3();
     if(shouldClean) cleanUrl();
     return;
@@ -5182,11 +5105,6 @@ window.addEventListener('load',async ()=>{
   resetShow();
   await loadDialogs();
   bootFromQuery();
-  // If no explicit start=... and intro is already hidden, default to foyer menu.
-  if(phase==='idle' && introOverlay.classList.contains('hidden')){
-    startDefaultFoyer();
-  }
-
 });
 
 /* =========================================================
