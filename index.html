@@ -3979,7 +3979,6 @@ async function runAct2(){
   actBreak.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
-  try{ if(!obsStarted) initShowBase(); }catch(_e){}
   phase='act2';
   applySignboardForPhase('act2');
 
@@ -4623,7 +4622,6 @@ if (btnBook) {
 function initShowBase(){
   stage.classList.add('open');
   setAudienceLights(false);
-  try{ if(!obsStarted) initShowBase(); }catch(_e){}
   if(!obsStarted){
     obsStarted=true;
     obsStartPlaybackOffset=playbackTime;
