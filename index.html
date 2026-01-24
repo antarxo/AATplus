@@ -357,10 +357,10 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 
 
     #xtMiniCanvas{
-      position:absolute;
-      left:50%;
-      top:22px;
-      transform:translateX(-50%);
+      position:fixed;
+      left:0;
+      top:0;
+      transform:none;
       z-index:9997;
       border-radius:14px;
       background:rgba(0,0,0,0.40);
@@ -4720,9 +4720,34 @@ const XTmini = (()=>{
     if(r > 0.0001) return T / r;
     return T;
   }
+  function layout(){
+    bind();
+    if(!cvs) return;
+    const rightCurt = document.querySelector('.curtain-side.right');
+    if(!rightCurt) return;
+    const r = rightCurt.getBoundingClientRect();
+    // Tight fit inside right curtain
+    const pad = 8;
+    const w = Math.max(120, Math.floor(r.width - 2*pad));
+    const h = Math.max(90,  Math.floor(r.height - 2*pad));
+    cvs.style.left = Math.floor(r.left + pad) + 'px';
+    cvs.style.top  = Math.floor(r.top  + pad) + 'px';
+    cvs.style.width = w + 'px';
+    cvs.style.height = h + 'px';
+    // set backing store to match
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const bw = Math.max(2, Math.floor(w * dpr));
+    const bh = Math.max(2, Math.floor(h * dpr));
+    if(cvs.width !== bw) cvs.width = bw;
+    if(cvs.height !== bh) cvs.height = bh;
+    if(ctx) ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+
 
   function windowSec(){
-    return Math.min(24, Math.max(3, 6 * periodSec()));
+    // half the previous time scale (more zoom in time)
+    return Math.min(12, Math.max(1.5, 3 * periodSec()));
   }
 
   function add(t, xMeters){
@@ -4744,6 +4769,7 @@ const XTmini = (()=>{
 
   function draw(tNow){
     if(!enabled || !ctx || !cvs) return;
+    layout();
     const W = cvs.width, H = cvs.height;
     ctx.clearRect(0,0,W,H);
 
@@ -4781,7 +4807,7 @@ const XTmini = (()=>{
     // labels
     ctx.fillStyle = 'rgba(255,255,255,0.82)';
     ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.fillText('x(t) (τελευταίες ~6 περίοδοι)', x0, 13);
+    ctx.fillText('x(t) (τελευταίες ~3 περίοδοι)', x0, 13);
     ctx.font = '10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.textAlign = 'right';
     ctx.fillText((+yMax.toFixed(1)) + ' m', x0-6, y0+4);
