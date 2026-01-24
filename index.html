@@ -2337,21 +2337,40 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // DEBUG/confirm rendering: κεντρικό panel στη μέση της σκηνής
-  if(!stage) return {left:0,right:0,top:0,bottom:0};
+  // Overlay panel inside the RIGHT curtain, below the top-right HUD.
+  const rc = document.querySelector('.curtain-side.right');
+  if(!rc) return {left:0,right:0,top:0,bottom:0};
 
-  const s = getStageScale();
-  const stageRect = stage.getBoundingClientRect();
-  const W = stage.clientWidth || 0;
-  const H = stage.clientHeight || 0;
+  const r = rc.getBoundingClientRect();
+  const stageR = stage.getBoundingClientRect();
+  const hud = document.getElementById('measureHUD');
 
-  const w = Math.min(560, Math.max(260, Math.round(W*0.55)));
-  const h = Math.min(320, Math.max(160, Math.round(H*0.38)));
+  const pad = 10;
+  const minH = 140;
 
-  const left  = Math.round((W - w)/2);
-  const top   = Math.round((H - h)/2);
+  // viewport -> stage-local (overlay canvas is stage-sized)
+  const left  = (r.left  - stageR.left) + pad;
+  const right = (r.right - stageR.left) - pad;
 
-  return { left, right:left+w, top, bottom:top+h };
+  let top = (r.top - stageR.top) + pad;
+
+  if(hud){
+    const hr = hud.getBoundingClientRect();
+    if(hr.width > 10 && hr.height > 10){
+      const t = (hr.bottom - stageR.top) + 10;
+      const bottomCandidate = (r.bottom - stageR.top) - pad;
+      if(bottomCandidate - t >= minH) top = Math.max(top, t);
+    }
+  }
+
+  let bottom = (r.bottom - stageR.top) - pad;
+
+  if(bottom - top < minH){
+    top = (r.top - stageR.top) + pad;
+    bottom = (r.bottom - stageR.top) - pad;
+  }
+
+  return {left,right,top,bottom};
 }
 
 function xtOverlayPushSample(tObs, uMeters){
@@ -2415,7 +2434,7 @@ function xtOverlayDraw(dt){
   const pyT = yTop + marginT;
   const pyB = yBot - marginB;
 
-  const span = Math.max(12, 6*T);
+  const span = Math.max(3, 1.5*T);
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
@@ -2460,9 +2479,9 @@ function xtOverlayDraw(dt){
 
   // time ticks: αραιά labels για να μη τρελαίνουν
   let step = 1;
-  if(span > 28) step = 6;
-  else if(span > 16) step = 4;
-  else if(span > 10) step = 2;
+  if(span > 10) step = 2;
+  else if(span > 6) step = 1;
+  else step = 0.5;
 
   const tStart = Math.ceil(t0/step)*step;
   for(let t=tStart; t<=t1+1e-9; t+=step){
@@ -3687,6 +3706,24 @@ function showDynBubble(ev){
 
 async function runAct1(){
   phase='act1';
+
+  // --- Act1 must be pure free undamped SHM: b=0, f=OFF, A=3m ---
+  try{
+    driveB = 0;
+    driveRatio = 0.00;     // OFF
+    driverOmega = omega * driveRatio;
+    driveInited = false;   // force re-seed to A=3m state
+    baseRefX = null;
+    basePrevX = null;
+    basePrevV = null;
+    // sync UI if present
+    if(elDriveB){ elDriveB.value = String(driveB); }
+    if(elDriveBVal){ elDriveBVal.textContent = `${driveB} kg/s`; }
+    if(elDriveRatio){ elDriveRatio.value = '0.00'; }
+    updateDriveFreqLabel && updateDriveFreqLabel();
+    syncDriveUI && syncDriveUI();
+  }catch(_e){}
+
   applySignboardForPhase('act1');
   try{ springEl.style.display='block'; }catch(_e){}
   for(const ev of ACT1){
