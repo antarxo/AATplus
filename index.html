@@ -93,6 +93,10 @@ function num(v,fallback=0){
     body.intro-open #navBreak,
     body.intro-open #btnBook,
     body.intro-open #foyerBubble,
+    body.intro-open #xtMiniCanvas,
+    body.intro-open #btnXTmini{
+      visibility: hidden !important;
+    }
 
     #introOverlay.intro-veil{
       position: fixed;
@@ -313,13 +317,18 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 
     /* === Measurement HUD + A–f plot (DEV overlay) === */
     #measureHUD{
-      position:static;
-      width:auto;
-      margin-top:10px;
-      padding:8px 10px;
-      background:rgba(0,0,0,0.20);
-      border:1px solid rgba(255,255,255,0.12);
+      position:absolute;
+      right:16px;
+      top:16px;
+      z-index:9999;
+      width:280px;
+      padding:10px 12px;
+      background:rgba(0,0,0,0.55);
+      border:1px solid rgba(255,255,255,0.18);
       border-radius:10px;
+      color:#fff;
+      font: 13px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      pointer-events:none;
     }
     #measureHUD .mh-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
     #measureHUD .mh-title{font-weight:700; letter-spacing:.2px;}
@@ -346,21 +355,22 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       pointer-events:none;
     }
 
-  
 
-  /* --- x(t) continuous chart on right curtain --- */
-  .curtain-side.right{ position: relative; overflow: hidden; }
-  #xtCurtainCanvas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    display:block;
-    z-index: 9998;
-    pointer-events:none;
-  }
+    #xtMiniCanvas{
+      position:absolute;
+      left:50%;
+      top:22px;
+      transform:translateX(-50%);
+      z-index:9997;
+      border-radius:14px;
+      background:rgba(0,0,0,0.40);
+      border:1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+      pointer-events:none;
+      display:none;
+    }
 
-</style>
+  </style>
 
 </head>
 <body class="intro-open">
@@ -377,7 +387,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
   <div class="curtain-top"></div>
   <div class="curtain-upper"></div>
   <div class="curtain-side left"></div>
-  <div class="curtain-side right"><canvas id="xtCurtainCanvas"></canvas></div>
+  <div class="curtain-side right"></div>
 
   <div class="spotlight" id="spotlight"></div>
 
@@ -390,7 +400,9 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="sb-lineD" id="signLineD">(*) ... εσείς</div>
   </div>
 
-<!-- 1. Χρονομετρητής -->
+  <canvas id="xtMiniCanvas" width="720" height="190" aria-hidden="true"></canvas>
+
+  <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
   <!-- 2. Πίνακας μετρήσεων t–x -->
@@ -402,21 +414,6 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       </thead>
       <tbody id="measureTBody"></tbody>
     </table>
-<div id="measureHUD" aria-hidden="true">
-    <div class="mh-row">
-      <div class="mh-title">Μετρήσεις</div>
-      <div class="mh-chip" id="mhStable">unstable</div>
-    </div>
-    <div class="mh-grid">
-      <div class="mh-k">x</div><div class="mh-v" id="mhX">–</div>
-      <div class="mh-k">xmin</div><div class="mh-v" id="mhXmin">–</div>
-      <div class="mh-k">xmax</div><div class="mh-v" id="mhXmax">–</div>
-      <div class="mh-k">A</div><div class="mh-v" id="mhA">–</div>
-      <div class="mh-k">f</div><div class="mh-v" id="mhF">–</div>
-      <div class="mh-k">b</div><div class="mh-v" id="mhB">–</div>
-    </div>
-    <div class="mh-note">Ορισμός: A = (xmax − xmin)/2. Καταγραφή όταν το peak-to-peak σταθεροποιείται.</div>
-  </div>
   </div>
 
   <!-- 3. Γράφημα x–t -->
@@ -493,7 +490,9 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <button id="btnReset" title="reset">↺</button>
     <button id="btnNext"  title="επόμενο">⏭</button>
     <button id="btnBook"  title="Διαθέσιμο μετά το τέλος της Πράξης 1" disabled>📖</button>
-</div>
+    <button id="btnXTOverlay" title="x–t overlay">📉</button>
+    <button id="btnXTmini" title="x–t">📉</button>
+  </div>
 
   <div class="drive-controls" id="driveCtrl" aria-label="ρυθμίσεις διεγέρτη">
     <div class="dc-row">
@@ -530,11 +529,6 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="box">
       <h3 id="startBreakTitle">Έναρξη Παράστασης</h3>
       <p  id="startBreakMsg">Ενας θεατής ας κάνει κλικ στην Έναρξη</p>
-      <div class="countdown-setting" style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
-        <label for="countdownSeconds" style="opacity:.9;">Countdown (s)</label>
-        <input id="countdownSeconds" type="number" min="0" max="30" step="1" value="5" style="width:72px; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,255,255,0.25); background:rgba(0,0,0,0.35); color:#fff; text-align:center;">
-      </div>
-
       <button class="start-btn" id="startBtn">Έναρξη</button>
     </div>
   </div>
@@ -912,7 +906,15 @@ const btnBook    = document.getElementById('btnBook');
 
 const btnXTOverlay = document.getElementById('btnXTOverlay');
 const ACT1_UNLOCK_KEY = 'aat_act1_completed';
-// XT overlay is always ON (no toggle button)
+// XT overlay toggle
+if(btnXTOverlay){
+  btnXTOverlay.onclick = ()=>{
+    setXTOverlay(!xtOverlayEnabled);
+    btnXTOverlay.classList.toggle('active', xtOverlayEnabled);
+  };
+}
+
+
 let bookUnlocked = (localStorage.getItem(ACT1_UNLOCK_KEY) === '1');
 
 function setBookUnlocked(on, persist=true){
@@ -1047,44 +1049,6 @@ const TM = (() => {
 
 /* Countdown state (για pause που πραγματικά παγώνει) */
 const countdownState = { active:false, remainingMs:0, lastNow:0 };
-
-function getCountdownSeconds(){
-  const el = document.getElementById('countdownSeconds');
-  let v = 5;
-  try{
-    const saved = localStorage.getItem('aat_countdown_seconds');
-    if(saved !== null && saved !== '') v = parseInt(saved,10);
-  }catch(_e){}
-  if(el){
-    const n = parseInt(el.value,10);
-    if(Number.isFinite(n)) v = n;
-  }
-  v = Math.max(0, Math.min(30, v));
-  if(el) el.value = String(v);
-  try{ localStorage.setItem('aat_countdown_seconds', String(v)); }catch(_e){}
-  return v;
-}
-
-function clearMeasurements(){
-  try{ measureTBody.innerHTML=''; }catch(_e){}
-  measureRowIdx = 0;
-  lastSampleObsTime = -Infinity;
-}
-
-function stopObservationSession(hide=true){
-  obsStarted = false;
-  clockEl.textContent = 't = 0.00 s';
-  if(hide) clockEl.style.display='none';
-}
-
-function startNewObservationSession(){
-  obsStarted = true;
-  obsStartPlaybackOffset = playbackTime;
-  clearMeasurements();
-  try{ logMeasurement(0, x0Val()); }catch(_e){}
-  clockEl.style.display='block';
-  measureBox.style.display='block';
-}
 
 
 let uXT = null;   // x–t canvas
@@ -2407,7 +2371,7 @@ function drawXTChart(){
 
 /* ---------- XT OVERLAY (μεγάλο διάγραμμα x–t πάνω στη σκηνή) ---------- */
 
-let xtOverlayEnabled = true;
+let xtOverlayEnabled = false;
 let xtOverlayBottomOpenLocal = null; // cached bottom (open curtain) in stage-local px
 
 let xtOverlayCan = null;
@@ -2425,15 +2389,15 @@ function ensureXTOverlay(){
   if(xtOverlayCan || !stage) return;
   const c = document.createElement('canvas');
   c.id = 'xtOverlayCanvas';
-  c.style.position = 'fixed';
+  c.style.position = 'absolute';
   c.style.left = '0';
   c.style.top = '0';
-  c.style.width = '10px';
-  c.style.height = '10px';
+  c.style.width = '100%';
+  c.style.height = '100%';
   c.style.pointerEvents = 'none';
-  c.style.zIndex = '10050';
-  c.style.display = 'block';
-  document.body.appendChild(c);
+  c.style.zIndex = '9996';
+  c.style.display = 'none';
+  stage.appendChild(c);
   xtOverlayCan = c;
 }
 
@@ -2449,35 +2413,57 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // ΜΟΝΙΜΑ μέσα στη δεξιά ακίνητη κουρτίνα (στενό όσο αυτή) και ορατό πάντα (fixed canvas).
-  const rc = document.querySelector('.curtain-side.right');
-  const s = stage.getBoundingClientRect();
+  // Πάνω: πάνω άκρο σκηνής. Κάτω: κάτω άκρο ΑΝΟΙΧΤΗΣ κουρτίνας (= curtain-top).
+  if(!stage) return {left:0,right:0,top:0,bottom:0};
 
-  if(!rc){
-    return {left:s.right-260, right:s.right-12, top:s.top+12, bottom:s.bottom-12};
+  const s = getStageScale();
+  const stageRect = stage.getBoundingClientRect();
+  const stageH = stage.clientHeight || 0;
+
+  let bottomLocal = 0;
+  const ct = stage.querySelector('.curtain-top');
+  // When curtains are closed, .curtain-top may extend too low; we want the OPEN-curtain baseline.
+  // Cache the open baseline when stage is open, reuse it when stage is closed.
+  if(ct && stage.classList.contains('open')){
+    const r = ct.getBoundingClientRect();
+    bottomLocal = (r.bottom - stageRect.top) / s;
+    if(isFinite(bottomLocal) && bottomLocal>0) xtOverlayBottomOpenLocal = bottomLocal;
+  }else if(isFinite(xtOverlayBottomOpenLocal) && xtOverlayBottomOpenLocal){
+    bottomLocal = xtOverlayBottomOpenLocal;
+  }else if(ct){
+    const r = ct.getBoundingClientRect();
+    bottomLocal = (r.bottom - stageRect.top) / s;
+  }else{
+    bottomLocal = stageH * 0.22;
   }
-  const r = rc.getBoundingClientRect();
-  const pad = 10;
 
-  // Vertical range: top of stage → bottom of OPEN curtain (curtain-top), else stage bottom
-  let bottom = s.bottom - pad;
-  try{
-    const ct = document.querySelector('.curtain-top');
-    if(ct){
-      const ctr = ct.getBoundingClientRect();
-      bottom = Math.min(bottom, ctr.bottom - pad);
-    }
-  }catch(_e){}
+  bottomLocal = Math.max(40, Math.min(stageH, bottomLocal));
 
-  const top = s.top + pad;
-  return {left:r.left+pad, right:r.right-pad, top:top, bottom:bottom};
+  let leftLocal = 0;
+  let rightLocal = (stage.clientWidth||0);
+
+  const cL = stage.querySelector('.curtain-side.left');
+  const cR = stage.querySelector('.curtain-side.right');
+  if(cL && cR){
+    const rl = cL.getBoundingClientRect();
+    const rr = cR.getBoundingClientRect();
+    leftLocal  = (rl.right - stageRect.left) / s;
+    rightLocal = (rr.left  - stageRect.left) / s;
+  }
+
+  // μικρό padding ώστε να μη "γλείφει" τις κουρτίνες
+  const pad = 8;
+  leftLocal  = Math.max(0, leftLocal + pad);
+  rightLocal = Math.min((stage.clientWidth||0), rightLocal - pad);
+
+  return { left:leftLocal, right:rightLocal, top:0, bottom:bottomLocal };
 }
 
 function xtOverlayPushSample(tObs, uMeters){
   if(!xtOverlayEnabled || !xtOverlayCan) return;
   if(!isFinite(tObs) || !isFinite(uMeters)) return;
 
-  const span = Math.max(6, 24*T); // ~24 περίοδοι (1 περίοδος στο 1/4 του πλάτους)
+  const span = Math.max(12, 48*T); // ~24 περίοδοι (1 περίοδος στο 1/4 του πλάτους)
   xtOverlayBuf.push({t:tObs, u:uMeters});
 
   const cutoff = tObs - (span + 2*T);
@@ -2488,109 +2474,170 @@ function xtOverlayDraw(dt){
   if(!xtOverlayEnabled || !xtOverlayCan) return;
 
   const rect = xtOverlayLocalRect();
-  const Wcss = rect.right-rect.left;
-  const Hcss = rect.bottom-rect.top;
-  if(Wcss<90 || Hcss<90) return;
+  const x0 = rect.left;
+  const x1 = rect.right;
+  const yTop = rect.top;
+  const yBot = rect.bottom;
 
-  // Position & size fixed canvas over the right curtain
-  xtOverlayCan.style.left = rect.left + 'px';
-  xtOverlayCan.style.top  = rect.top  + 'px';
-  xtOverlayCan.style.width  = Wcss + 'px';
-  xtOverlayCan.style.height = Hcss + 'px';
+  const W = x1-x0;
+  const H = yBot-yTop;
+  if(W<60 || H<50) return;
 
-  const dpr = window.devicePixelRatio || 1;
-  const W = Math.floor(Wcss * dpr);
-  const H = Math.floor(Hcss * dpr);
-  if(xtOverlayCan.width !== W) xtOverlayCan.width = W;
-  if(xtOverlayCan.height!== H) xtOverlayCan.height = H;
+  // Resize backing canvas to stage px
+  const wNeed = stage.clientWidth || 0;
+  const hNeed = stage.clientHeight || 0;
+  if(xtOverlayCan.width !== wNeed) xtOverlayCan.width = wNeed;
+  if(xtOverlayCan.height!== hNeed) xtOverlayCan.height = hNeed;
 
   const ctx = xtOverlayCan.getContext('2d');
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,Wcss,Hcss);
+  ctx.clearRect(0,0,xtOverlayCan.width,xtOverlayCan.height);
 
-  // Panel bg
+  // Panel background (μόνο στο rect)
   ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.28)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.16)';
-  const rr = 10;
+  ctx.fillStyle = 'rgba(0,0,0,0.26)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+  ctx.lineWidth = 1;
+  const r = 12;
+  const X = x0+6, Y=yTop+6, WW=W-12, HH=H-12;
   ctx.beginPath();
-  ctx.moveTo(rr,0);
-  ctx.lineTo(Wcss-rr,0);
-  ctx.quadraticCurveTo(Wcss,0,Wcss,rr);
-  ctx.lineTo(Wcss,Hcss-rr);
-  ctx.quadraticCurveTo(Wcss,Hcss,Wcss-rr,Hcss);
-  ctx.lineTo(rr,Hcss);
-  ctx.quadraticCurveTo(0,Hcss,0,Hcss-rr);
-  ctx.lineTo(0,rr);
-  ctx.quadraticCurveTo(0,0,rr,0);
+  ctx.moveTo(X+r,Y);
+  ctx.lineTo(X+WW-r,Y);
+  ctx.quadraticCurveTo(X+WW,Y,X+WW,Y+r);
+  ctx.lineTo(X+WW,Y+HH-r);
+  ctx.quadraticCurveTo(X+WW,Y+HH,X+WW-r,Y+HH);
+  ctx.lineTo(X+r,Y+HH);
+  ctx.quadraticCurveTo(X,Y+HH,X,Y+HH-r);
+  ctx.lineTo(X,Y+r);
+  ctx.quadraticCurveTo(X,Y,X+r,Y);
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
   ctx.restore();
 
-  const padL = 24, padR = 10, padT = 10, padB = 18;
-  const gx0 = padL, gy0 = padT;
-  const gw = Wcss - padL - padR;
-  const gh = Hcss - padT - padB;
-  if(gw<40 || gh<40) return;
+  const marginL=38, marginR=16, marginT=18, marginB=20;
+  const pxL = x0 + marginL;
+  const pxR = x1 - marginR;
+  const pyT = yTop + marginT;
+  const pyB = yBot - marginB;
 
-  const span = Math.max(6, 24*T); // sync with push
-  const tMax = (xtOverlayBuf.length? xtOverlayBuf[xtOverlayBuf.length-1].t : 0);
-  const tMin = Math.max(0, tMax - span);
+  const span = Math.max(12, 48*T);
+  if(!xtOverlayBuf.length) return;
 
-  const uMax = xtOverlayURange;  // fixed ±6.5 m
-  const uMin = -uMax;
+  const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
 
-  const tx = (t)=> gx0 + ((t - tMin) / (span || 1)) * gw;
-  const uy = (u)=> gy0 + (1 - ((u - uMin) / ((uMax-uMin)||1))) * gh;
+  // Time window: 0 στην αρχή, ολίσθηση μόνο όταν γεμίσει.
+  const desiredT0 = Math.max(0, tNow - span);
+  if(tNow <= span){
+    xtOverlayT0 = 0;
+  }else{
+    // αργή ολίσθηση (inertia)
+    const alpha = Math.min(1, Math.max(0.02, (dt||0.016)*0.20));
+    xtOverlayT0 = xtOverlayT0 + (desiredT0 - xtOverlayT0)*alpha;
+  }
+  const t0 = xtOverlayT0;
+  const t1 = t0 + span;
 
-  // Grid + labels (stable)
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
-  ctx.fillStyle = 'rgba(255,255,255,0.65)';
-  ctx.font = '11px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-  ctx.textAlign='right';
-  ctx.textBaseline='middle';
+  // Υ-κλίμακα: ΣΤΑΘΕΡΗ, για να φαίνονται καθαρά οι διαφορές (±6.5 m)
+  const uRange = 6.5;
 
-  const yticks = [-6,-3,0,3,6];
-  for(const yv of yticks){
-    const yy = uy(yv);
-    ctx.beginPath(); ctx.moveTo(gx0,yy); ctx.lineTo(gx0+gw,yy); ctx.stroke();
-    ctx.fillText(String(yv), gx0-4, yy);
+  function tToX(t){
+    return pxL + (t - t0) / (t1 - t0) * (pxR - pxL);
+  }
+  function uToY(u){
+    const mid = (pyT+pyB)/2;
+    return mid - (u / uRange) * ((pyB-pyT)/2);
   }
 
-  // time axis at u=0
-  const y0 = uy(0);
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-  ctx.beginPath(); ctx.moveTo(gx0,y0); ctx.lineTo(gx0+gw,y0); ctx.stroke();
+  // Grid + axes
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,0.14)';
+  ctx.lineWidth=1;
+  ctx.setLineDash([3,3]);
 
-  ctx.textAlign='left';
-  ctx.textBaseline='top';
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
-  ctx.fillText('t (s)', gx0, gy0+gh+2);
-  ctx.textAlign='left';
-  ctx.fillText(tMin.toFixed(1), gx0, gy0+gh+2);
-  ctx.textAlign='right';
-  ctx.fillText(tMax.toFixed(1), gx0+gw, gy0+gh+2);
+  // time ticks: αραιά labels για να μη τρελαίνουν
+  let step = 1;
+  if(span > 120) step = 24;
+  else if(span > 60) step = 12;
+  else if(span > 28) step = 6;
+  else if(span > 16) step = 4;
+  else if(span > 10) step = 2;
+
+  const tStart = Math.ceil(t0/step)*step;
+  for(let t=tStart; t<=t1+1e-9; t+=step){
+    const x = tToX(t);
+    ctx.beginPath();
+    ctx.moveTo(x,pyT);
+    ctx.lineTo(x,pyB);
+    ctx.stroke();
+  }
+
+  // u ticks
+  const uTicks = [-uRange/2, 0, uRange/2];
+  for(const u of uTicks){
+    const y = uToY(u);
+    ctx.beginPath();
+    ctx.moveTo(pxL,y);
+    ctx.lineTo(pxR,y);
+    ctx.stroke();
+  }
+
   ctx.restore();
 
-  // Trace
-  if(xtOverlayBuf.length>1){
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    let started=false;
-    for(const p of xtOverlayBuf){
-      if(p.t < tMin) continue;
-      const x = tx(p.t);
-      const y = uy(p.u);
-      if(!started){ ctx.moveTo(x,y); started=true; }
-      else ctx.lineTo(x,y);
-    }
-    ctx.stroke();
-    ctx.restore();
+  // axes bold
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,0.55)';
+  ctx.lineWidth=1;
+  ctx.setLineDash([]);
+  // time axis (u=0)
+  const y0 = uToY(0);
+  ctx.beginPath();
+  ctx.moveTo(pxL,y0);
+  ctx.lineTo(pxR,y0);
+  ctx.stroke();
+  // left border
+  ctx.beginPath();
+  ctx.moveTo(pxL,pyT);
+  ctx.lineTo(pxL,pyB);
+  ctx.stroke();
+  // frame
+  ctx.beginPath();
+  ctx.rect(pxL,pyT,pxR-pxL,pyB-pyT);
+  ctx.stroke();
+  ctx.restore();
+
+  // plot
+  ctx.save();
+  ctx.strokeStyle='rgba(255,210,90,0.95)';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  let started = false;
+  for(const p of xtOverlayBuf){
+    if(p.t < t0 || p.t > t1) continue;
+    const x = tToX(p.t);
+    const y = uToY(p.u);
+    if(!started){ ctx.moveTo(x,y); started = true; }
+    else{ ctx.lineTo(x,y); }
   }
+  if(started) ctx.stroke();
+  ctx.restore();
+
+  // labels
+  ctx.save();
+  ctx.fillStyle='rgba(255,255,255,0.92)';
+  ctx.font='12px system-ui';
+  const title = (currentLang==='en') ? 'x–t (relative)' : 'x–t (ως προς ισορροπία)';
+  ctx.fillText(title, pxL+6, pyT+14);
+
+  ctx.font='10px system-ui';
+  ctx.textAlign='center';
+  for(let t=tStart; t<=t1+1e-9; t+=step){
+    const x = tToX(t);
+    ctx.fillText(String(Math.round(t)), x, pyB+12);
+  }
+  ctx.textAlign='left';
+  ctx.fillText('t (s)', pxR-28, y0-6);
+  ctx.fillText('x (m)', pxL+2, pyT-4);
+  ctx.restore();
 }
 
 /* ---------- Νόμοι & mini-διαγράμματα ---------- */
@@ -3673,127 +3720,6 @@ function showDynBubble(ev){
 }
 
 
-
-/* ---------- Right-curtain x(t) chart (continuous, sliding) ---------- */
-const XTCurtain = (()=>{
-  const cvs = document.getElementById('xtCurtainCanvas');
-  let ctx = null;
-  const samples = [];
-  const MAX_SAMPLES = 6000;
-
-  // time window: half of the previous overlay scale (24T if old was 48T)
-  function windowSec(){ return 24 * T; }  // 24 periods shown
-  const Y_RANGE_M = 6.5; // fixed ±6.5 m for comparability
-
-  function ensure(){
-    if(!cvs) return false;
-    if(!ctx) ctx = cvs.getContext('2d');
-    // match canvas to CSS size
-    const r = cvs.getBoundingClientRect();
-    const w = Math.max(2, Math.round(r.width));
-    const h = Math.max(2, Math.round(r.height));
-    if(cvs.width !== w) cvs.width = w;
-    if(cvs.height !== h) cvs.height = h;
-    return true;
-  }
-
-  function push(t, dx){
-    samples.push([t, dx]);
-    if(samples.length > MAX_SAMPLES) samples.splice(0, samples.length - MAX_SAMPLES);
-  }
-
-  function draw(tNow){
-    if(!ensure()) return;
-    const w = cvs.width, h = cvs.height;
-    ctx.clearRect(0,0,w,h);
-
-    if(!obsStarted) return;
-
-    const W = windowSec();
-    const t0 = Math.max(0, tNow - W);
-    const t1 = (tNow < W) ? W : tNow;
-
-    // styling
-    ctx.save();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-    ctx.fillStyle   = 'rgba(255,255,255,0.60)';
-    ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.textBaseline = 'middle';
-
-    const padL = 28, padR = 10, padT = 10, padB = 14;
-    const gx0 = padL, gx1 = w - padR;
-    const gy0 = padT, gy1 = h - padB;
-
-    // border
-    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-    ctx.strokeRect(gx0, gy0, gx1-gx0, gy1-gy0);
-
-    // axes (y=0 line)
-    const y0 = gy0 + (gy1-gy0)/2;
-    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-    ctx.beginPath();
-    ctx.moveTo(gx0, y0);
-    ctx.lineTo(gx1, y0);
-    ctx.stroke();
-
-    // y labels (+/-6.5, 0)
-    ctx.fillStyle='rgba(255,255,255,0.70)';
-    ctx.fillText('+6.5', 2, gy0+8);
-    ctx.fillText('0',    12, y0);
-    ctx.fillText('-6.5', 2, gy1-8);
-
-    // x labels (time)
-    const span = t1 - t0;
-    const tickCount = 4;
-    ctx.fillStyle='rgba(255,255,255,0.55)';
-    for(let i=0;i<=tickCount;i++){
-      const tt = t0 + span*(i/tickCount);
-      const x = gx0 + (gx1-gx0)*(i/tickCount);
-      ctx.strokeStyle='rgba(255,255,255,0.12)';
-      ctx.beginPath();
-      ctx.moveTo(x, gy0);
-      ctx.lineTo(x, gy1);
-      ctx.stroke();
-      ctx.fillText(tt.toFixed(0), x-6, gy1+6);
-    }
-
-    // trace
-    ctx.strokeStyle='rgba(255,255,255,0.85)';
-    ctx.lineWidth=1.6;
-    ctx.beginPath();
-    let started=false;
-    for(const [t, dx] of samples){
-      if(t < t0) continue;
-      if(t > t1) break;
-      const xx = gx0 + (gx1-gx0)*((t - t0)/span);
-      const yy = y0 - (gy1-gy0)/2 * (dx / Y_RANGE_M);
-      if(!started){ ctx.moveTo(xx, yy); started=true; }
-      else ctx.lineTo(xx, yy);
-    }
-    if(started) ctx.stroke();
-
-    // title
-    ctx.fillStyle='rgba(255,255,255,0.75)';
-    ctx.textBaseline='top';
-    ctx.fillText('x(t) – απομάκρυνση', gx0+6, gy0+4);
-
-    ctx.restore();
-  }
-
-  function step(tObs, dx){
-    if(!cvs) return;
-    push(tObs, dx);
-    // trim old samples beyond 2 windows for efficiency
-    const W = windowSec();
-    const cut = Math.max(0, tObs - 2*W);
-    while(samples.length && samples[0][0] < cut) samples.shift();
-    draw(tObs);
-  }
-
-  return { step, draw };
-})();
-
 /* ---------- Dialog Actions (minimal, JSON-friendly) ----------
    Optional per-dialog-line field:
      "actions": [ { "type":"setB", "value":12 }, { "type":"setF", "ratio":0.95 } ]
@@ -4361,8 +4287,6 @@ async function runFoyer(){
   setAudienceLights(true);
   foyerEl.style.display='block';
   setFoyerTitles();
-  try{ clockEl.style.display='none'; }catch(_e){}
-  try{ measureBox.style.display='none'; }catch(_e){}
   if(startBreak) startBreak.style.display='none';
   startBtn.style.display='none';
   boardLeft.innerHTML='';
@@ -4698,11 +4622,14 @@ if (btnBook) {
 function initShowBase(){
   stage.classList.add('open');
   setAudienceLights(false);
-  // Do NOT start/reset observation here; it is controlled by countdown completion.
-  if(obsStarted){
-    clockEl.style.display='block';
-    measureBox.style.display='block';
+  if(!obsStarted){
+    obsStarted=true;
+    obsStartPlaybackOffset=playbackTime;
+    // Καταγραφή του t=0, x0 ως πρώτη εγγραφή
+    logMeasurement(0, x0Val());
   }
+  clockEl.style.display='block';
+  measureBox.style.display='block';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
   updateRuler();
@@ -4710,7 +4637,6 @@ function initShowBase(){
 
 function beginObservation(){
   countdownState.active = false;
-  // Start the clock ONLY when countdown finishes.
   initShowBase();
   runAct1();
 }
@@ -4720,9 +4646,8 @@ function startShowCountdown(){
   if(startBreak) startBreak.style.display='none';
   startBtn.style.display='none';
   countdownOverlay.style.display='flex';
-  try{ clockEl.style.display='none'; }catch(_e){}
 
-  const seconds = getCountdownSeconds();
+  const seconds = 5;
   countdownState.active = true;
   countdownState.remainingMs = seconds * 1000;
   countdownState.lastNow = performance.now();
@@ -4766,6 +4691,119 @@ btnFoyerGo.addEventListener('click',()=>{
 });
 
 
+/* ---------- Mini x(t) overlay (τελευταίες ~6 περίοδοι) ---------- */
+
+const XTmini = (()=>{
+  let enabled = false;
+  let btn=null, cvs=null, ctx=null;
+  const samples = [];
+  const MAX_SAMPLES = 2600;
+  let lastT = 0;
+
+  function bind(){
+    if(!btn) btn = document.getElementById('btnXTmini');
+    if(!cvs) cvs = document.getElementById('xtMiniCanvas');
+    if(cvs && !ctx) ctx = cvs.getContext('2d');
+
+    if(btn && !btn._xtmini){
+      btn._xtmini = true;
+      btn.addEventListener('click', ()=>{
+        enabled = !enabled;
+        if(cvs) cvs.style.display = enabled ? 'block' : 'none';
+        if(enabled) draw(lastT);
+      });
+    }
+  }
+
+  function periodSec(){
+    const r = (typeof driveRatio==='number') ? driveRatio : 0;
+    if(r > 0.0001) return T / r;
+    return T;
+  }
+
+  function windowSec(){
+    return Math.min(24, Math.max(3, 6 * periodSec()));
+  }
+
+  function add(t, xMeters){
+    lastT = t;
+    if(!Number.isFinite(t) || !Number.isFinite(xMeters)) return;
+    bind();
+
+    // κρατάμε displacement ως προς το 10 m
+    const xRel = xMeters - RULER_CENTER_M;
+    samples.push({t, x:xRel});
+    if(samples.length > MAX_SAMPLES) samples.splice(0, samples.length - MAX_SAMPLES);
+
+    const win = windowSec();
+    const tMin = t - win - 0.5;
+    while(samples.length && samples[0].t < tMin) samples.shift();
+
+    if(enabled) draw(t);
+  }
+
+  function draw(tNow){
+    if(!enabled || !ctx || !cvs) return;
+    const W = cvs.width, H = cvs.height;
+    ctx.clearRect(0,0,W,H);
+
+    // frame
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillRect(0,0,W,H);
+
+    const padL=44, padR=10, padT=16, padB=26;
+    const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
+    const w=x1-x0, h=y1-y0;
+
+    const win = windowSec();
+    const tStart = tNow - win;
+    const pts = samples.filter(p=>p.t >= tStart - 1e-6);
+
+    // y-scale
+    let maxAbs = 0.5;
+    for(const p of pts) maxAbs = Math.max(maxAbs, Math.abs(p.x));
+    const yMax = Math.min(8, Math.max(1, maxAbs*1.12));
+
+    const X = (tt)=> x0 + ((tt - tStart)/win) * w;
+    const Y = (xx)=> {
+      const u = (xx / yMax);
+      return y0 + (0.5 - 0.5*u) * h;
+    };
+
+    // axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0 + h/2); ctx.lineTo(x1, y0 + h/2);
+    ctx.moveTo(x0, y0); ctx.lineTo(x0, y1);
+    ctx.stroke();
+
+    // labels
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.fillText('x(t) (τελευταίες ~6 περίοδοι)', x0, 13);
+    ctx.font = '10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText((+yMax.toFixed(1)) + ' m', x0-6, y0+4);
+    ctx.fillText((-(+yMax.toFixed(1))) + ' m', x0-6, y1);
+    ctx.textAlign = 'left';
+
+    // curve
+    if(pts.length >= 2){
+      ctx.strokeStyle = 'rgba(80,180,255,0.95)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(X(pts[0].t), Y(pts[0].x));
+      for(let i=1;i<pts.length;i++) ctx.lineTo(X(pts[i].t), Y(pts[i].x));
+      ctx.stroke();
+    }else{
+      ctx.fillStyle='rgba(255,255,255,0.70)';
+      ctx.fillText('—', x0+6, y0 + h/2 + 4);
+    }
+  }
+
+  return { add, draw, isOn:()=>enabled };
+})();
 
 /* ---------- Animation loop ---------- */
 
@@ -4865,12 +4903,6 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   actor.style.left=(hookX-actorWidth/2)+'px';
 
   markerEl.style.left=hookX+'px';
-  // Continuous x(t) chart on right curtain (always-on after countdown)
-  try{
-    const x_m = (hookX - rulerZeroX)/pxPerMeter;
-    const dx_m = x_m - RULER_CENTER_M;
-    XTCurtain.step(tObs, dx_m);
-  }catch(_e){}
   spotlight.style.background =
     'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,0.65), rgba(255,255,255,0) 70%)';
 
@@ -4881,6 +4913,8 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   logMeasurement(tObs,xMeters);
   xtOverlayPushSample(tObs, driveU/pxPerMeter);
   xtOverlayDraw(dt);
+
+  if(typeof XTmini !== 'undefined' && XTmini) XTmini.add(tObs, xMeters);
 
   if(ghost && ghostSpring){
     const target=ghostActive?1:0;
@@ -5614,15 +5648,24 @@ stable = nowStable;
 })();
 
 
-
-
-// --- Always-on x(t) overlay init (right curtain) ---
-try{ ensureXTOverlay(); }catch(_e){}
 </script>
 
   <!-- === Measurement HUD + A–f plot (DEV) === -->
-  
-
+  <div id="measureHUD" aria-hidden="true">
+    <div class="mh-row">
+      <div class="mh-title">Μετρήσεις</div>
+      <div class="mh-chip" id="mhStable">unstable</div>
+    </div>
+    <div class="mh-grid">
+      <div class="mh-k">x</div><div class="mh-v" id="mhX">–</div>
+      <div class="mh-k">xmin</div><div class="mh-v" id="mhXmin">–</div>
+      <div class="mh-k">xmax</div><div class="mh-v" id="mhXmax">–</div>
+      <div class="mh-k">A</div><div class="mh-v" id="mhA">–</div>
+      <div class="mh-k">f</div><div class="mh-v" id="mhF">–</div>
+      <div class="mh-k">b</div><div class="mh-v" id="mhB">–</div>
+    </div>
+    <div class="mh-note">Ορισμός: A = (xmax − xmin)/2. Καταγραφή όταν το peak-to-peak σταθεροποιείται.</div>
+  </div>
   <canvas id="afCanvas" width="260" height="330" aria-hidden="true"></canvas>
 
 </body>
