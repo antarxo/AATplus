@@ -2308,35 +2308,17 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // Panel inside the RIGHT curtain, below the top-right HUD.
-  const rc = document.querySelector('.curtain-side.right');
-  if(!rc) return {left:0,right:0,top:0,bottom:0};
-  const r = rc.getBoundingClientRect();
-  const hud = document.getElementById('measureHUD');
-  const pad = 10;
-  const minH = 140;
+  // DEBUG placement: center of viewport so we can confirm it renders.
+  const vw = Math.max(320, window.innerWidth || 0);
+  const vh = Math.max(240, window.innerHeight || 0);
 
-  let topCandidate = r.top + pad;
-  if(hud){
-    const hr = hud.getBoundingClientRect();
-    if(hr.width > 10 && hr.height > 10){
-      // only use HUD bottom if it still leaves enough space
-      const t = hr.bottom + 10;
-      if((r.bottom - pad) - t >= minH) topCandidate = Math.max(topCandidate, t);
-    }
-  }
+  const w = Math.min(520, Math.round(vw * 0.55));
+  const h = Math.min(320, Math.round(vh * 0.40));
 
-  let top = topCandidate;
-  let bottom = r.bottom - pad;
-  if(bottom - top < minH){
-    top = r.top + pad;
-    bottom = r.bottom - pad;
-  }
+  const left = Math.round((vw - w) / 2);
+  const top  = Math.round((vh - h) / 2);
 
-  const left  = r.left + pad;
-  const right = r.right - pad;
-
-  return {left,right,top,bottom};
+  return { left, right: left + w, top, bottom: top + h };
 }
 
 function xtOverlayPushSample(tObs, uMeters){
