@@ -2282,65 +2282,23 @@ function ensureXTOverlay(){
   c.style.position = 'absolute';
   c.style.left = '0';
   c.style.top = '0';
-  c.style.width = '10px';
-  c.style.height = '10px';
+  c.style.width = '100%';
+  c.style.height = '100%';
   c.style.pointerEvents = 'none';
-  c.style.zIndex = '1200';
+  // Below the HUD, above curtains/stage
+  c.style.zIndex = '8000';
   c.style.display = 'none';
   stage.appendChild(c);
   xtOverlayCan = c;
-  layoutXTOverlay();
 }
 
-function layoutXTOverlay(){
-  if(!xtOverlayCan) return;
-  try{
-    const rc = document.querySelector('.curtain-side.right');
-    const hud = document.getElementById('measureHUD');
-    if(!rc || !stage) return;
-
-    const s = stage.getBoundingClientRect();
-    const r = rc.getBoundingClientRect();
-
-    const pad = 10;
-
-    // Convert viewport coordinates to stage-local coordinates
-    const rTop = (r.top - s.top);
-    const rLeft = (r.left - s.left);
-    const rBottom = (r.bottom - s.top);
-
-    let top = Math.round(rTop) + pad;
-
-    if(hud){
-      const hr = hud.getBoundingClientRect();
-      if(hr.width > 10 && hr.height > 10){
-        const hudBottomLocal = (hr.bottom - s.top);
-        top = Math.max(top, Math.round(hudBottomLocal) + 10);
-      }
-    }
-
-    const left = Math.round(rLeft) + pad;
-    const width  = Math.max(80, Math.round(r.width) - 2*pad);
-    const height = Math.max(120, Math.round(rBottom) - top - pad);
-
-    xtOverlayCan.style.left = left + 'px';
-    xtOverlayCan.style.top  = top  + 'px';
-    xtOverlayCan.style.width  = width + 'px';
-    xtOverlayCan.style.height = height + 'px';
-
-    const wpx = Math.max(2, width);
-    const hpx = Math.max(2, height);
-    if(xtOverlayCan.width !== wpx) xtOverlayCan.width = wpx;
-    if(xtOverlayCan.height !== hpx) xtOverlayCan.height = hpx;
-  }catch(_e){}
-}
+function layoutXTOverlay(){ /* no-op: xtOverlayDraw uses xtOverlayLocalRect for panel placement */ }
 
 
 function setXTOverlay(on){
   xtOverlayEnabled = !!on;
   ensureXTOverlay();
   if(!xtOverlayCan) return;
-  layoutXTOverlay();
   xtOverlayCan.style.display = xtOverlayEnabled ? 'block' : 'none';
   xtOverlayBuf = [];
   xtOverlayT0 = 0;
@@ -3713,6 +3671,7 @@ function showDynBubble(ev){
 async function runAct1(){
   phase='act1';
   applySignboardForPhase('act1');
+  springEl.style.display='block';
   for(const ev of ACT1){
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
