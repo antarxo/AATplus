@@ -93,10 +93,6 @@ function num(v,fallback=0){
     body.intro-open #navBreak,
     body.intro-open #btnBook,
     body.intro-open #foyerBubble,
-    body.intro-open #xtMiniCanvas,
-    body.intro-open #btnXTmini{
-      visibility: hidden !important;
-    }
 
     #introOverlay.intro-veil{
       position: fixed;
@@ -350,22 +346,21 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       pointer-events:none;
     }
 
+  
 
-    #xtMiniCanvas{
-      position:absolute;
-      left:50%;
-      top:22px;
-      transform:translateX(-50%);
-      z-index:9997;
-      border-radius:14px;
-      background:rgba(0,0,0,0.40);
-      border:1px solid rgba(255,255,255,0.18);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
-      pointer-events:none;
-      display:none;
-    }
+  /* --- x(t) continuous chart on right curtain --- */
+  .curtain-side.right{ position: relative; overflow: hidden; }
+  #xtCurtainCanvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    z-index: 9998;
+    pointer-events:none;
+  }
 
-  </style>
+</style>
 
 </head>
 <body class="intro-open">
@@ -382,7 +377,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
   <div class="curtain-top"></div>
   <div class="curtain-upper"></div>
   <div class="curtain-side left"></div>
-  <div class="curtain-side right"></div>
+  <div class="curtain-side right"><canvas id="xtCurtainCanvas"></canvas></div>
 
   <div class="spotlight" id="spotlight"></div>
 
@@ -3678,6 +3673,127 @@ function showDynBubble(ev){
 }
 
 
+
+/* ---------- Right-curtain x(t) chart (continuous, sliding) ---------- */
+const XTCurtain = (()=>{
+  const cvs = document.getElementById('xtCurtainCanvas');
+  let ctx = null;
+  const samples = [];
+  const MAX_SAMPLES = 6000;
+
+  // time window: half of the previous overlay scale (24T if old was 48T)
+  function windowSec(){ return 24 * T; }  // 24 periods shown
+  const Y_RANGE_M = 6.5; // fixed ±6.5 m for comparability
+
+  function ensure(){
+    if(!cvs) return false;
+    if(!ctx) ctx = cvs.getContext('2d');
+    // match canvas to CSS size
+    const r = cvs.getBoundingClientRect();
+    const w = Math.max(2, Math.round(r.width));
+    const h = Math.max(2, Math.round(r.height));
+    if(cvs.width !== w) cvs.width = w;
+    if(cvs.height !== h) cvs.height = h;
+    return true;
+  }
+
+  function push(t, dx){
+    samples.push([t, dx]);
+    if(samples.length > MAX_SAMPLES) samples.splice(0, samples.length - MAX_SAMPLES);
+  }
+
+  function draw(tNow){
+    if(!ensure()) return;
+    const w = cvs.width, h = cvs.height;
+    ctx.clearRect(0,0,w,h);
+
+    if(!obsStarted) return;
+
+    const W = windowSec();
+    const t0 = Math.max(0, tNow - W);
+    const t1 = (tNow < W) ? W : tNow;
+
+    // styling
+    ctx.save();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.fillStyle   = 'rgba(255,255,255,0.60)';
+    ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.textBaseline = 'middle';
+
+    const padL = 28, padR = 10, padT = 10, padB = 14;
+    const gx0 = padL, gx1 = w - padR;
+    const gy0 = padT, gy1 = h - padB;
+
+    // border
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.strokeRect(gx0, gy0, gx1-gx0, gy1-gy0);
+
+    // axes (y=0 line)
+    const y0 = gy0 + (gy1-gy0)/2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.beginPath();
+    ctx.moveTo(gx0, y0);
+    ctx.lineTo(gx1, y0);
+    ctx.stroke();
+
+    // y labels (+/-6.5, 0)
+    ctx.fillStyle='rgba(255,255,255,0.70)';
+    ctx.fillText('+6.5', 2, gy0+8);
+    ctx.fillText('0',    12, y0);
+    ctx.fillText('-6.5', 2, gy1-8);
+
+    // x labels (time)
+    const span = t1 - t0;
+    const tickCount = 4;
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    for(let i=0;i<=tickCount;i++){
+      const tt = t0 + span*(i/tickCount);
+      const x = gx0 + (gx1-gx0)*(i/tickCount);
+      ctx.strokeStyle='rgba(255,255,255,0.12)';
+      ctx.beginPath();
+      ctx.moveTo(x, gy0);
+      ctx.lineTo(x, gy1);
+      ctx.stroke();
+      ctx.fillText(tt.toFixed(0), x-6, gy1+6);
+    }
+
+    // trace
+    ctx.strokeStyle='rgba(255,255,255,0.85)';
+    ctx.lineWidth=1.6;
+    ctx.beginPath();
+    let started=false;
+    for(const [t, dx] of samples){
+      if(t < t0) continue;
+      if(t > t1) break;
+      const xx = gx0 + (gx1-gx0)*((t - t0)/span);
+      const yy = y0 - (gy1-gy0)/2 * (dx / Y_RANGE_M);
+      if(!started){ ctx.moveTo(xx, yy); started=true; }
+      else ctx.lineTo(xx, yy);
+    }
+    if(started) ctx.stroke();
+
+    // title
+    ctx.fillStyle='rgba(255,255,255,0.75)';
+    ctx.textBaseline='top';
+    ctx.fillText('x(t) – απομάκρυνση', gx0+6, gy0+4);
+
+    ctx.restore();
+  }
+
+  function step(tObs, dx){
+    if(!cvs) return;
+    push(tObs, dx);
+    // trim old samples beyond 2 windows for efficiency
+    const W = windowSec();
+    const cut = Math.max(0, tObs - 2*W);
+    while(samples.length && samples[0][0] < cut) samples.shift();
+    draw(tObs);
+  }
+
+  return { step, draw };
+})();
+
 /* ---------- Dialog Actions (minimal, JSON-friendly) ----------
    Optional per-dialog-line field:
      "actions": [ { "type":"setB", "value":12 }, { "type":"setF", "ratio":0.95 } ]
@@ -4650,119 +4766,6 @@ btnFoyerGo.addEventListener('click',()=>{
 });
 
 
-/* ---------- Mini x(t) overlay (τελευταίες ~6 περίοδοι) ---------- */
-
-const XTmini = (()=>{
-  let enabled = false;
-  let btn=null, cvs=null, ctx=null;
-  const samples = [];
-  const MAX_SAMPLES = 2600;
-  let lastT = 0;
-
-  function bind(){
-    if(!btn) btn = document.getElementById('btnXTmini');
-    if(!cvs) cvs = document.getElementById('xtMiniCanvas');
-    if(cvs && !ctx) ctx = cvs.getContext('2d');
-
-    if(btn && !btn._xtmini){
-      btn._xtmini = true;
-      btn.addEventListener('click', ()=>{
-        enabled = !enabled;
-        if(cvs) cvs.style.display = enabled ? 'block' : 'none';
-        if(enabled) draw(lastT);
-      });
-    }
-  }
-
-  function periodSec(){
-    const r = (typeof driveRatio==='number') ? driveRatio : 0;
-    if(r > 0.0001) return T / r;
-    return T;
-  }
-
-  function windowSec(){
-    return Math.min(24, Math.max(3, 6 * periodSec()));
-  }
-
-  function add(t, xMeters){
-    lastT = t;
-    if(!Number.isFinite(t) || !Number.isFinite(xMeters)) return;
-    bind();
-
-    // κρατάμε displacement ως προς το 10 m
-    const xRel = xMeters - RULER_CENTER_M;
-    samples.push({t, x:xRel});
-    if(samples.length > MAX_SAMPLES) samples.splice(0, samples.length - MAX_SAMPLES);
-
-    const win = windowSec();
-    const tMin = t - win - 0.5;
-    while(samples.length && samples[0].t < tMin) samples.shift();
-
-    if(enabled) draw(t);
-  }
-
-  function draw(tNow){
-    if(!enabled || !ctx || !cvs) return;
-    const W = cvs.width, H = cvs.height;
-    ctx.clearRect(0,0,W,H);
-
-    // frame
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.fillRect(0,0,W,H);
-
-    const padL=44, padR=10, padT=16, padB=26;
-    const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
-    const w=x1-x0, h=y1-y0;
-
-    const win = windowSec();
-    const tStart = tNow - win;
-    const pts = samples.filter(p=>p.t >= tStart - 1e-6);
-
-    // y-scale
-    let maxAbs = 0.5;
-    for(const p of pts) maxAbs = Math.max(maxAbs, Math.abs(p.x));
-    const yMax = Math.min(8, Math.max(1, maxAbs*1.12));
-
-    const X = (tt)=> x0 + ((tt - tStart)/win) * w;
-    const Y = (xx)=> {
-      const u = (xx / yMax);
-      return y0 + (0.5 - 0.5*u) * h;
-    };
-
-    // axes
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x0, y0 + h/2); ctx.lineTo(x1, y0 + h/2);
-    ctx.moveTo(x0, y0); ctx.lineTo(x0, y1);
-    ctx.stroke();
-
-    // labels
-    ctx.fillStyle = 'rgba(255,255,255,0.82)';
-    ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.fillText('x(t) (τελευταίες ~6 περίοδοι)', x0, 13);
-    ctx.font = '10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.textAlign = 'right';
-    ctx.fillText((+yMax.toFixed(1)) + ' m', x0-6, y0+4);
-    ctx.fillText((-(+yMax.toFixed(1))) + ' m', x0-6, y1);
-    ctx.textAlign = 'left';
-
-    // curve
-    if(pts.length >= 2){
-      ctx.strokeStyle = 'rgba(80,180,255,0.95)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(X(pts[0].t), Y(pts[0].x));
-      for(let i=1;i<pts.length;i++) ctx.lineTo(X(pts[i].t), Y(pts[i].x));
-      ctx.stroke();
-    }else{
-      ctx.fillStyle='rgba(255,255,255,0.70)';
-      ctx.fillText('—', x0+6, y0 + h/2 + 4);
-    }
-  }
-
-  return { add, draw, isOn:()=>enabled };
-})();
 
 /* ---------- Animation loop ---------- */
 
@@ -4862,6 +4865,12 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   actor.style.left=(hookX-actorWidth/2)+'px';
 
   markerEl.style.left=hookX+'px';
+  // Continuous x(t) chart on right curtain (always-on after countdown)
+  try{
+    const x_m = (hookX - rulerZeroX)/pxPerMeter;
+    const dx_m = x_m - RULER_CENTER_M;
+    XTCurtain.step(tObs, dx_m);
+  }catch(_e){}
   spotlight.style.background =
     'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,0.65), rgba(255,255,255,0) 70%)';
 
