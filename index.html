@@ -4700,18 +4700,33 @@ const XTmini = (()=>{
     if(cvs && !ctx) ctx = cvs.getContext('2d');
     // always visible, no button
     if(cvs) cvs.style.display = 'block';
-    // place on right curtain (same width), under HUD
+    // place on right curtain (same width), BELOW the top-right HUD (xmin/xmax/A/...)
     try{
       const rc = document.querySelector('.curtain-side.right');
+      const hud = document.getElementById('measureHUD');
       if(rc && cvs){
         const r = rc.getBoundingClientRect();
         const pad = 10;
         const topPad = 10;
-        const h = Math.max(120, Math.round(r.height*0.40));
+        let top = Math.round(r.top) + topPad;
+
+        if(hud){
+          const hr = hud.getBoundingClientRect();
+          // if HUD is visible and overlaps right curtain, stack the chart under it
+          if(hr.width > 10 && hr.height > 10){
+            top = Math.max(top, Math.round(hr.bottom) + 10);
+          }
+        }
+
+        // height: fill remaining right-curtain space (min 120px)
+        const maxH = Math.max(120, Math.round(r.bottom) - top - pad);
+        const h = Math.min(Math.round(r.height*0.55), maxH);
+
         cvs.style.left = (Math.round(r.left)+pad)+'px';
-        cvs.style.top  = (Math.round(r.top)+topPad)+'px';
-        cvs.style.width = (Math.round(r.width)-2*pad)+'px';
+        cvs.style.top  = top+'px';
+        cvs.style.width  = (Math.round(r.width)-2*pad)+'px';
         cvs.style.height = h+'px';
+
         const wpx = Math.max(2, Math.round(r.width)-2*pad);
         const hpx = Math.max(2, h);
         if(cvs.width!==wpx) cvs.width=wpx;
