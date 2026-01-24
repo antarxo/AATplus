@@ -94,9 +94,7 @@ function num(v,fallback=0){
     body.intro-open #btnBook,
     body.intro-open #foyerBubble,
     body.intro-open #xtMiniCanvas,
-    body.intro-open #btnXTmini{
-      visibility: hidden !important;
-    }
+    body.intro-open #btnXTmini{ display:none !important; }
 
     #introOverlay.intro-veil{
       position: fixed;
@@ -358,16 +356,13 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 
     #xtMiniCanvas{
       position:fixed;
-      left:0;
-      top:0;
-      transform:none;
-      z-index:9997;
+      z-index:2000; /* κάτω από clock/measure HUD */
       border-radius:14px;
       background:rgba(0,0,0,0.40);
       border:1px solid rgba(255,255,255,0.18);
       box-shadow: 0 12px 30px rgba(0,0,0,0.28);
       pointer-events:none;
-      display:none;
+      display:block;
     }
 
   </style>
@@ -4694,25 +4689,35 @@ btnFoyerGo.addEventListener('click',()=>{
 /* ---------- Mini x(t) overlay (τελευταίες ~6 περίοδοι) ---------- */
 
 const XTmini = (()=>{
-  let enabled = false;
+  let enabled = true;
   let btn=null, cvs=null, ctx=null;
   const samples = [];
   const MAX_SAMPLES = 2600;
   let lastT = 0;
 
   function bind(){
-    if(!btn) btn = document.getElementById('btnXTmini');
     if(!cvs) cvs = document.getElementById('xtMiniCanvas');
     if(cvs && !ctx) ctx = cvs.getContext('2d');
-
-    if(btn && !btn._xtmini){
-      btn._xtmini = true;
-      btn.addEventListener('click', ()=>{
-        enabled = !enabled;
-        if(cvs) cvs.style.display = enabled ? 'block' : 'none';
-        if(enabled) draw(lastT);
-      });
-    }
+    // always visible, no button
+    if(cvs) cvs.style.display = 'block';
+    // place on right curtain (same width), under HUD
+    try{
+      const rc = document.querySelector('.curtain-side.right');
+      if(rc && cvs){
+        const r = rc.getBoundingClientRect();
+        const pad = 10;
+        const topPad = 10;
+        const h = Math.max(120, Math.round(r.height*0.40));
+        cvs.style.left = (Math.round(r.left)+pad)+'px';
+        cvs.style.top  = (Math.round(r.top)+topPad)+'px';
+        cvs.style.width = (Math.round(r.width)-2*pad)+'px';
+        cvs.style.height = h+'px';
+        const wpx = Math.max(2, Math.round(r.width)-2*pad);
+        const hpx = Math.max(2, h);
+        if(cvs.width!==wpx) cvs.width=wpx;
+        if(cvs.height!==hpx) cvs.height=hpx;
+      }
+    }catch(_e){}
   }
 
   function periodSec(){
@@ -4720,34 +4725,9 @@ const XTmini = (()=>{
     if(r > 0.0001) return T / r;
     return T;
   }
-  function layout(){
-    bind();
-    if(!cvs) return;
-    const rightCurt = document.querySelector('.curtain-side.right');
-    if(!rightCurt) return;
-    const r = rightCurt.getBoundingClientRect();
-    // Tight fit inside right curtain
-    const pad = 8;
-    const w = Math.max(120, Math.floor(r.width - 2*pad));
-    const h = Math.max(90,  Math.floor(r.height - 2*pad));
-    cvs.style.left = Math.floor(r.left + pad) + 'px';
-    cvs.style.top  = Math.floor(r.top  + pad) + 'px';
-    cvs.style.width = w + 'px';
-    cvs.style.height = h + 'px';
-    // set backing store to match
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-    const bw = Math.max(2, Math.floor(w * dpr));
-    const bh = Math.max(2, Math.floor(h * dpr));
-    if(cvs.width !== bw) cvs.width = bw;
-    if(cvs.height !== bh) cvs.height = bh;
-    if(ctx) ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
-
-
 
   function windowSec(){
-    // half the previous time scale (more zoom in time)
-    return Math.min(12, Math.max(1.5, 3 * periodSec()));
+    return Math.min(12, Math.max(2, 3 * periodSec()));
   }
 
   function add(t, xMeters){
@@ -4769,7 +4749,6 @@ const XTmini = (()=>{
 
   function draw(tNow){
     if(!enabled || !ctx || !cvs) return;
-    layout();
     const W = cvs.width, H = cvs.height;
     ctx.clearRect(0,0,W,H);
 
@@ -4807,7 +4786,7 @@ const XTmini = (()=>{
     // labels
     ctx.fillStyle = 'rgba(255,255,255,0.82)';
     ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.fillText('x(t) (τελευταίες ~3 περίοδοι)', x0, 13);
+    ctx.fillText('x(t) (τελευταίες ~6 περίοδοι)', x0, 13);
     ctx.font = '10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.textAlign = 'right';
     ctx.fillText((+yMax.toFixed(1)) + ' m', x0-6, y0+4);
