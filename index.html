@@ -93,7 +93,12 @@ function num(v,fallback=0){
     body.intro-open #navBreak,
     body.intro-open #btnBook,
     body.intro-open #foyerBubble,
-#introOverlay.intro-veil{
+    body.intro-open #xtMiniCanvas,
+    body.intro-open #btnXTmini{
+      visibility: hidden !important;
+    }
+
+    #introOverlay.intro-veil{
       position: fixed;
       inset: 0;
       z-index: 10000;
@@ -350,7 +355,24 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       pointer-events:none;
     }
 
-#btnXTOverlay{display:none !important;}
+
+    #xtMiniCanvas{
+      position:absolute;
+      left:50%;
+      top:22px;
+      transform:translateX(-50%);
+      z-index:9997;
+      border-radius:14px;
+      background:rgba(0,0,0,0.40);
+      border:1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+      pointer-events:none;
+      display:none;
+    }
+
+  
+  /* Disable mini x(t) widget near navigation (not used) */
+  #btnXTmini, #xtMiniCanvas{ display:none !important; }
 </style>
 
 </head>
@@ -380,7 +402,10 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="sb-lineC" id="signLineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
     <div class="sb-lineD" id="signLineD">(*) ... εσείς</div>
   </div>
-<!-- 1. Χρονομετρητής -->
+
+  <canvas id="xtMiniCanvas" width="720" height="190" aria-hidden="true"></canvas>
+
+  <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
   <!-- 2. Πίνακας μετρήσεων t–x -->
@@ -469,7 +494,8 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <button id="btnNext"  title="επόμενο">⏭</button>
     <button id="btnBook"  title="Διαθέσιμο μετά το τέλος της Πράξης 1" disabled>📖</button>
     <button id="btnXTOverlay" title="x–t overlay">📉</button>
-</div>
+    <button id="btnXTmini" title="x–t">📉</button>
+  </div>
 
   <div class="drive-controls" id="driveCtrl" aria-label="ρυθμίσεις διεγέρτη">
     <div class="dc-row">
@@ -883,9 +909,13 @@ const btnBook    = document.getElementById('btnBook');
 
 const btnXTOverlay = document.getElementById('btnXTOverlay');
 const ACT1_UNLOCK_KEY = 'aat_act1_completed';
-// XT overlay (always on)
-setXTOverlay(true);
-if(btnXTOverlay){ btnXTOverlay.classList.toggle('active', true); }
+// XT overlay toggle
+if(btnXTOverlay){
+  btnXTOverlay.onclick = ()=>{
+    setXTOverlay(!xtOverlayEnabled);
+    btnXTOverlay.classList.toggle('active', xtOverlayEnabled);
+  };
+}
 
 
 let bookUnlocked = (localStorage.getItem(ACT1_UNLOCK_KEY) === '1');
@@ -912,6 +942,9 @@ const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
 const foyerBreak = document.getElementById('foyerBreak');
 const btnFoyerGo = document.getElementById('btnFoyerGo');
+
+const act3Break = document.getElementById('act3Break');
+const btnAct3   = document.getElementById('btnAct3');
 
 const foyerEl     = document.getElementById('foyer');
 const boardLeft   = document.getElementById('boardLeft');
@@ -2264,12 +2297,12 @@ function drawXTChart(){
 
 /* ---------- XT OVERLAY (μεγάλο διάγραμμα x–t πάνω στη σκηνή) ---------- */
 
-var xtOverlayEnabled = true;
-var xtOverlayCan = null;
-var xtOverlayBuf = [];
-var xtOverlayT0 = 0;
-var xtOverlayLastNow = null;
-var xtOverlayURange = 3.5;
+let xtOverlayEnabled = false;
+let xtOverlayCan = null;
+let xtOverlayBuf = [];
+let xtOverlayT0 = 0;
+let xtOverlayLastNow = null;
+let xtOverlayURange = 3.5;
 
 function getStageScale(){
   const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
@@ -2277,24 +2310,20 @@ function getStageScale(){
 }
 
 function ensureXTOverlay(){
-  if(xtOverlayCan) return;
+  if(xtOverlayCan || !stage) return;
   const c = document.createElement('canvas');
   c.id = 'xtOverlayCanvas';
-  c.style.position = 'fixed';
+  c.style.position = 'absolute';
   c.style.left = '0';
   c.style.top = '0';
-  c.style.width = '100vw';
-  c.style.height = '100vh';
+  c.style.width = '100%';
+  c.style.height = '100%';
   c.style.pointerEvents = 'none';
-  // Under measureHUD (z=9999), above background
-  c.style.zIndex = '8000';
+  c.style.zIndex = '1500';
   c.style.display = 'none';
-  document.body.appendChild(c);
+  stage.appendChild(c);
   xtOverlayCan = c;
 }
-
-function layoutXTOverlay(){ /* no-op: xtOverlayDraw uses xtOverlayLocalRect for panel placement */ }
-
 
 function setXTOverlay(on){
   xtOverlayEnabled = !!on;
@@ -2308,17 +2337,21 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // DEBUG placement: center of viewport so we can confirm it renders.
-  const vw = Math.max(320, window.innerWidth || 0);
-  const vh = Math.max(240, window.innerHeight || 0);
+  // DEBUG/confirm rendering: κεντρικό panel στη μέση της σκηνής
+  if(!stage) return {left:0,right:0,top:0,bottom:0};
 
-  const w = Math.min(520, Math.round(vw * 0.55));
-  const h = Math.min(320, Math.round(vh * 0.40));
+  const s = getStageScale();
+  const stageRect = stage.getBoundingClientRect();
+  const W = stage.clientWidth || 0;
+  const H = stage.clientHeight || 0;
 
-  const left = Math.round((vw - w) / 2);
-  const top  = Math.round((vh - h) / 2);
+  const w = Math.min(560, Math.max(260, Math.round(W*0.55)));
+  const h = Math.min(320, Math.max(160, Math.round(H*0.38)));
 
-  return { left, right: left + w, top, bottom: top + h };
+  const left  = Math.round((W - w)/2);
+  const top   = Math.round((H - h)/2);
+
+  return { left, right:left+w, top, bottom:top+h };
 }
 
 function xtOverlayPushSample(tObs, uMeters){
@@ -2345,9 +2378,9 @@ function xtOverlayDraw(dt){
   const H = yBot-yTop;
   if(W<60 || H<50) return;
 
-  // Resize backing canvas to viewport px
-  const wNeed = Math.max(2, window.innerWidth || 0);
-  const hNeed = Math.max(2, window.innerHeight || 0);
+  // Resize backing canvas to stage px
+  const wNeed = stage.clientWidth || 0;
+  const hNeed = stage.clientHeight || 0;
   if(xtOverlayCan.width !== wNeed) xtOverlayCan.width = wNeed;
   if(xtOverlayCan.height!== hNeed) xtOverlayCan.height = hNeed;
 
@@ -3655,7 +3688,7 @@ function showDynBubble(ev){
 async function runAct1(){
   phase='act1';
   applySignboardForPhase('act1');
-  springEl.style.display='block';
+  try{ springEl.style.display='block'; }catch(_e){}
   for(const ev of ACT1){
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
@@ -3738,10 +3771,6 @@ async function runAct1(){
       triggerXtZeroMark(ev);
     }
   }
-  // If Act1 finishes naturally, proceed to Act2
-  await closeCurtainToAct2();
-  return;
-
 }
 
 /* Ghost / Act 2 */
@@ -3864,38 +3893,28 @@ async function runAct2(){
   stage.classList.remove('open');
   updateMarbleTrack();
   setAudienceLights(true);
-  phase='between2andFoyer';
-  TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
+  phase='between2and3';
+  TM.setTimeout(()=>{
+    act3Break.style.display='flex';
+    try{ btnAct3.disabled=false; btnAct3.setAttribute('aria-disabled','false'); btnAct3.removeAttribute('title'); }catch(_e){}
+  },1200);
 }
 
-async function runAct3(){
-  ensureGhost();
-  ghostActive=false;
-  ghostVisibility=0;
-  if(ghost){
-    ghost.style.display='none';
-    ghost.style.opacity='0';
-  }
-  if(ghostSpring){
-    ghostSpring.style.display='none';
-    ghostSpring.style.opacity='0';
-  }
 
-  actBreak.style.display='none';
+async function runAct3(){
+  act3Break.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
   phase='act3';
   applySignboardForPhase('act3');
 
-  springEl.style.display='block';
+  // Ελατήριο ορατό και στην Πράξη 3
+  try{ springEl.style.display='block'; }catch(_e){}
   markerEl.style.opacity='1';
-  markerGhostEl.style.opacity='0';
 
   for(const ev of ACT3){
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
-    if(ev.gStart) ghostActive=true;
-    if(ev.gStop)  ghostActive=false;
 
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
@@ -3938,12 +3957,8 @@ async function runAct3(){
   stage.classList.remove('open');
   updateMarbleTrack();
   setAudienceLights(true);
-  phase='between2andFoyer';
+  phase='between3andFoyer';
   TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
-
-
-  // φυσικό τέλος: επιστροφή στο φουαγιέ
-  await closeCurtainToFoyer();
 }
 
 
@@ -3961,18 +3976,6 @@ function closeCurtainToAct2(){
     },1400);
   });
 }
-
-function closeCurtainToAct3(){
-  return new Promise(resolve=>{
-    stage.classList.remove('open');
-    updateMarbleTrack();
-    setAudienceLights(true);
-    TM.setTimeout(()=>{
-      resolve();
-    },1400);
-  });
-}
-
 
 /* ---------- Φουαγιέ ---------- */
 
@@ -4471,6 +4474,7 @@ function initShowBase(){
 
 function beginObservation(){
   countdownState.active = false;
+  try{ setXTOverlay(true); }catch(_e){}
   initShowBase();
   runAct1();
 }
@@ -4519,11 +4523,130 @@ btnAct2.addEventListener('click',()=>{
   runAct2();
 });
 
+btnAct3.addEventListener('click',()=>{
+  act3Break.style.display='none';
+  runAct3();
+});
+
 btnFoyerGo.addEventListener('click',()=>{
   foyerBreak.style.display='none';
   runFoyer();
 });
 
+
+/* ---------- Mini x(t) overlay (τελευταίες ~6 περίοδοι) ---------- */
+
+const XTmini = (()=>{
+  let enabled = false;
+  let btn=null, cvs=null, ctx=null;
+  const samples = [];
+  const MAX_SAMPLES = 2600;
+  let lastT = 0;
+
+  function bind(){
+    if(!btn) btn = document.getElementById('btnXTmini');
+    if(!cvs) cvs = document.getElementById('xtMiniCanvas');
+    if(cvs && !ctx) ctx = cvs.getContext('2d');
+
+    if(btn && !btn._xtmini){
+      btn._xtmini = true;
+      btn.addEventListener('click', ()=>{
+        enabled = !enabled;
+        if(cvs) cvs.style.display = enabled ? 'block' : 'none';
+        if(enabled) draw(lastT);
+      });
+    }
+  }
+
+  function periodSec(){
+    const r = (typeof driveRatio==='number') ? driveRatio : 0;
+    if(r > 0.0001) return T / r;
+    return T;
+  }
+
+  function windowSec(){
+    return Math.min(24, Math.max(3, 6 * periodSec()));
+  }
+
+  function add(t, xMeters){
+    lastT = t;
+    if(!Number.isFinite(t) || !Number.isFinite(xMeters)) return;
+    bind();
+
+    // κρατάμε displacement ως προς το 10 m
+    const xRel = xMeters - RULER_CENTER_M;
+    samples.push({t, x:xRel});
+    if(samples.length > MAX_SAMPLES) samples.splice(0, samples.length - MAX_SAMPLES);
+
+    const win = windowSec();
+    const tMin = t - win - 0.5;
+    while(samples.length && samples[0].t < tMin) samples.shift();
+
+    if(enabled) draw(t);
+  }
+
+  function draw(tNow){
+    if(!enabled || !ctx || !cvs) return;
+    const W = cvs.width, H = cvs.height;
+    ctx.clearRect(0,0,W,H);
+
+    // frame
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillRect(0,0,W,H);
+
+    const padL=44, padR=10, padT=16, padB=26;
+    const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
+    const w=x1-x0, h=y1-y0;
+
+    const win = windowSec();
+    const tStart = tNow - win;
+    const pts = samples.filter(p=>p.t >= tStart - 1e-6);
+
+    // y-scale
+    let maxAbs = 0.5;
+    for(const p of pts) maxAbs = Math.max(maxAbs, Math.abs(p.x));
+    const yMax = Math.min(8, Math.max(1, maxAbs*1.12));
+
+    const X = (tt)=> x0 + ((tt - tStart)/win) * w;
+    const Y = (xx)=> {
+      const u = (xx / yMax);
+      return y0 + (0.5 - 0.5*u) * h;
+    };
+
+    // axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0 + h/2); ctx.lineTo(x1, y0 + h/2);
+    ctx.moveTo(x0, y0); ctx.lineTo(x0, y1);
+    ctx.stroke();
+
+    // labels
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.fillText('x(t) (τελευταίες ~6 περίοδοι)', x0, 13);
+    ctx.font = '10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText((+yMax.toFixed(1)) + ' m', x0-6, y0+4);
+    ctx.fillText((-(+yMax.toFixed(1))) + ' m', x0-6, y1);
+    ctx.textAlign = 'left';
+
+    // curve
+    if(pts.length >= 2){
+      ctx.strokeStyle = 'rgba(80,180,255,0.95)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(X(pts[0].t), Y(pts[0].x));
+      for(let i=1;i<pts.length;i++) ctx.lineTo(X(pts[i].t), Y(pts[i].x));
+      ctx.stroke();
+    }else{
+      ctx.fillStyle='rgba(255,255,255,0.70)';
+      ctx.fillText('—', x0+6, y0 + h/2 + 4);
+    }
+  }
+
+  return { add, draw, isOn:()=>enabled };
+})();
 
 /* ---------- Animation loop ---------- */
 
@@ -4632,6 +4755,9 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   logMeasurement(tObs,xMeters);
   xtOverlayPushSample(tObs, driveU/pxPerMeter);
   xtOverlayDraw(dt);
+
+  if(typeof XTmini !== 'undefined' && XTmini) XTmini.add(tObs, xMeters);
+
   if(ghost && ghostSpring){
     const target=ghostActive?1:0;
     const fadeSpeed=3;
