@@ -317,18 +317,13 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 
     /* === Measurement HUD + A–f plot (DEV overlay) === */
     #measureHUD{
-      position:absolute;
-      right:16px;
-      top:16px;
-      z-index:9999;
-      width:280px;
-      padding:10px 12px;
-      background:rgba(0,0,0,0.55);
-      border:1px solid rgba(255,255,255,0.18);
+      position:static;
+      width:auto;
+      margin-top:10px;
+      padding:8px 10px;
+      background:rgba(0,0,0,0.20);
+      border:1px solid rgba(255,255,255,0.12);
       border-radius:10px;
-      color:#fff;
-      font: 13px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      pointer-events:none;
     }
     #measureHUD .mh-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
     #measureHUD .mh-title{font-weight:700; letter-spacing:.2px;}
@@ -400,9 +395,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="sb-lineD" id="signLineD">(*) ... εσείς</div>
   </div>
 
-  <canvas id="xtMiniCanvas" width="720" height="190" aria-hidden="true"></canvas>
-
-  <!-- 1. Χρονομετρητής -->
+<!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
   <!-- 2. Πίνακας μετρήσεων t–x -->
@@ -414,6 +407,21 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       </thead>
       <tbody id="measureTBody"></tbody>
     </table>
+<div id="measureHUD" aria-hidden="true">
+    <div class="mh-row">
+      <div class="mh-title">Μετρήσεις</div>
+      <div class="mh-chip" id="mhStable">unstable</div>
+    </div>
+    <div class="mh-grid">
+      <div class="mh-k">x</div><div class="mh-v" id="mhX">–</div>
+      <div class="mh-k">xmin</div><div class="mh-v" id="mhXmin">–</div>
+      <div class="mh-k">xmax</div><div class="mh-v" id="mhXmax">–</div>
+      <div class="mh-k">A</div><div class="mh-v" id="mhA">–</div>
+      <div class="mh-k">f</div><div class="mh-v" id="mhF">–</div>
+      <div class="mh-k">b</div><div class="mh-v" id="mhB">–</div>
+    </div>
+    <div class="mh-note">Ορισμός: A = (xmax − xmin)/2. Καταγραφή όταν το peak-to-peak σταθεροποιείται.</div>
+  </div>
   </div>
 
   <!-- 3. Γράφημα x–t -->
@@ -490,9 +498,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <button id="btnReset" title="reset">↺</button>
     <button id="btnNext"  title="επόμενο">⏭</button>
     <button id="btnBook"  title="Διαθέσιμο μετά το τέλος της Πράξης 1" disabled>📖</button>
-    <button id="btnXTOverlay" title="x–t overlay">📉</button>
-    <button id="btnXTmini" title="x–t">📉</button>
-  </div>
+</div>
 
   <div class="drive-controls" id="driveCtrl" aria-label="ρυθμίσεις διεγέρτη">
     <div class="dc-row">
@@ -529,6 +535,11 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="box">
       <h3 id="startBreakTitle">Έναρξη Παράστασης</h3>
       <p  id="startBreakMsg">Ενας θεατής ας κάνει κλικ στην Έναρξη</p>
+      <div class="countdown-setting" style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
+        <label for="countdownSeconds" style="opacity:.9;">Countdown (s)</label>
+        <input id="countdownSeconds" type="number" min="0" max="30" step="1" value="5" style="width:72px; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,255,255,0.25); background:rgba(0,0,0,0.35); color:#fff; text-align:center;">
+      </div>
+
       <button class="start-btn" id="startBtn">Έναρξη</button>
     </div>
   </div>
@@ -906,15 +917,7 @@ const btnBook    = document.getElementById('btnBook');
 
 const btnXTOverlay = document.getElementById('btnXTOverlay');
 const ACT1_UNLOCK_KEY = 'aat_act1_completed';
-// XT overlay toggle
-if(btnXTOverlay){
-  btnXTOverlay.onclick = ()=>{
-    setXTOverlay(!xtOverlayEnabled);
-    btnXTOverlay.classList.toggle('active', xtOverlayEnabled);
-  };
-}
-
-
+// XT overlay is always ON (no toggle button)
 let bookUnlocked = (localStorage.getItem(ACT1_UNLOCK_KEY) === '1');
 
 function setBookUnlocked(on, persist=true){
@@ -1049,6 +1052,44 @@ const TM = (() => {
 
 /* Countdown state (για pause που πραγματικά παγώνει) */
 const countdownState = { active:false, remainingMs:0, lastNow:0 };
+
+function getCountdownSeconds(){
+  const el = document.getElementById('countdownSeconds');
+  let v = 5;
+  try{
+    const saved = localStorage.getItem('aat_countdown_seconds');
+    if(saved !== null && saved !== '') v = parseInt(saved,10);
+  }catch(_e){}
+  if(el){
+    const n = parseInt(el.value,10);
+    if(Number.isFinite(n)) v = n;
+  }
+  v = Math.max(0, Math.min(30, v));
+  if(el) el.value = String(v);
+  try{ localStorage.setItem('aat_countdown_seconds', String(v)); }catch(_e){}
+  return v;
+}
+
+function clearMeasurements(){
+  try{ measureTBody.innerHTML=''; }catch(_e){}
+  measureRowIdx = 0;
+  lastSampleObsTime = -Infinity;
+}
+
+function stopObservationSession(hide=true){
+  obsStarted = false;
+  clockEl.textContent = 't = 0.00 s';
+  if(hide) clockEl.style.display='none';
+}
+
+function startNewObservationSession(){
+  obsStarted = true;
+  obsStartPlaybackOffset = playbackTime;
+  clearMeasurements();
+  try{ logMeasurement(0, x0Val()); }catch(_e){}
+  clockEl.style.display='block';
+  measureBox.style.display='block';
+}
 
 
 let uXT = null;   // x–t canvas
@@ -2371,7 +2412,7 @@ function drawXTChart(){
 
 /* ---------- XT OVERLAY (μεγάλο διάγραμμα x–t πάνω στη σκηνή) ---------- */
 
-let xtOverlayEnabled = false;
+let xtOverlayEnabled = true;
 let xtOverlayBottomOpenLocal = null; // cached bottom (open curtain) in stage-local px
 
 let xtOverlayCan = null;
@@ -2389,15 +2430,15 @@ function ensureXTOverlay(){
   if(xtOverlayCan || !stage) return;
   const c = document.createElement('canvas');
   c.id = 'xtOverlayCanvas';
-  c.style.position = 'absolute';
+  c.style.position = 'fixed';
   c.style.left = '0';
   c.style.top = '0';
-  c.style.width = '100%';
-  c.style.height = '100%';
+  c.style.width = '10px';
+  c.style.height = '10px';
   c.style.pointerEvents = 'none';
-  c.style.zIndex = '9996';
-  c.style.display = 'none';
-  stage.appendChild(c);
+  c.style.zIndex = '10050';
+  c.style.display = 'block';
+  document.body.appendChild(c);
   xtOverlayCan = c;
 }
 
@@ -2413,57 +2454,35 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // Πάνω: πάνω άκρο σκηνής. Κάτω: κάτω άκρο ΑΝΟΙΧΤΗΣ κουρτίνας (= curtain-top).
-  if(!stage) return {left:0,right:0,top:0,bottom:0};
+  // ΜΟΝΙΜΑ μέσα στη δεξιά ακίνητη κουρτίνα (στενό όσο αυτή) και ορατό πάντα (fixed canvas).
+  const rc = document.querySelector('.curtain-side.right');
+  const s = stage.getBoundingClientRect();
 
-  const s = getStageScale();
-  const stageRect = stage.getBoundingClientRect();
-  const stageH = stage.clientHeight || 0;
-
-  let bottomLocal = 0;
-  const ct = stage.querySelector('.curtain-top');
-  // When curtains are closed, .curtain-top may extend too low; we want the OPEN-curtain baseline.
-  // Cache the open baseline when stage is open, reuse it when stage is closed.
-  if(ct && stage.classList.contains('open')){
-    const r = ct.getBoundingClientRect();
-    bottomLocal = (r.bottom - stageRect.top) / s;
-    if(isFinite(bottomLocal) && bottomLocal>0) xtOverlayBottomOpenLocal = bottomLocal;
-  }else if(isFinite(xtOverlayBottomOpenLocal) && xtOverlayBottomOpenLocal){
-    bottomLocal = xtOverlayBottomOpenLocal;
-  }else if(ct){
-    const r = ct.getBoundingClientRect();
-    bottomLocal = (r.bottom - stageRect.top) / s;
-  }else{
-    bottomLocal = stageH * 0.22;
+  if(!rc){
+    return {left:s.right-260, right:s.right-12, top:s.top+12, bottom:s.bottom-12};
   }
+  const r = rc.getBoundingClientRect();
+  const pad = 10;
 
-  bottomLocal = Math.max(40, Math.min(stageH, bottomLocal));
+  // Vertical range: top of stage → bottom of OPEN curtain (curtain-top), else stage bottom
+  let bottom = s.bottom - pad;
+  try{
+    const ct = document.querySelector('.curtain-top');
+    if(ct){
+      const ctr = ct.getBoundingClientRect();
+      bottom = Math.min(bottom, ctr.bottom - pad);
+    }
+  }catch(_e){}
 
-  let leftLocal = 0;
-  let rightLocal = (stage.clientWidth||0);
-
-  const cL = stage.querySelector('.curtain-side.left');
-  const cR = stage.querySelector('.curtain-side.right');
-  if(cL && cR){
-    const rl = cL.getBoundingClientRect();
-    const rr = cR.getBoundingClientRect();
-    leftLocal  = (rl.right - stageRect.left) / s;
-    rightLocal = (rr.left  - stageRect.left) / s;
-  }
-
-  // μικρό padding ώστε να μη "γλείφει" τις κουρτίνες
-  const pad = 8;
-  leftLocal  = Math.max(0, leftLocal + pad);
-  rightLocal = Math.min((stage.clientWidth||0), rightLocal - pad);
-
-  return { left:leftLocal, right:rightLocal, top:0, bottom:bottomLocal };
+  const top = s.top + pad;
+  return {left:r.left+pad, right:r.right-pad, top:top, bottom:bottom};
 }
 
 function xtOverlayPushSample(tObs, uMeters){
   if(!xtOverlayEnabled || !xtOverlayCan) return;
   if(!isFinite(tObs) || !isFinite(uMeters)) return;
 
-  const span = Math.max(12, 48*T); // ~24 περίοδοι (1 περίοδος στο 1/4 του πλάτους)
+  const span = Math.max(6, 24*T); // ~24 περίοδοι (1 περίοδος στο 1/4 του πλάτους)
   xtOverlayBuf.push({t:tObs, u:uMeters});
 
   const cutoff = tObs - (span + 2*T);
@@ -2474,170 +2493,109 @@ function xtOverlayDraw(dt){
   if(!xtOverlayEnabled || !xtOverlayCan) return;
 
   const rect = xtOverlayLocalRect();
-  const x0 = rect.left;
-  const x1 = rect.right;
-  const yTop = rect.top;
-  const yBot = rect.bottom;
+  const Wcss = rect.right-rect.left;
+  const Hcss = rect.bottom-rect.top;
+  if(Wcss<90 || Hcss<90) return;
 
-  const W = x1-x0;
-  const H = yBot-yTop;
-  if(W<60 || H<50) return;
+  // Position & size fixed canvas over the right curtain
+  xtOverlayCan.style.left = rect.left + 'px';
+  xtOverlayCan.style.top  = rect.top  + 'px';
+  xtOverlayCan.style.width  = Wcss + 'px';
+  xtOverlayCan.style.height = Hcss + 'px';
 
-  // Resize backing canvas to stage px
-  const wNeed = stage.clientWidth || 0;
-  const hNeed = stage.clientHeight || 0;
-  if(xtOverlayCan.width !== wNeed) xtOverlayCan.width = wNeed;
-  if(xtOverlayCan.height!== hNeed) xtOverlayCan.height = hNeed;
+  const dpr = window.devicePixelRatio || 1;
+  const W = Math.floor(Wcss * dpr);
+  const H = Math.floor(Hcss * dpr);
+  if(xtOverlayCan.width !== W) xtOverlayCan.width = W;
+  if(xtOverlayCan.height!== H) xtOverlayCan.height = H;
 
   const ctx = xtOverlayCan.getContext('2d');
-  ctx.clearRect(0,0,xtOverlayCan.width,xtOverlayCan.height);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,Wcss,Hcss);
 
-  // Panel background (μόνο στο rect)
+  // Panel bg
   ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.26)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-  ctx.lineWidth = 1;
-  const r = 12;
-  const X = x0+6, Y=yTop+6, WW=W-12, HH=H-12;
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+  const rr = 10;
   ctx.beginPath();
-  ctx.moveTo(X+r,Y);
-  ctx.lineTo(X+WW-r,Y);
-  ctx.quadraticCurveTo(X+WW,Y,X+WW,Y+r);
-  ctx.lineTo(X+WW,Y+HH-r);
-  ctx.quadraticCurveTo(X+WW,Y+HH,X+WW-r,Y+HH);
-  ctx.lineTo(X+r,Y+HH);
-  ctx.quadraticCurveTo(X,Y+HH,X,Y+HH-r);
-  ctx.lineTo(X,Y+r);
-  ctx.quadraticCurveTo(X,Y,X+r,Y);
+  ctx.moveTo(rr,0);
+  ctx.lineTo(Wcss-rr,0);
+  ctx.quadraticCurveTo(Wcss,0,Wcss,rr);
+  ctx.lineTo(Wcss,Hcss-rr);
+  ctx.quadraticCurveTo(Wcss,Hcss,Wcss-rr,Hcss);
+  ctx.lineTo(rr,Hcss);
+  ctx.quadraticCurveTo(0,Hcss,0,Hcss-rr);
+  ctx.lineTo(0,rr);
+  ctx.quadraticCurveTo(0,0,rr,0);
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
   ctx.restore();
 
-  const marginL=38, marginR=16, marginT=18, marginB=20;
-  const pxL = x0 + marginL;
-  const pxR = x1 - marginR;
-  const pyT = yTop + marginT;
-  const pyB = yBot - marginB;
+  const padL = 24, padR = 10, padT = 10, padB = 18;
+  const gx0 = padL, gy0 = padT;
+  const gw = Wcss - padL - padR;
+  const gh = Hcss - padT - padB;
+  if(gw<40 || gh<40) return;
 
-  const span = Math.max(12, 48*T);
-  if(!xtOverlayBuf.length) return;
+  const span = Math.max(6, 24*T); // sync with push
+  const tMax = (xtOverlayBuf.length? xtOverlayBuf[xtOverlayBuf.length-1].t : 0);
+  const tMin = Math.max(0, tMax - span);
 
-  const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
+  const uMax = xtOverlayURange;  // fixed ±6.5 m
+  const uMin = -uMax;
 
-  // Time window: 0 στην αρχή, ολίσθηση μόνο όταν γεμίσει.
-  const desiredT0 = Math.max(0, tNow - span);
-  if(tNow <= span){
-    xtOverlayT0 = 0;
-  }else{
-    // αργή ολίσθηση (inertia)
-    const alpha = Math.min(1, Math.max(0.02, (dt||0.016)*0.20));
-    xtOverlayT0 = xtOverlayT0 + (desiredT0 - xtOverlayT0)*alpha;
-  }
-  const t0 = xtOverlayT0;
-  const t1 = t0 + span;
+  const tx = (t)=> gx0 + ((t - tMin) / (span || 1)) * gw;
+  const uy = (u)=> gy0 + (1 - ((u - uMin) / ((uMax-uMin)||1))) * gh;
 
-  // Υ-κλίμακα: ΣΤΑΘΕΡΗ, για να φαίνονται καθαρά οι διαφορές (±6.5 m)
-  const uRange = 6.5;
-
-  function tToX(t){
-    return pxL + (t - t0) / (t1 - t0) * (pxR - pxL);
-  }
-  function uToY(u){
-    const mid = (pyT+pyB)/2;
-    return mid - (u / uRange) * ((pyB-pyT)/2);
-  }
-
-  // Grid + axes
+  // Grid + labels (stable)
   ctx.save();
-  ctx.strokeStyle='rgba(255,255,255,0.14)';
-  ctx.lineWidth=1;
-  ctx.setLineDash([3,3]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.font = '11px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+  ctx.textAlign='right';
+  ctx.textBaseline='middle';
 
-  // time ticks: αραιά labels για να μη τρελαίνουν
-  let step = 1;
-  if(span > 120) step = 24;
-  else if(span > 60) step = 12;
-  else if(span > 28) step = 6;
-  else if(span > 16) step = 4;
-  else if(span > 10) step = 2;
-
-  const tStart = Math.ceil(t0/step)*step;
-  for(let t=tStart; t<=t1+1e-9; t+=step){
-    const x = tToX(t);
-    ctx.beginPath();
-    ctx.moveTo(x,pyT);
-    ctx.lineTo(x,pyB);
-    ctx.stroke();
+  const yticks = [-6,-3,0,3,6];
+  for(const yv of yticks){
+    const yy = uy(yv);
+    ctx.beginPath(); ctx.moveTo(gx0,yy); ctx.lineTo(gx0+gw,yy); ctx.stroke();
+    ctx.fillText(String(yv), gx0-4, yy);
   }
 
-  // u ticks
-  const uTicks = [-uRange/2, 0, uRange/2];
-  for(const u of uTicks){
-    const y = uToY(u);
-    ctx.beginPath();
-    ctx.moveTo(pxL,y);
-    ctx.lineTo(pxR,y);
-    ctx.stroke();
-  }
+  // time axis at u=0
+  const y0 = uy(0);
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.beginPath(); ctx.moveTo(gx0,y0); ctx.lineTo(gx0+gw,y0); ctx.stroke();
 
-  ctx.restore();
-
-  // axes bold
-  ctx.save();
-  ctx.strokeStyle='rgba(255,255,255,0.55)';
-  ctx.lineWidth=1;
-  ctx.setLineDash([]);
-  // time axis (u=0)
-  const y0 = uToY(0);
-  ctx.beginPath();
-  ctx.moveTo(pxL,y0);
-  ctx.lineTo(pxR,y0);
-  ctx.stroke();
-  // left border
-  ctx.beginPath();
-  ctx.moveTo(pxL,pyT);
-  ctx.lineTo(pxL,pyB);
-  ctx.stroke();
-  // frame
-  ctx.beginPath();
-  ctx.rect(pxL,pyT,pxR-pxL,pyB-pyT);
-  ctx.stroke();
-  ctx.restore();
-
-  // plot
-  ctx.save();
-  ctx.strokeStyle='rgba(255,210,90,0.95)';
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  let started = false;
-  for(const p of xtOverlayBuf){
-    if(p.t < t0 || p.t > t1) continue;
-    const x = tToX(p.t);
-    const y = uToY(p.u);
-    if(!started){ ctx.moveTo(x,y); started = true; }
-    else{ ctx.lineTo(x,y); }
-  }
-  if(started) ctx.stroke();
-  ctx.restore();
-
-  // labels
-  ctx.save();
-  ctx.fillStyle='rgba(255,255,255,0.92)';
-  ctx.font='12px system-ui';
-  const title = (currentLang==='en') ? 'x–t (relative)' : 'x–t (ως προς ισορροπία)';
-  ctx.fillText(title, pxL+6, pyT+14);
-
-  ctx.font='10px system-ui';
-  ctx.textAlign='center';
-  for(let t=tStart; t<=t1+1e-9; t+=step){
-    const x = tToX(t);
-    ctx.fillText(String(Math.round(t)), x, pyB+12);
-  }
   ctx.textAlign='left';
-  ctx.fillText('t (s)', pxR-28, y0-6);
-  ctx.fillText('x (m)', pxL+2, pyT-4);
+  ctx.textBaseline='top';
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillText('t (s)', gx0, gy0+gh+2);
+  ctx.textAlign='left';
+  ctx.fillText(tMin.toFixed(1), gx0, gy0+gh+2);
+  ctx.textAlign='right';
+  ctx.fillText(tMax.toFixed(1), gx0+gw, gy0+gh+2);
   ctx.restore();
+
+  // Trace
+  if(xtOverlayBuf.length>1){
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    let started=false;
+    for(const p of xtOverlayBuf){
+      if(p.t < tMin) continue;
+      const x = tx(p.t);
+      const y = uy(p.u);
+      if(!started){ ctx.moveTo(x,y); started=true; }
+      else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
 }
 
 /* ---------- Νόμοι & mini-διαγράμματα ---------- */
@@ -4287,6 +4245,8 @@ async function runFoyer(){
   setAudienceLights(true);
   foyerEl.style.display='block';
   setFoyerTitles();
+  try{ clockEl.style.display='none'; }catch(_e){}
+  try{ measureBox.style.display='none'; }catch(_e){}
   if(startBreak) startBreak.style.display='none';
   startBtn.style.display='none';
   boardLeft.innerHTML='';
@@ -4622,14 +4582,11 @@ if (btnBook) {
 function initShowBase(){
   stage.classList.add('open');
   setAudienceLights(false);
-  if(!obsStarted){
-    obsStarted=true;
-    obsStartPlaybackOffset=playbackTime;
-    // Καταγραφή του t=0, x0 ως πρώτη εγγραφή
-    logMeasurement(0, x0Val());
+  // Do NOT start/reset observation here; it is controlled by countdown completion.
+  if(obsStarted){
+    clockEl.style.display='block';
+    measureBox.style.display='block';
   }
-  clockEl.style.display='block';
-  measureBox.style.display='block';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
   updateRuler();
@@ -4637,6 +4594,7 @@ function initShowBase(){
 
 function beginObservation(){
   countdownState.active = false;
+  // Start the clock ONLY when countdown finishes.
   initShowBase();
   runAct1();
 }
@@ -4646,8 +4604,9 @@ function startShowCountdown(){
   if(startBreak) startBreak.style.display='none';
   startBtn.style.display='none';
   countdownOverlay.style.display='flex';
+  try{ clockEl.style.display='none'; }catch(_e){}
 
-  const seconds = 5;
+  const seconds = getCountdownSeconds();
   countdownState.active = true;
   countdownState.remainingMs = seconds * 1000;
   countdownState.lastNow = performance.now();
@@ -4913,8 +4872,6 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   logMeasurement(tObs,xMeters);
   xtOverlayPushSample(tObs, driveU/pxPerMeter);
   xtOverlayDraw(dt);
-
-  if(typeof XTmini !== 'undefined' && XTmini) XTmini.add(tObs, xMeters);
 
   if(ghost && ghostSpring){
     const target=ghostActive?1:0;
@@ -5648,24 +5605,15 @@ stable = nowStable;
 })();
 
 
+
+
+// --- Always-on x(t) overlay init (right curtain) ---
+try{ ensureXTOverlay(); }catch(_e){}
 </script>
 
   <!-- === Measurement HUD + A–f plot (DEV) === -->
-  <div id="measureHUD" aria-hidden="true">
-    <div class="mh-row">
-      <div class="mh-title">Μετρήσεις</div>
-      <div class="mh-chip" id="mhStable">unstable</div>
-    </div>
-    <div class="mh-grid">
-      <div class="mh-k">x</div><div class="mh-v" id="mhX">–</div>
-      <div class="mh-k">xmin</div><div class="mh-v" id="mhXmin">–</div>
-      <div class="mh-k">xmax</div><div class="mh-v" id="mhXmax">–</div>
-      <div class="mh-k">A</div><div class="mh-v" id="mhA">–</div>
-      <div class="mh-k">f</div><div class="mh-v" id="mhF">–</div>
-      <div class="mh-k">b</div><div class="mh-v" id="mhB">–</div>
-    </div>
-    <div class="mh-note">Ορισμός: A = (xmax − xmin)/2. Καταγραφή όταν το peak-to-peak σταθεροποιείται.</div>
-  </div>
+  
+
   <canvas id="afCanvas" width="260" height="330" aria-hidden="true"></canvas>
 
 </body>
