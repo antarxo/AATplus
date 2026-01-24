@@ -2276,19 +2276,19 @@ function getStageScale(){
 }
 
 function ensureXTOverlay(){
-  if(xtOverlayCan || !stage) return;
+  if(xtOverlayCan) return;
   const c = document.createElement('canvas');
   c.id = 'xtOverlayCanvas';
-  c.style.position = 'absolute';
+  c.style.position = 'fixed';
   c.style.left = '0';
   c.style.top = '0';
-  c.style.width = '100%';
-  c.style.height = '100%';
+  c.style.width = '100vw';
+  c.style.height = '100vh';
   c.style.pointerEvents = 'none';
-  // Below the HUD, above curtains/stage
+  // Under measureHUD (z=9999), above background
   c.style.zIndex = '8000';
   c.style.display = 'none';
-  stage.appendChild(c);
+  document.body.appendChild(c);
   xtOverlayCan = c;
 }
 
@@ -2307,32 +2307,24 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // Δεξιά κουρτίνα: το γράφημα μπαίνει στο πλαίσιο της δεξιάς κουρτίνας
-  // και τοποθετείται ΚΑΤΩ από τον πίνακα μετρήσεων (xmin/xmax/A/...) που είναι πάνω δεξιά.
-  if(!stage) return {left:0,right:0,top:0,bottom:0};
-
+  // Panel inside the RIGHT curtain, below the top-right HUD.
   const rc = document.querySelector('.curtain-side.right');
   if(!rc) return {left:0,right:0,top:0,bottom:0};
-
-  const s = getStageScale();
-  const stageRect = stage.getBoundingClientRect();
   const r = rc.getBoundingClientRect();
   const hud = document.getElementById('measureHUD');
-  const padPx = 10;
+  const pad = 10;
 
-  let topPx = r.top + padPx;
+  let top = r.top + pad;
   if(hud){
     const hr = hud.getBoundingClientRect();
     if(hr.width > 10 && hr.height > 10){
-      topPx = Math.max(topPx, hr.bottom + 10);
+      top = Math.max(top, hr.bottom + 10);
     }
   }
-  const bottomPx = r.bottom - padPx;
+  const bottom = r.bottom - pad;
 
-  const left   = (r.left   - stageRect.left)/s + (padPx/s);
-  const right  = (r.right  - stageRect.left)/s - (padPx/s);
-  const top    = (topPx    - stageRect.top)/s;
-  const bottom = (bottomPx - stageRect.top)/s;
+  const left  = r.left + pad;
+  const right = r.right - pad;
 
   return {left,right,top,bottom};
 }
@@ -2361,9 +2353,9 @@ function xtOverlayDraw(dt){
   const H = yBot-yTop;
   if(W<60 || H<50) return;
 
-  // Resize backing canvas to stage px
-  const wNeed = stage.clientWidth || 0;
-  const hNeed = stage.clientHeight || 0;
+  // Resize backing canvas to viewport px
+  const wNeed = Math.max(2, window.innerWidth || 0);
+  const hNeed = Math.max(2, window.innerHeight || 0);
   if(xtOverlayCan.width !== wNeed) xtOverlayCan.width = wNeed;
   if(xtOverlayCan.height!== hNeed) xtOverlayCan.height = hNeed;
 
@@ -3754,6 +3746,10 @@ async function runAct1(){
       triggerXtZeroMark(ev);
     }
   }
+  // If Act1 finishes naturally, proceed to Act2
+  await closeCurtainToAct2();
+  return;
+
 }
 
 /* Ghost / Act 2 */
