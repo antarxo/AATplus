@@ -2337,7 +2337,7 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // Overlay panel inside the RIGHT curtain, below the top-right HUD.
+  // Bottom-right panel inside the RIGHT curtain, stacked under HUD, touching screen bottom.
   const rc = document.querySelector('.curtain-side.right');
   if(!rc) return {left:0,right:0,top:0,bottom:0};
 
@@ -2348,27 +2348,33 @@ function xtOverlayLocalRect(){
   const pad = 10;
   const minH = 140;
 
-  // viewport -> stage-local (overlay canvas is stage-sized)
+  // viewport -> stage-local
   const left  = (r.left  - stageR.left) + pad;
   const right = (r.right - stageR.left) - pad;
 
-  let top = (r.top - stageR.top) + pad;
+  // bottom touches the visible stage/screen bottom
+  const bottom = (stageR.bottom - stageR.top) - pad;
+
+  // desired height: ~40% of stage height, clamped
+  const desiredH = Math.max(minH, Math.round((stageR.bottom - stageR.top) * 0.40));
+
+  let top = bottom - desiredH;
 
   if(hud){
     const hr = hud.getBoundingClientRect();
     if(hr.width > 10 && hr.height > 10){
-      const t = (hr.bottom - stageR.top) + 10;
-      const bottomCandidate = (r.bottom - stageR.top) - pad;
-      if(bottomCandidate - t >= minH) top = Math.max(top, t);
+      const hudBottom = (hr.bottom - stageR.top) + 10;
+      top = Math.max(top, hudBottom);
     }
   }
 
-  let bottom = (r.bottom - stageR.top) - pad;
-
   if(bottom - top < minH){
-    top = (r.top - stageR.top) + pad;
-    bottom = (r.bottom - stageR.top) - pad;
+    top = bottom - minH;
   }
+
+  // keep within right curtain vertical span
+  const curtainTop = (r.top - stageR.top) + pad;
+  if(top < curtainTop) top = curtainTop;
 
   return {left,right,top,bottom};
 }
@@ -2434,7 +2440,7 @@ function xtOverlayDraw(dt){
   const pyT = yTop + marginT;
   const pyB = yBot - marginB;
 
-  const span = Math.max(3, 1.5*T);
+  const span = Math.max(0.8, 0.5*T);
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
@@ -2479,9 +2485,9 @@ function xtOverlayDraw(dt){
 
   // time ticks: αραιά labels για να μη τρελαίνουν
   let step = 1;
-  if(span > 10) step = 2;
-  else if(span > 6) step = 1;
-  else step = 0.5;
+  if(span > 4) step = 1;
+  else if(span > 2) step = 0.5;
+  else step = 0.25;
 
   const tStart = Math.ceil(t0/step)*step;
   for(let t=tStart; t<=t1+1e-9; t+=step){
