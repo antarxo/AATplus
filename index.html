@@ -600,6 +600,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 let VIEWERS = [];
 let ACT1    = [];
 let ACT2    = [];
+let ACT3    = [];
 let FOYER   = [];
 
 let foyerTBody = null;
@@ -2313,15 +2314,24 @@ function xtOverlayLocalRect(){
   const r = rc.getBoundingClientRect();
   const hud = document.getElementById('measureHUD');
   const pad = 10;
+  const minH = 140;
 
-  let top = r.top + pad;
+  let topCandidate = r.top + pad;
   if(hud){
     const hr = hud.getBoundingClientRect();
     if(hr.width > 10 && hr.height > 10){
-      top = Math.max(top, hr.bottom + 10);
+      // only use HUD bottom if it still leaves enough space
+      const t = hr.bottom + 10;
+      if((r.bottom - pad) - t >= minH) topCandidate = Math.max(topCandidate, t);
     }
   }
-  const bottom = r.bottom - pad;
+
+  let top = topCandidate;
+  let bottom = r.bottom - pad;
+  if(bottom - top < minH){
+    top = r.top + pad;
+    bottom = r.bottom - pad;
+  }
 
   const left  = r.left + pad;
   const right = r.right - pad;
@@ -3876,6 +3886,85 @@ async function runAct2(){
   TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
 }
 
+async function runAct3(){
+  ensureGhost();
+  ghostActive=false;
+  ghostVisibility=0;
+  if(ghost){
+    ghost.style.display='none';
+    ghost.style.opacity='0';
+  }
+  if(ghostSpring){
+    ghostSpring.style.display='none';
+    ghostSpring.style.opacity='0';
+  }
+
+  actBreak.style.display='none';
+  stage.classList.add('open');
+  setAudienceLights(false);
+  phase='act3';
+  applySignboardForPhase('act3');
+
+  springEl.style.display='block';
+  markerEl.style.opacity='1';
+  markerGhostEl.style.opacity='0';
+
+  for(const ev of ACT3){
+    if(ev.uiPatch)   applySignPatch(ev.uiPatch);
+    if(ev.signPatch) applySignPatch(ev.signPatch);
+    if(ev.gStart) ghostActive=true;
+    if(ev.gStop)  ghostActive=false;
+
+    if(ev.left || ev.viewer){
+      await showBubbleForEvent(ev);
+
+      if(ev.right){
+        addLaw(ev.right);
+        if(ev.alsoParams) showParamsBox();
+      }
+
+      if(ev.graph==='xt') initXTChart();
+      if(ev.plot ==='v') ensureVelocityChart();
+      if(ev.plot ==='a') ensureAccelerationChart();
+      if(ev.plot ==='ax')ensureAxChart();
+      if(ev.plot ==='xsin')ensureXSinChart();
+
+      continue;
+    }
+
+    if(ev.right){
+      addLaw(ev.right);
+      if(ev.alsoParams) showParamsBox();
+
+      if(ev.graph==='xt') initXTChart();
+      if(ev.plot ==='v') ensureVelocityChart();
+      if(ev.plot ==='a') ensureAccelerationChart();
+      if(ev.plot ==='ax')ensureAxChart();
+      if(ev.plot ==='xsin')ensureXSinChart();
+
+      await TM.sleep(600);
+      continue;
+    }
+
+    if(ev.graph==='xt') initXTChart();
+    if(ev.plot ==='v') ensureVelocityChart();
+    if(ev.plot ==='a') ensureAccelerationChart();
+    if(ev.plot ==='ax')ensureAxChart();
+    if(ev.plot ==='xsin')ensureXSinChart();
+  }
+
+  stage.classList.remove('open');
+  updateMarbleTrack();
+  setAudienceLights(true);
+  phase='between2andFoyer';
+  TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
+
+
+  // φυσικό τέλος: επιστροφή στο φουαγιέ
+  await closeCurtainToFoyer();
+}
+
+
 /* ---------- Κουρτίνες / μεταβάσεις ---------- */
 
 function closeCurtainToAct2(){
@@ -3890,6 +3979,18 @@ function closeCurtainToAct2(){
     },1400);
   });
 }
+
+function closeCurtainToAct3(){
+  return new Promise(resolve=>{
+    stage.classList.remove('open');
+    updateMarbleTrack();
+    setAudienceLights(true);
+    TM.setTimeout(()=>{
+      resolve();
+    },1400);
+  });
+}
+
 
 /* ---------- Φουαγιέ ---------- */
 
@@ -4672,6 +4773,7 @@ async function loadDialogs(){
     VIEWERS=data.viewers || [];
     ACT1   =data.act1    || [];
     ACT2   =data.act2    || [];
+    ACT3   =data.act3    || [];
     FOYER  =data.foyer   || [];
 
     if(typeof data.actsAvatarOffset==='number'){
