@@ -2297,19 +2297,31 @@ function layoutXTOverlay(){
   try{
     const rc = document.querySelector('.curtain-side.right');
     const hud = document.getElementById('measureHUD');
-    if(!rc) return;
+    if(!rc || !stage) return;
+
+    const s = stage.getBoundingClientRect();
     const r = rc.getBoundingClientRect();
+
     const pad = 10;
-    let top = Math.round(r.top) + pad;
+
+    // Convert viewport coordinates to stage-local coordinates
+    const rTop = (r.top - s.top);
+    const rLeft = (r.left - s.left);
+    const rBottom = (r.bottom - s.top);
+
+    let top = Math.round(rTop) + pad;
+
     if(hud){
       const hr = hud.getBoundingClientRect();
       if(hr.width > 10 && hr.height > 10){
-        top = Math.max(top, Math.round(hr.bottom) + 10);
+        const hudBottomLocal = (hr.bottom - s.top);
+        top = Math.max(top, Math.round(hudBottomLocal) + 10);
       }
     }
-    const left = Math.round(r.left) + pad;
-    const width = Math.max(80, Math.round(r.width) - 2*pad);
-    const height = Math.max(120, Math.round(r.bottom) - top - pad);
+
+    const left = Math.round(rLeft) + pad;
+    const width  = Math.max(80, Math.round(r.width) - 2*pad);
+    const height = Math.max(120, Math.round(rBottom) - top - pad);
 
     xtOverlayCan.style.left = left + 'px';
     xtOverlayCan.style.top  = top  + 'px';
