@@ -2448,7 +2448,7 @@ function xtOverlayDraw(dt){
   // Time window:
   // Ξεκινάει από τη στιγμή που πρωτοεμφανίζεται (startT) ως t=0 της προβολής,
   // γεμίζει το πλάτος μέχρι spanT, και μετά ολισθαίνει αριστερά κρατώντας πάντα το tNow δεξιά.
-  const spanT = Math.max(24, 12*T); // πολλές περίοδοι σε στενό πλάτος
+   // πολλές περίοδοι σε στενό πλάτος
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
@@ -2463,6 +2463,7 @@ function xtOverlayDraw(dt){
   }else{
     t1 = tNow;
     t0 = t1 - spanT;
+  }
   }
 
 
