@@ -2327,6 +2327,11 @@ function ensureXTOverlay(){
 
 function setXTOverlay(on){
   xtOverlayEnabled = !!on;
+
+  try{
+    const nowT = (obsStarted ? (playbackTime - obsStartPlaybackOffset) : 0);
+    if(xtOverlayEnabled && xtOverlayStartT===null) xtOverlayStartT = nowT;
+  }catch(_e){}
   ensureXTOverlay();
   if(!xtOverlayCan) return;
   xtOverlayCan.style.display = xtOverlayEnabled ? 'block' : 'none';
@@ -2337,7 +2342,7 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // Bottom-right panel inside the RIGHT curtain, stacked under HUD, touching screen bottom.
+  // Bottom-right panel. Width = right curtain width, bottom touches stage bottom.
   const rc = document.querySelector('.curtain-side.right');
   if(!rc) return {left:0,right:0,top:0,bottom:0};
 
@@ -2346,35 +2351,30 @@ function xtOverlayLocalRect(){
   const hud = document.getElementById('measureHUD');
 
   const pad = 10;
-  const minH = 140;
+  const minH = 160;
 
-  // viewport -> stage-local
-  const left  = (r.left  - stageR.left) + pad;
-  const right = (r.right - stageR.left) - pad;
+  const stageW = Math.max(2, stage.clientWidth);
+  const stageH = Math.max(2, stage.clientHeight);
 
-  // bottom touches the visible stage/screen bottom
-  const bottom = (stageR.bottom - stageR.top) - pad;
+  const curtainW = Math.max(80, Math.round(r.width));
 
-  // desired height: ~40% of stage height, clamped
-  const desiredH = Math.max(minH, Math.round((stageR.bottom - stageR.top) * 0.40));
+  const right = stageW - pad;
+  const left  = Math.max(pad, right - curtainW + 2*pad);
 
-  let top = bottom - desiredH;
+  const bottom = stageH - pad;
 
+  let top = pad;
   if(hud){
     const hr = hud.getBoundingClientRect();
     if(hr.width > 10 && hr.height > 10){
-      const hudBottom = (hr.bottom - stageR.top) + 10;
-      top = Math.max(top, hudBottom);
+      top = Math.max(top, Math.round((hr.bottom - stageR.top) + 10));
     }
   }
 
   if(bottom - top < minH){
     top = bottom - minH;
   }
-
-  // keep within right curtain vertical span
-  const curtainTop = (r.top - stageR.top) + pad;
-  if(top < curtainTop) top = curtainTop;
+  if(top < pad) top = pad;
 
   return {left,right,top,bottom};
 }
@@ -2440,7 +2440,7 @@ function xtOverlayDraw(dt){
   const pyT = yTop + marginT;
   const pyB = yBot - marginB;
 
-  const span = Math.max(0.8, 0.5*T);
+  const span = Math.max(24, 12*T);
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
