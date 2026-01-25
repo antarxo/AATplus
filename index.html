@@ -2440,15 +2440,15 @@ function xtOverlayDraw(dt){
   const pyT = yTop + marginT;
   const pyB = yBot - marginB;
 
-  const span = Math.max(24, 12*T);
+  const spanT = Math.max(24, 12*T);
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
 
   // Time window:
   // Ξεκινάει από τη στιγμή που πρωτοεμφανίζεται (startT) ως t=0 της προβολής,
-  // γεμίζει το πλάτος μέχρι span, και μετά ολισθαίνει αριστερά κρατώντας πάντα το tNow δεξιά.
-  const span = Math.max(24, 12*T); // πολλές περίοδοι σε στενό πλάτος
+  // γεμίζει το πλάτος μέχρι spanT, και μετά ολισθαίνει αριστερά κρατώντας πάντα το tNow δεξιά.
+  const spanT = Math.max(24, 12*T); // πολλές περίοδοι σε στενό πλάτος
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
@@ -2457,12 +2457,12 @@ function xtOverlayDraw(dt){
   const startT = xtOverlayStartT;
 
   let t0, t1;
-  if((tNow - startT) < span){
+  if((tNow - startT) < spanT){
     t0 = startT;
-    t1 = startT + span;
+    t1 = startT + spanT;
   }else{
     t1 = tNow;
-    t0 = t1 - span;
+    t0 = t1 - spanT;
   }
 
 
@@ -2486,9 +2486,9 @@ function xtOverlayDraw(dt){
 
   // time ticks: labels αραιά (αλλιώς γίνεται σαλάτα όταν δείχνουμε πολλές περιόδους)
   let step = 1;
-  if(span > 60) step = 10;
-  else if(span > 30) step = 5;
-  else if(span > 18) step = 2;
+  if(spanT > 60) step = 10;
+  else if(spanT > 30) step = 5;
+  else if(spanT > 18) step = 2;
   else step = 1;
 
   const tStart = Math.ceil(t0/step)*step;
