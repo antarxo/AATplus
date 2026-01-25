@@ -92,9 +92,7 @@ function num(v,fallback=0){
     body.intro-open #btnNext,
     body.intro-open #navBreak,
     body.intro-open #btnBook,
-    body.intro-open #foyerBubble,
-    body.intro-open #xtMiniCanvas,
-    body.intro-open #btnXTmini{
+    body.intro-open #foyerBubble{
       visibility: hidden !important;
     }
 
@@ -355,25 +353,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       pointer-events:none;
     }
 
-
-    #xtMiniCanvas{
-      position:absolute;
-      left:50%;
-      top:22px;
-      transform:translateX(-50%);
-      z-index:9997;
-      border-radius:14px;
-      background:rgba(0,0,0,0.40);
-      border:1px solid rgba(255,255,255,0.18);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.28);
-      pointer-events:none;
-      display:none;
-    }
-
-  
-  /* Disable mini x(t) widget near navigation (not used) */
-  #btnXTmini, #xtMiniCanvas{ display:none !important; }
-</style>
+  </style>
 
 </head>
 <body class="intro-open">
@@ -402,8 +382,6 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="sb-lineC" id="signLineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
     <div class="sb-lineD" id="signLineD">(*) ... εσείς</div>
   </div>
-
-  <canvas id="xtMiniCanvas" width="720" height="190" aria-hidden="true"></canvas>
 
   <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
@@ -493,17 +471,13 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <button id="btnReset" title="reset">↺</button>
     <button id="btnNext"  title="επόμενο">⏭</button>
     <button id="btnBook"  title="Διαθέσιμο μετά το τέλος της Πράξης 1" disabled>📖</button>
-    <button id="btnXTOverlay" title="x–t overlay">📉</button>
-    <button id="btnXTmini" title="x–t">📉</button>
   </div>
 
   <div class="drive-controls" id="driveCtrl" aria-label="ρυθμίσεις διεγέρτη">
     <div class="dc-row">
       <span class="dc-lbl">f</span>
       <select id="driveRatio" aria-label="συχνότητα διεγέρτη ως πολλαπλάσιο της ιδιοσυχνότητας">
-        
-        <option value="0.00">OFF</option>
-<option value="0.60">0.60 f₀</option>
+        <option value="0.60">0.60 f₀</option>
         <option value="0.75">0.75 f₀</option>
         <option value="0.90">0.90 f₀</option>
         <option value="1.00">1.00 f₀</option>
@@ -516,7 +490,6 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
     <div class="dc-row">
       <span class="dc-lbl">b</span>
       <select id="driveB">
-  <option value="0">0</option>
   <option value="6">6</option>
   <option value="12">12</option>
   <option value="24">24</option>
@@ -626,7 +599,6 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 let VIEWERS = [];
 let ACT1    = [];
 let ACT2    = [];
-let ACT3    = [];
 let FOYER   = [];
 
 let foyerTBody = null;
@@ -906,17 +878,7 @@ const btnReset   = document.getElementById('btnReset');
   const navToFoyer = document.getElementById('navToFoyer');
 const btnBook    = document.getElementById('btnBook');
 
-
-const btnXTOverlay = document.getElementById('btnXTOverlay');
 const ACT1_UNLOCK_KEY = 'aat_act1_completed';
-// XT overlay toggle
-if(btnXTOverlay){
-  btnXTOverlay.onclick = ()=>{
-    setXTOverlay(!xtOverlayEnabled);
-    btnXTOverlay.classList.toggle('active', xtOverlayEnabled);
-  };
-}
-
 
 let bookUnlocked = (localStorage.getItem(ACT1_UNLOCK_KEY) === '1');
 
@@ -942,9 +904,6 @@ const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
 const foyerBreak = document.getElementById('foyerBreak');
 const btnFoyerGo = document.getElementById('btnFoyerGo');
-
-const act3Break = document.getElementById('act3Break');
-const btnAct3   = document.getElementById('btnAct3');
 
 const foyerEl     = document.getElementById('foyer');
 const boardLeft   = document.getElementById('boardLeft');
@@ -1070,11 +1029,9 @@ const BOOK_STORAGE_KEY = 'aatBookData';
 const m   = 70;
 const T   = 6.0;
 const A_m = 3.0;
-const pxPerMeter = 50;
-const RULER_CENTER_M = 10;
+let pxPerMeter = 50;
 const omega = 2*Math.PI/T;
-const A_px  = A_m*pxPerMeter;
-
+let A_px  = A_m*pxPerMeter;
 /* συνολικός χρόνος άξονα x–t: 2T */
 const XT_TOTAL_T = 2*T;
 
@@ -1526,12 +1483,8 @@ function driverShiftPx(){ return driverW() * DRIVER_SHIFT_FACTOR; }
 function rulerAxisShiftPx(){ return driverW() * (DRIVER_SHIFT_REF - DRIVER_SHIFT_FACTOR); }
 
 function centerX(){
-  // Θέλουμε το κέντρο του ‘μαρμάρου’ (x=0 της ταλάντωσης) να συμπίπτει με το 10 m του χάρακα.
-  if(stage && Number.isFinite(rulerZeroX) && Number.isFinite(pxPerMeter) && pxPerMeter>0){
-    return rulerZeroX + RULER_CENTER_M*pxPerMeter;
-  }
   const base = stage ? (stage.clientWidth * 0.5) : (window.innerWidth * 0.5);
-  return base;
+  return base + rulerAxisShiftPx();
 }
 
 
@@ -1633,14 +1586,14 @@ let baseRefX  = null;  // px (y0)
 
 let driveB = 12;       // kg/s  (b στη δύναμη -b·v)
 
-const DRIVE_B_HARD_MIN = 0;   // επιτρέπουμε και b=0 (αμείωτη/χωρίς απόσβεση)
+const DRIVE_B_HARD_MIN = 6;   // επιτρέπουμε κάτω από 10 μόνο με “ασφάλεια” (βλ. applyFrequencySafetyByB)
 const DRIVE_B_SAFE_MIN = 10;  // φυσικό/λειτουργικό κατώφλι του συστήματος
 const DRIVE_B_MAX = 50;
 
 
 
 function snapBToPresets(v){
-  const presets = [0,6,12,24,30];
+  const presets = [6,12,24,30];
   let best = presets[0], bestd = Infinity;
   for(const p of presets){
     const d = Math.abs(p - v);
@@ -1658,11 +1611,6 @@ const elDriveBVal    = document.getElementById('driveBVal');
 function updateDriveFreqLabel(){
   const f  = (driverOmega / (2*Math.PI));
   if(!elDriveFreqVal) return;
-
-  if(driveRatio <= 0){
-    elDriveFreqVal.textContent = `OFF · ${f.toFixed(2)} Hz`;
-    return;
-  }
 
   // Για b<10 δεν “προβάλλουμε” το f0 ως έξτρα χαρακτηριστικό (μένει μόνο λόγος r)
   if(driveB < DRIVE_B_SAFE_MIN){
@@ -1750,18 +1698,9 @@ function isRatioDisabledForB(bKey, ratio){
   return false;
 }
 
-// backward-compatible alias (παλιό όνομα που χρησιμοποιούν κάποια σημεία)
-function isDisabledRatioForB(bKey, ratio){
-  return isRatioDisabledForB(bKey, ratio);
-}
-
-
 function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
-  let enabled = options.filter(o => !o.disabled).map(o => Number(o.value)).filter(Number.isFinite);
+  const enabled = options.filter(o => !o.disabled).map(o => Number(o.value)).filter(Number.isFinite);
   if(!enabled.length) return null;
-
-  // Μην επιλέγεις αυτόματα το OFF (0.00) αν υπάρχουν άλλες διαθέσιμες επιλογές.
-  if(enabled.length > 1) enabled = enabled.filter(v => Math.abs(v) > 1e-12);
 
   let pool = enabled;
   if(preferSide === 'right'){
@@ -1787,7 +1726,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   const bKey = bKeyFromB(bKgPerS);
 
   // Σταθερές προεπιλεγμένες τιμές συχνοτήτων για ΟΛΑ τα b
-  const ratios = [0.00, 0.60, 0.75, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.45];
+  const ratios = [0.60, 0.75, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.45];
 
   const prev = String(elDriveRatio.value || '');
   elDriveRatio.innerHTML = '';
@@ -1795,7 +1734,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   for(const r of ratios){
     const opt = document.createElement('option');
     opt.value = r.toFixed(2);
-    opt.textContent = (r === 0 ? 'OFF' : (r*100).toFixed(0) + '%');
+    opt.textContent = (r*100).toFixed(0) + '%';
 
     // Dynamic forbid (cap) για το συγκεκριμένο b + ειδικός κανόνας: για b=6 απενεργοποιείται το 100%
     opt.disabled = isDisabledRatioForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
@@ -1816,7 +1755,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
     elDriveRatio.value = best.toFixed(2);
 
     // ενημέρωση κινητήρα (χωρίς να βασιζόμαστε στο 'change' event)
-    const rr = Math.max(0.0, parseFloat(elDriveRatio.value) || 0.0);
+    const rr = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
     driveRatio = rr;
     driverOmega = omega * driveRatio;
     updateDriveFreqLabel();
@@ -1844,7 +1783,7 @@ function applyCapForCurrentBF(bKgPerS, fRatio){
 
 if(elDriveRatio){
   elDriveRatio.addEventListener('change', () => {
-    const r = Math.max(0.0, parseFloat(elDriveRatio.value) || 0.0);
+    const r = Math.max(0.01, parseFloat(elDriveRatio.value) || 1.00);
     driveRatio = r;
     driverOmega = omega * driveRatio;
     updateDriveFreqLabel();
@@ -1911,53 +1850,15 @@ function applyDriverTransform(){
   drvSlider.style.transform = 'translateX(' + dx.toFixed(2) + 'px)';
 }
 
-
-let _afFitW = null;
-function fitAFCanvasToCurtain(){
-  const cvs = document.getElementById('afCanvas');
-  if(!cvs || !stage) return;
-  const leftCurt = stage.querySelector('.curtain-side.left');
-  if(!leftCurt) return;
-
-  // Το afCanvas είναι *εκτός* του .stage, άρα το τοποθετούμε σε screen px, πάνω στην αριστερή κουρτίνα.
-  const sRect = stage.getBoundingClientRect();
-  const lRect = leftCurt.getBoundingClientRect();
-
-  const pad = 16;
-  const targetW = Math.max(190, Math.floor(lRect.width - pad*2));
-  const targetH = 330;
-
-  const leftPx = Math.round(lRect.left + pad);
-  const topPx  = Math.round(sRect.bottom - targetH - pad);
-
-  const key = targetW + 'x' + targetH + '@' + leftPx + ',' + topPx;
-  if(cvs.dataset.fitKey === key) return;
-  cvs.dataset.fitKey = key;
-
-  cvs.style.left = leftPx + 'px';
-  cvs.style.top  = topPx + 'px';
-  cvs.style.bottom = '';
-  cvs.style.width = targetW + 'px';
-  cvs.style.height = targetH + 'px';
-
-  // Canvas intrinsic size (για να μη “ζουμάρει” θαμπά)
-  cvs.width  = targetW;
-  cvs.height = targetH;
-
-  // redraw if recorder is present
-  if(typeof AFRecorder !== 'undefined' && AFRecorder){
-    try{ AFRecorder.onBChange(); }catch(e){}
-  }
-}
-
 function updateRuler(){
-  // Μετροταινία (σαν tape measure):
-  // - Το 0 μπαίνει εμφανώς ΜΕΣΑ στη σκηνή (λίγο δεξιά από την αριστερή κουρτίνα).
-  // - Ο χάρακας απλώνεται μέχρι το δεξί άκρο του stage, ώστε οι τελευταίες τιμές να μπορούν
-  //   να “χάνονται” πίσω από τη δεξιά κουρτίνα (ανάλογα με τα z-index).
+  // Μετροταινία:
+  // - Κέντρο (x=0) στο μέσο του “ανοίγματος” ανάμεσα στις πλαϊνές κουρτίνες.
+  // - Κλίμακα σταθερή σε ±6.5 m (σύνολο 13 m).
+  // - Τα δεξιά panels (clock/measure/γραφήματα/params) να μένουν ΜΕΣΑ στη δεξιά ακίνητη κουρτίνα.
   const sRect = stage.getBoundingClientRect();
   const stageW = stage.clientWidth;
 
+  // Εσωτερικό άκρο αριστερής κουρτίνας
   let openLeft = 0;
   const leftCurt = stage.querySelector('.curtain-side.left');
   if(leftCurt){
@@ -1965,35 +1866,76 @@ function updateRuler(){
     openLeft = Math.max(0, Math.round(lRect.right - sRect.left));
   }
 
-  const RULER_LEFT_INSET_PX = 14; // το 0 να φαίνεται μέσα στη σκηνή (όχι πάνω στην κουρτίνα)
-  rulerZeroX = Math.min(stageW - 1, Math.max(0, openLeft + RULER_LEFT_INSET_PX));
+  // Εσωτερικό άκρο δεξιάς κουρτίνας
+  let rightCurtLeft = stageW;
+  let rightCurtW = Math.round(stageW * 0.18);
+  const rightCurt = stage.querySelector('.curtain-side.right');
+  if(rightCurt){
+    const rRect = rightCurt.getBoundingClientRect();
+    rightCurtLeft = Math.max(0, Math.round(rRect.left - sRect.left));
+    rightCurtW = Math.max(0, Math.round(rRect.width));
+  }else{
+    rightCurtLeft = stageW - rightCurtW;
+  }
 
-  const usableW = Math.max(0, stageW - rulerZeroX);
+  const INSET_PX = 14;
+  const innerLeft  = Math.min(stageW-1, Math.max(0, openLeft + INSET_PX));
+  const innerRight = Math.max(innerLeft+1, Math.min(stageW, rightCurtLeft - INSET_PX));
+  const visibleW = Math.max(0, innerRight - innerLeft);
 
-  rulerEl.style.left  = rulerZeroX + 'px';
-  rulerEl.style.width = usableW + 'px';
+  const RULER_RANGE_M = 6.5; // ±6.5 m
+
+  if(visibleW > 50){
+    pxPerMeter = visibleW / (2 * RULER_RANGE_M);
+    A_px = A_m * pxPerMeter;
+  }
+
+  rulerZeroX = innerLeft + (visibleW * 0.5);
+
+  rulerEl.style.left  = innerLeft + 'px';
+  rulerEl.style.width = visibleW + 'px';
   rulerEl.innerHTML   = '';
 
-  const maxTick = Math.floor(usableW / pxPerMeter);
-  for(let mTick=0; mTick<=maxTick; mTick++){
-    const rel = mTick * pxPerMeter;
+  // ticks: κάθε 0.5 m, labels στα ακέραια + endpoints (±6.5)
+  const step = 0.5;
+  for(let mVal = -RULER_RANGE_M; mVal <= RULER_RANGE_M + 1e-9; mVal += step){
+    const rel = (mVal + RULER_RANGE_M) * pxPerMeter;
 
     const tDiv = document.createElement('div');
     tDiv.className='tick';
     tDiv.style.left = rel + 'px';
+
+    const isInt = Math.abs(mVal - Math.round(mVal)) < 1e-9;
+    tDiv.style.height = isInt ? '12px' : '7px';
     rulerEl.appendChild(tDiv);
 
-    const lbl = document.createElement('div');
-    lbl.className='tick-label';
-    lbl.textContent = mTick + ' m';
-    lbl.style.left = rel + 'px';
-
-    // Κράτα το 0 μέσα στο οπτικό πεδίο (αριστερά), άσε τα δεξιά να “χαθούν” πίσω από την κουρτίνα.
-    if(mTick===0) lbl.style.transform = 'translateX(0)';
-    rulerEl.appendChild(lbl);
+    const isEndpoint = (Math.abs(mVal + RULER_RANGE_M) < 1e-9) || (Math.abs(mVal - RULER_RANGE_M) < 1e-9);
+    if(isInt || isEndpoint){
+      const lbl = document.createElement('div');
+      lbl.className='tick-label';
+      lbl.style.left = rel + 'px';
+      lbl.textContent = isInt ? String(Math.round(mVal)) : mVal.toFixed(1);
+      rulerEl.appendChild(lbl);
+    }
   }
 
-  fitAFCanvasToCurtain();
+  // --- Δεξιά panels: κλείδωμα μέσα στη δεξιά κουρτίνα ---
+  const PAD = 10;
+  const panelLeft = Math.max(0, rightCurtLeft + PAD);
+  const panelW = Math.max(160, rightCurtW - PAD*2);
+
+  function pinRightPanel(el){
+    if(!el) return;
+    el.style.left  = panelLeft + 'px';
+    el.style.right = 'auto';
+    el.style.width = panelW + 'px';
+  }
+
+  pinRightPanel(clockEl);
+  pinRightPanel(measureBox);
+  pinRightPanel(xtChartEl);
+  pinRightPanel(xSinChartEl);
+  pinRightPanel(paramsBoxEl);
 }
 
 /* ---------- Δειγματοληψία t–x (πίνακας + βιβλίο) ---------- */
@@ -2041,10 +1983,15 @@ function initXTChart(){
   if(!xtChartEl) return;
   xtChartEl.style.display='block';
   const c = document.createElement('canvas');
-  c.width = 210;
-  c.height= 120;
-  c.style.width='210px';
-  c.style.height='120px';
+
+  // width = container-10 (clamp), height σταθερό
+  const rawW = (xtChartEl.clientWidth ? (xtChartEl.clientWidth - 10) : 210);
+  const w = Math.round(Math.max(160, Math.min(260, rawW)));
+  c.width  = w;
+  c.height = 120;
+  c.style.width  = w + 'px';
+  c.style.height = '120px';
+
   xtChartEl.innerHTML='';
   xtChartEl.appendChild(c);
   uXT = c;
@@ -2054,11 +2001,18 @@ function initXTChart(){
 function drawXTChart(){
   if(!uXT) return;
   const ctx = uXT.getContext('2d');
+
+  // sync canvas width με το panel (ώστε να μένει μέσα στη δεξιά κουρτίνα)
+  const rawW = (xtChartEl && xtChartEl.clientWidth) ? (xtChartEl.clientWidth - 10) : uXT.width;
+  const targetW = Math.round(Math.max(160, Math.min(260, rawW)));
+  if(uXT.width !== targetW){
+    uXT.width = targetW;
+    uXT.style.width = targetW + 'px';
+  }
   const w = uXT.width;
   const h = uXT.height;
   ctx.clearRect(0,0,w,h);
-
-  const margin=14;
+const margin=14;
   const x0=margin;
   const x1=w-margin;
   const yTop=margin;
@@ -2066,7 +2020,7 @@ function drawXTChart(){
 
   const [tArr,xArr] = buildSeriesData();
   const tMin=0, tMax=XT_TOTAL_T;
-  const xMaxAbs=A_m*1.1;
+  const xMaxAbs=6.5;
 
   function tToX(t){ return x0+(t-tMin)/(tMax-tMin)*(x1-x0); }
   function xToY(x){
@@ -2090,7 +2044,7 @@ function drawXTChart(){
     ctx.stroke();
   });
 
-  const xTicks=[-A_m,0,A_m];
+  const xTicks=[-xMaxAbs, -xMaxAbs/2, 0, xMaxAbs/2, xMaxAbs];
   xTicks.forEach(x=>{
     const yf=xToY(x);
     ctx.beginPath();
@@ -2150,11 +2104,10 @@ function drawXTChart(){
   ctx.fillText((2*T).toFixed(1), tToX(2*T), yBot+10);
   ctx.textAlign='left';
 
-  ctx.fillText('-A', x0+4, xToY(-A_m)+4);
-  ctx.fillText('0',  x0+4, xToY(0)+4);
-  ctx.fillText('+A', x0+4, xToY(+A_m)+4);
-
-  // Γραμμή x0
+  ctx.fillText((-xMaxAbs).toFixed(1), x0+4, xToY(-xMaxAbs)+4);
+  ctx.fillText('0.0',                 x0+4, xToY(0)+4);
+  ctx.fillText((+xMaxAbs).toFixed(1), x0+4, xToY(+xMaxAbs)+4);
+// Γραμμή x0
   const x0val=A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
   const yx0=xToY(x0val);
   ctx.strokeStyle='rgba(255,255,255,0.7)';
@@ -2294,289 +2247,6 @@ function drawXTChart(){
   }
 }
 
-
-/* ---------- XT OVERLAY (μεγάλο διάγραμμα x–t πάνω στη σκηνή) ---------- */
-
-let xtOverlayEnabled = false;
-let xtOverlayCan = null;
-let xtOverlayBuf = [];
-let xtOverlayT0 = 0;
-let xtOverlayLastNow = null;
-let xtOverlayURange = 3.5;
-
-function getStageScale(){
-  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
-  return (isFinite(v) && v>0) ? v : 1;
-}
-
-function ensureXTOverlay(){
-  if(xtOverlayCan || !stage) return;
-  const c = document.createElement('canvas');
-  c.id = 'xtOverlayCanvas';
-  c.style.position = 'absolute';
-  c.style.left = '0';
-  c.style.top = '0';
-  c.style.width = '100%';
-  c.style.height = '100%';
-  c.style.pointerEvents = 'none';
-  c.style.zIndex = '1500';
-  c.style.display = 'none';
-  stage.appendChild(c);
-  xtOverlayCan = c;
-}
-
-function setXTOverlay(on){
-  xtOverlayEnabled = !!on;
-
-  try{
-    const nowT = (obsStarted ? (playbackTime - obsStartPlaybackOffset) : 0);
-    if(xtOverlayEnabled && xtOverlayStartT===null) xtOverlayStartT = nowT;
-  }catch(_e){}
-  ensureXTOverlay();
-  if(!xtOverlayCan) return;
-  xtOverlayCan.style.display = xtOverlayEnabled ? 'block' : 'none';
-  xtOverlayBuf = [];
-  xtOverlayT0 = 0;
-  xtOverlayLastNow = null;
-  xtOverlayURange = 3.5;
-}
-
-function xtOverlayLocalRect(){
-  // Bottom-right panel. Width = right curtain width, bottom touches stage bottom.
-  const rc = document.querySelector('.curtain-side.right');
-  if(!rc) return {left:0,right:0,top:0,bottom:0};
-
-  const r = rc.getBoundingClientRect();
-  const stageR = stage.getBoundingClientRect();
-  const hud = document.getElementById('measureHUD');
-
-  const pad = 10;
-  const minH = 160;
-
-  const stageW = Math.max(2, stage.clientWidth);
-  const stageH = Math.max(2, stage.clientHeight);
-
-  const curtainW = Math.max(80, Math.round(r.width));
-
-  const right = stageW - pad;
-  const left  = Math.max(pad, right - curtainW + 2*pad);
-
-  const bottom = stageH - pad;
-
-  let top = pad;
-  if(hud){
-    const hr = hud.getBoundingClientRect();
-    if(hr.width > 10 && hr.height > 10){
-      top = Math.max(top, Math.round((hr.bottom - stageR.top) + 10));
-    }
-  }
-
-  if(bottom - top < minH){
-    top = bottom - minH;
-  }
-  if(top < pad) top = pad;
-
-  return {left,right,top,bottom};
-}
-
-function xtOverlayPushSample(tObs, uMeters){
-  if(!xtOverlayEnabled || !xtOverlayCan) return;
-  if(!isFinite(tObs) || !isFinite(uMeters)) return;
-
-  const span = Math.max(24, 12*T); // ίδιο με το overlay window
-  xtOverlayBuf.push({t:tObs, u:uMeters});
-
-  const cutoff = tObs - (span + 2*T);
-  while(xtOverlayBuf.length && xtOverlayBuf[0].t < cutoff) xtOverlayBuf.shift();
-}
-
-function xtOverlayDraw(dt){
-  if(!xtOverlayEnabled || !xtOverlayCan) return;
-
-  const rect = xtOverlayLocalRect();
-  const x0 = rect.left;
-  const x1 = rect.right;
-  const yTop = rect.top;
-  const yBot = rect.bottom;
-
-  const W = x1-x0;
-  const H = yBot-yTop;
-  if(W<60 || H<50) return;
-
-  // Resize backing canvas to stage px
-  const wNeed = stage.clientWidth || 0;
-  const hNeed = stage.clientHeight || 0;
-  if(xtOverlayCan.width !== wNeed) xtOverlayCan.width = wNeed;
-  if(xtOverlayCan.height!== hNeed) xtOverlayCan.height = hNeed;
-
-  const ctx = xtOverlayCan.getContext('2d');
-  ctx.clearRect(0,0,xtOverlayCan.width,xtOverlayCan.height);
-
-  // Panel background (μόνο στο rect)
-  ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.26)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-  ctx.lineWidth = 1;
-  const r = 12;
-  const X = x0+6, Y=yTop+6, WW=W-12, HH=H-12;
-  ctx.beginPath();
-  ctx.moveTo(X+r,Y);
-  ctx.lineTo(X+WW-r,Y);
-  ctx.quadraticCurveTo(X+WW,Y,X+WW,Y+r);
-  ctx.lineTo(X+WW,Y+HH-r);
-  ctx.quadraticCurveTo(X+WW,Y+HH,X+WW-r,Y+HH);
-  ctx.lineTo(X+r,Y+HH);
-  ctx.quadraticCurveTo(X,Y+HH,X,Y+HH-r);
-  ctx.lineTo(X,Y+r);
-  ctx.quadraticCurveTo(X,Y,X+r,Y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-
-  const marginL=38, marginR=16, marginT=18, marginB=20;
-  const pxL = x0 + marginL;
-  const pxR = x1 - marginR;
-  const pyT = yTop + marginT;
-  const pyB = yBot - marginB;
-
-  const spanT = Math.max(24, 12*T);
-  if(!xtOverlayBuf.length) return;
-
-  const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
-
-  // Time window:
-  // Ξεκινάει από τη στιγμή που πρωτοεμφανίζεται (startT) ως t=0 της προβολής,
-  // γεμίζει το πλάτος μέχρι spanT, και μετά ολισθαίνει αριστερά κρατώντας πάντα το tNow δεξιά.
-   // πολλές περίοδοι σε στενό πλάτος
-  if(!xtOverlayBuf.length) return;
-
-  const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
-  if(xtOverlayStartT==null) xtOverlayStartT = tNow; // fallback ασφάλειας
-
-  const startT = xtOverlayStartT;
-
-  let t0, t1;
-  if((tNow - startT) < spanT){
-    t0 = startT;
-    t1 = startT + spanT;
-  }else{
-    t1 = tNow;
-    t0 = t1 - spanT;
-  }
-  }
-
-
-  // Υ-κλίμακα: σταθερή ±6.5 m (για να συγκρίνονται όλες οι περιπτώσεις, ειδικά η εξαναγκασμένη)
-  const uRange = 6.5;
-
-
-  function tToX(t){
-    return pxL + (t - t0) / (t1 - t0) * (pxR - pxL);
-  }
-  function uToY(u){
-    const mid = (pyT+pyB)/2;
-    return mid - (u / uRange) * ((pyB-pyT)/2);
-  }
-
-  // Grid + axes
-  ctx.save();
-  ctx.strokeStyle='rgba(255,255,255,0.14)';
-  ctx.lineWidth=1;
-  ctx.setLineDash([3,3]);
-
-  // time ticks: labels αραιά (αλλιώς γίνεται σαλάτα όταν δείχνουμε πολλές περιόδους)
-  let step = 1;
-  if(spanT > 60) step = 10;
-  else if(spanT > 30) step = 5;
-  else if(spanT > 18) step = 2;
-  else step = 1;
-
-  const tStart = Math.ceil(t0/step)*step;
-
-  for(let t=tStart; t<=t1+1e-9; t+=step){
-    const x = tToX(t);
-    ctx.beginPath();
-    ctx.moveTo(x,pyT);
-    ctx.lineTo(x,pyB);
-    ctx.stroke();
-  }
-
-  // u ticks
-  const uTicks = [-6.5, -3.25, 0, 3.25, 6.5];
-  for(const u of uTicks){
-    const y = uToY(u);
-    ctx.beginPath();
-    ctx.moveTo(pxL,y);
-    ctx.lineTo(pxR,y);
-    ctx.stroke();
-  }
-
-  ctx.restore();
-
-  // axes bold
-  ctx.save();
-  ctx.strokeStyle='rgba(255,255,255,0.55)';
-  ctx.lineWidth=1;
-  ctx.setLineDash([]);
-  // time axis (u=0)
-  const y0 = uToY(0);
-  ctx.beginPath();
-  ctx.moveTo(pxL,y0);
-  ctx.lineTo(pxR,y0);
-  ctx.stroke();
-  // left border
-  ctx.beginPath();
-  ctx.moveTo(pxL,pyT);
-  ctx.lineTo(pxL,pyB);
-  ctx.stroke();
-  // frame
-  ctx.beginPath();
-  ctx.rect(pxL,pyT,pxR-pxL,pyB-pyT);
-  ctx.stroke();
-  ctx.restore();
-
-  // plot
-  ctx.save();
-  ctx.strokeStyle='rgba(255,210,90,0.95)';
-  ctx.lineWidth=2;
-  ctx.beginPath();
-  let started = false;
-  for(const p of xtOverlayBuf){
-    if(p.t < t0 || p.t > t1) continue;
-    const x = tToX(p.t);
-    const y = uToY(p.u);
-    if(!started){ ctx.moveTo(x,y); started = true; }
-    else{ ctx.lineTo(x,y); }
-  }
-  if(started) ctx.stroke();
-  ctx.restore();
-
-  // labels
-  ctx.save();
-  ctx.fillStyle='rgba(255,255,255,0.92)';
-  ctx.font='12px system-ui';
-  const title = (currentLang==='en') ? 'x–t (relative)' : 'x–t (ως προς ισορροπία)';
-  ctx.fillText(title, pxL+6, pyT+14);
-
-  ctx.font='10px system-ui';
-  // y labels
-  ctx.textAlign='right';
-  for(const u of uTicks){
-    const y = uToY(u);
-    ctx.fillText(u.toFixed(2), pxL-6, y+3);
-  }
-  ctx.textAlign='center';
-  for(let t=tStart; t<=t1+1e-9; t+=step){
-    const x = tToX(t);
-    ctx.fillText(String(Math.round(t - startT)), x, pyB+12);
-  }
-  ctx.textAlign='left';
-  ctx.fillText("t' (s)", pxR-32, y0-6);
-  ctx.fillText('x (m)', pxL+2, pyT-4);
-  ctx.restore();
-}
-
 /* ---------- Νόμοι & mini-διαγράμματα ---------- */
 
 let firstLawShown=false;
@@ -2601,8 +2271,10 @@ function addLaw(txt){
   lawsBody.appendChild(div);
 }
 
-function sizeLawCanvas(c){
-  const w=210,h=120;
+function sizeLawCanvas(c, h=120){
+  const parentW = (c && c.parentElement) ? c.parentElement.clientWidth : 0;
+  const rawW = parentW ? (parentW - 10) : 210;
+  const w = Math.round(Math.max(160, Math.min(260, rawW)));
   c.width=w; c.height=h;
   c.style.width=w+'px';
   c.style.height=h+'px';
@@ -2966,9 +2638,9 @@ function drawXSinChart(){
   ctx.fillText('+1',SToX(+1),y1+10);
   ctx.textAlign='left';
 
-  ctx.fillText('-A',x0+4,xToY(-A_m)+4);
-  ctx.fillText('0', x0+4,xToY(0)+4);
-  ctx.fillText('+A',x0+4,xToY(+A_m)+4);
+  ctx.fillText((-A_m).toFixed(2), x0+4, xToY(-A_m)+4);
+  ctx.fillText('0.00',            x0+4, xToY(0)+4);
+  ctx.fillText((+A_m).toFixed(2), x0+4, xToY(+A_m)+4);
 }
 
 function ensureVelocityChart(){
@@ -3588,6 +3260,8 @@ function showBubbleForEvent(ev){
     else startTyping();
   });
 }
+  }
+  }
 
 /* Δυναμικό κείμενο με {A},{T},{omega},{x0},{phi0},{vSignSymbol},{vSignWord} */
 function expandDynTemplate(tpl){
@@ -3687,8 +3361,7 @@ function showDynBubble(ev){
       const el = document.getElementById('driveRatio');
       if(!el) return;
       // ratio is numeric like 0.95, 1.15 etc
-      const raw = Number(action.ratio ?? action.value);
-      el.value = (Number.isFinite(raw) ? raw.toFixed(2) : String(action.ratio ?? action.value));
+      el.value = String(action.ratio ?? action.value);
       _dispatchChange(el);
       return;
     }
@@ -3722,26 +3395,7 @@ function showDynBubble(ev){
 
 async function runAct1(){
   phase='act1';
-
-  // --- Act1 must be pure free undamped SHM: b=0, f=OFF, A=3m ---
-  try{
-    driveB = 0;
-    driveRatio = 0.00;     // OFF
-    driverOmega = omega * driveRatio;
-    driveInited = false;   // force re-seed to A=3m state
-    baseRefX = null;
-    basePrevX = null;
-    basePrevV = null;
-    // sync UI if present
-    if(elDriveB){ elDriveB.value = String(driveB); }
-    if(elDriveBVal){ elDriveBVal.textContent = `${driveB} kg/s`; }
-    if(elDriveRatio){ elDriveRatio.value = '0.00'; }
-    updateDriveFreqLabel && updateDriveFreqLabel();
-    syncDriveUI && syncDriveUI();
-  }catch(_e){}
-
   applySignboardForPhase('act1');
-  try{ springEl.style.display='block'; }catch(_e){}
   for(const ev of ACT1){
     if(ev.uiPatch)   applySignPatch(ev.uiPatch);
     if(ev.signPatch) applySignPatch(ev.signPatch);
@@ -3946,74 +3600,9 @@ async function runAct2(){
   stage.classList.remove('open');
   updateMarbleTrack();
   setAudienceLights(true);
-  phase='between2and3';
-  TM.setTimeout(()=>{
-    act3Break.style.display='flex';
-    try{ btnAct3.disabled=false; btnAct3.setAttribute('aria-disabled','false'); btnAct3.removeAttribute('title'); }catch(_e){}
-  },1200);
-}
-
-
-async function runAct3(){
-  act3Break.style.display='none';
-  stage.classList.add('open');
-  setAudienceLights(false);
-  phase='act3';
-  applySignboardForPhase('act3');
-
-  // Ελατήριο ορατό και στην Πράξη 3
-  try{ springEl.style.display='block'; }catch(_e){}
-  markerEl.style.opacity='1';
-
-  for(const ev of ACT3){
-    if(ev.uiPatch)   applySignPatch(ev.uiPatch);
-    if(ev.signPatch) applySignPatch(ev.signPatch);
-
-    if(ev.left || ev.viewer){
-      await showBubbleForEvent(ev);
-
-      if(ev.right){
-        addLaw(ev.right);
-        if(ev.alsoParams) showParamsBox();
-      }
-
-      if(ev.graph==='xt') initXTChart();
-      if(ev.plot ==='v') ensureVelocityChart();
-      if(ev.plot ==='a') ensureAccelerationChart();
-      if(ev.plot ==='ax')ensureAxChart();
-      if(ev.plot ==='xsin')ensureXSinChart();
-
-      continue;
-    }
-
-    if(ev.right){
-      addLaw(ev.right);
-      if(ev.alsoParams) showParamsBox();
-
-      if(ev.graph==='xt') initXTChart();
-      if(ev.plot ==='v') ensureVelocityChart();
-      if(ev.plot ==='a') ensureAccelerationChart();
-      if(ev.plot ==='ax')ensureAxChart();
-      if(ev.plot ==='xsin')ensureXSinChart();
-
-      await TM.sleep(600);
-      continue;
-    }
-
-    if(ev.graph==='xt') initXTChart();
-    if(ev.plot ==='v') ensureVelocityChart();
-    if(ev.plot ==='a') ensureAccelerationChart();
-    if(ev.plot ==='ax')ensureAxChart();
-    if(ev.plot ==='xsin')ensureXSinChart();
-  }
-
-  stage.classList.remove('open');
-  updateMarbleTrack();
-  setAudienceLights(true);
-  phase='between3andFoyer';
+  phase='between2andFoyer';
   TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
 }
-
 
 /* ---------- Κουρτίνες / μεταβάσεις ---------- */
 
@@ -4527,7 +4116,6 @@ function initShowBase(){
 
 function beginObservation(){
   countdownState.active = false;
-  try{ setXTOverlay(true); }catch(_e){}
   initShowBase();
   runAct1();
 }
@@ -4576,130 +4164,10 @@ btnAct2.addEventListener('click',()=>{
   runAct2();
 });
 
-btnAct3.addEventListener('click',()=>{
-  act3Break.style.display='none';
-  runAct3();
-});
-
 btnFoyerGo.addEventListener('click',()=>{
   foyerBreak.style.display='none';
   runFoyer();
 });
-
-
-/* ---------- Mini x(t) overlay (τελευταίες ~6 περίοδοι) ---------- */
-
-const XTmini = (()=>{
-  let enabled = false;
-  let btn=null, cvs=null, ctx=null;
-  const samples = [];
-  const MAX_SAMPLES = 2600;
-  let lastT = 0;
-
-  function bind(){
-    if(!btn) btn = document.getElementById('btnXTmini');
-    if(!cvs) cvs = document.getElementById('xtMiniCanvas');
-    if(cvs && !ctx) ctx = cvs.getContext('2d');
-
-    if(btn && !btn._xtmini){
-      btn._xtmini = true;
-      btn.addEventListener('click', ()=>{
-        enabled = !enabled;
-        if(cvs) cvs.style.display = enabled ? 'block' : 'none';
-        if(enabled) draw(lastT);
-      });
-    }
-  }
-
-  function periodSec(){
-    const r = (typeof driveRatio==='number') ? driveRatio : 0;
-    if(r > 0.0001) return T / r;
-    return T;
-  }
-
-  function windowSec(){
-    return Math.min(24, Math.max(3, 6 * periodSec()));
-  }
-
-  function add(t, xMeters){
-    lastT = t;
-    if(!Number.isFinite(t) || !Number.isFinite(xMeters)) return;
-    bind();
-
-    // κρατάμε displacement ως προς το 10 m
-    const xRel = xMeters - RULER_CENTER_M;
-    samples.push({t, x:xRel});
-    if(samples.length > MAX_SAMPLES) samples.splice(0, samples.length - MAX_SAMPLES);
-
-    const win = windowSec();
-    const tMin = t - win - 0.5;
-    while(samples.length && samples[0].t < tMin) samples.shift();
-
-    if(enabled) draw(t);
-  }
-
-  function draw(tNow){
-    if(!enabled || !ctx || !cvs) return;
-    const W = cvs.width, H = cvs.height;
-    ctx.clearRect(0,0,W,H);
-
-    // frame
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.fillRect(0,0,W,H);
-
-    const padL=44, padR=10, padT=16, padB=26;
-    const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
-    const w=x1-x0, h=y1-y0;
-
-    const win = windowSec();
-    const tStart = tNow - win;
-    const pts = samples.filter(p=>p.t >= tStart - 1e-6);
-
-    // y-scale
-    let maxAbs = 0.5;
-    for(const p of pts) maxAbs = Math.max(maxAbs, Math.abs(p.x));
-    const yMax = Math.min(8, Math.max(1, maxAbs*1.12));
-
-    const X = (tt)=> x0 + ((tt - tStart)/win) * w;
-    const Y = (xx)=> {
-      const u = (xx / yMax);
-      return y0 + (0.5 - 0.5*u) * h;
-    };
-
-    // axes
-    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x0, y0 + h/2); ctx.lineTo(x1, y0 + h/2);
-    ctx.moveTo(x0, y0); ctx.lineTo(x0, y1);
-    ctx.stroke();
-
-    // labels
-    ctx.fillStyle = 'rgba(255,255,255,0.82)';
-    ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.fillText('x(t) (τελευταίες ~6 περίοδοι)', x0, 13);
-    ctx.font = '10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.textAlign = 'right';
-    ctx.fillText((+yMax.toFixed(1)) + ' m', x0-6, y0+4);
-    ctx.fillText((-(+yMax.toFixed(1))) + ' m', x0-6, y1);
-    ctx.textAlign = 'left';
-
-    // curve
-    if(pts.length >= 2){
-      ctx.strokeStyle = 'rgba(80,180,255,0.95)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(X(pts[0].t), Y(pts[0].x));
-      for(let i=1;i<pts.length;i++) ctx.lineTo(X(pts[i].t), Y(pts[i].x));
-      ctx.stroke();
-    }else{
-      ctx.fillStyle='rgba(255,255,255,0.70)';
-      ctx.fillText('—', x0+6, y0 + h/2 + 4);
-    }
-  }
-
-  return { add, draw, isOn:()=>enabled };
-})();
 
 /* ---------- Animation loop ---------- */
 
@@ -4806,10 +4274,6 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const fRatio = driveRatio;
   if (typeof AFRecorder !== 'undefined') AFRecorder.update({ xMeters, dt, fHz, fRatio, bKgPerS: driveB });
   logMeasurement(tObs,xMeters);
-  xtOverlayPushSample(tObs, xMeters);
-  xtOverlayDraw(dt);
-
-  if(typeof XTmini !== 'undefined' && XTmini) XTmini.add(tObs, xMeters);
 
   if(ghost && ghostSpring){
     const target=ghostActive?1:0;
@@ -4934,7 +4398,6 @@ async function loadDialogs(){
     VIEWERS=data.viewers || [];
     ACT1   =data.act1    || [];
     ACT2   =data.act2    || [];
-    ACT3   =data.act3    || [];
     FOYER  =data.foyer   || [];
 
     if(typeof data.actsAvatarOffset==='number'){
@@ -5026,9 +4489,6 @@ const AFRecorder = (() => {
   let xMin = Infinity;
   let xMax = -Infinity;
 
-  // Live extrema (τελευταίο max/min) για οπτική συμφωνία με χάρακα/γράφημα
-  let liveMin = null;
-  let liveMax = null;
   const maxList = [];
   const minList = [];
 
@@ -5152,7 +4612,7 @@ const AFRecorder = (() => {
     const W=cvs.width, H=cvs.height;
     ctx.clearRect(0,0,W,H);
 
-    const padL=34, padR=10, padT=18, padB=28;
+    const padL=44, padR=10, padT=18, padB=28;
     const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
     const w=x1-x0, h=y1-y0;
 
@@ -5182,7 +4642,7 @@ function colorForB(k){ return B_COL[k] || 'rgba(230,230,230,0.85)'; }
     ctx.font='12px system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.fillText('A–f', x0, 12);
     ctx.fillText('f/f₀', x1-34, H-10);
-    ctx.fillText('A (m)', Math.max(4, x0-30), y0+10);
+    ctx.fillText('A (m)', 6, y0+10);
 
     function X(r){
       const u=(r-XRANGE[0])/(XRANGE[1]-XRANGE[0]);
@@ -5235,13 +4695,12 @@ function colorForB(k){ return B_COL[k] || 'rgba(230,230,230,0.85)'; }
     // y grid/ticks (σταθερά 0..8 ανά 2)
     ctx.save();
     ctx.font='10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.textAlign='right';
     for(let A=0; A<=8.0001; A+=2){
       const yy=Y(A);
       ctx.strokeStyle='rgba(255,255,255,0.08)';
       ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x1,yy); ctx.stroke();
       ctx.fillStyle='rgba(255,255,255,0.55)';
-      ctx.fillText(A.toFixed(0), x0-6, yy+4);
+      ctx.fillText(A.toFixed(0), 6, yy+4);
     }
     ctx.restore();
 
@@ -5388,13 +4847,9 @@ data.forEach(p=>{
     if(!elX) return;
 
     elX.textContent = `${fmt(x,3)} m`;
-    const xminShow = (Number.isFinite(liveMin) ? liveMin : xMin);
-    const xmaxShow = (Number.isFinite(liveMax) ? liveMax : xMax);
-    const aShow = (Number.isFinite(xminShow) && Number.isFinite(xmaxShow)) ? 0.5*(xmaxShow-xminShow) : null;
-
-    elXmin.textContent = (Number.isFinite(xminShow) ? `${fmt(xminShow,3)} m` : '—');
-    elXmax.textContent = (Number.isFinite(xmaxShow) ? `${fmt(xmaxShow,3)} m` : '—');
-    elA.textContent    = (aShow!==null ? `${fmt(aShow,3)} m` : '—');
+    elXmin.textContent = `${fmt(xMin,3)} m`;
+    elXmax.textContent = `${fmt(xMax,3)} m`;
+    elA.textContent = `${fmt((xMax-xMin)/2,3)} m`;
     if(b < DRIVE_B_SAFE_MIN){
       elF.textContent = `${fmt(fHz,3)} Hz  (r=${fmt(ratio,2)})`;
     } else {
@@ -5452,10 +4907,6 @@ data.forEach(p=>{
     if(lastSign === 1 && sign === -1) pushMax(lastX);
     if(lastSign === -1 && sign === 1) pushMin(lastX);
 
-
-    // update live extrema όταν πιάσουμε νέο ακρότατο
-    if(maxList.length) liveMax = maxList[maxList.length-1];
-    if(minList.length) liveMin = minList[minList.length-1];
     lastX = xMeters;
     lastSign = sign;
 
