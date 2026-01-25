@@ -277,7 +277,8 @@ body{
 .clock{
   position:absolute;
   top:10px;
-  right:10px;
+  right:auto;
+  left:0;
   background:rgba(0,0,0,.5);
   color:#fff;
   padding:6px 10px;
@@ -300,7 +301,8 @@ body{
 
 .measure-box{
   position:absolute;
-  right:10px;
+  right:auto;
+  left:0;
   top:44px;
   width:220px;
   z-index: 2200;
@@ -349,7 +351,8 @@ body{
 /* Γράφημα x–t */
 #xtChart{
   position:absolute;
-  right:10px;
+  right:auto;
+  left:0;
   width:220px;           /* πιο στενό, ευθυγραμμισμένο με measure-box/params */
   height:120px;          /* μικρότερο ύψος */
   top:calc(44px + calc(28 * var(--aat-vh0)) + 8px);
@@ -362,7 +365,8 @@ body{
 /* Γράφημα x–sin(ωt) */
 #xSinChart{
   position:absolute;
-  right:10px;
+  right:auto;
+  left:0;
   width:220px;           /* ίδιο πλάτος */
   height:120px;          /* ίδιο μικρό ύψος */
   top:calc(44px + calc(28 * var(--aat-vh0)) + 8px + 120px + 8px);
@@ -375,7 +379,8 @@ body{
 /* Πίνακας A, ω, φ₀ */
 .params-box{
   position:absolute;
-  right:10px;
+  right:auto;
+  left:0;
   top:calc(44px + calc(28 * var(--aat-vh0)) + 8px + 120px + 8px + 120px + 8px);
   z-index: 2199;
   background:rgba(0,0,0,.6);
