@@ -1737,7 +1737,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
     opt.textContent = (r*100).toFixed(0) + '%';
 
     // Dynamic forbid (cap) για το συγκεκριμένο b + ειδικός κανόνας: για b=6 απενεργοποιείται το 100%
-    opt.disabled = isDisabledRatioForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
+    opt.disabled = isRatioDisabledForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
 
     elDriveRatio.appendChild(opt);
   }
