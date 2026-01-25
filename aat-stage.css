@@ -277,8 +277,7 @@ body{
 .clock{
   position:absolute;
   top:10px;
-  right:auto;
-  left:0;
+  right:10px;
   background:rgba(0,0,0,.5);
   color:#fff;
   padding:6px 10px;
@@ -301,8 +300,7 @@ body{
 
 .measure-box{
   position:absolute;
-  right:auto;
-  left:0;
+  right:10px;
   top:44px;
   width:220px;
   z-index: 2200;
@@ -351,8 +349,7 @@ body{
 /* Γράφημα x–t */
 #xtChart{
   position:absolute;
-  right:auto;
-  left:0;
+  right:10px;
   width:220px;           /* πιο στενό, ευθυγραμμισμένο με measure-box/params */
   height:120px;          /* μικρότερο ύψος */
   top:calc(44px + calc(28 * var(--aat-vh0)) + 8px);
@@ -365,8 +362,7 @@ body{
 /* Γράφημα x–sin(ωt) */
 #xSinChart{
   position:absolute;
-  right:auto;
-  left:0;
+  right:10px;
   width:220px;           /* ίδιο πλάτος */
   height:120px;          /* ίδιο μικρό ύψος */
   top:calc(44px + calc(28 * var(--aat-vh0)) + 8px + 120px + 8px);
@@ -379,8 +375,7 @@ body{
 /* Πίνακας A, ω, φ₀ */
 .params-box{
   position:absolute;
-  right:auto;
-  left:0;
+  right:10px;
   top:calc(44px + calc(28 * var(--aat-vh0)) + 8px + 120px + 8px + 120px + 8px);
   z-index: 2199;
   background:rgba(0,0,0,.6);
@@ -1043,52 +1038,4 @@ body.exit-mask-active .exit-panel-mask{
   filter: grayscale(1);
 }
 #marbleTrackGhost{
-  /* override vivid green veins with a neutral grey marble look */
-  background:
-    linear-gradient(180deg, rgba(245,245,245,0.85), rgba(205,205,205,0.85)),
-    repeating-linear-gradient(135deg,
-      rgba(255,255,255,0.0) 0px,
-      rgba(255,255,255,0.0) 10px,
-      rgba(255,255,255,0.18) 12px,
-      rgba(255,255,255,0.0) 22px
-    );
-}
-
-/* --- Layer fix: ensure dialogs/bubbles are never covered by the A-ω-φ0 params box --- */
-/* params box stays aligned with right panels/charts layer */
-.params-box, #paramsBox, .paramsPanel{
-  z-index: 2199 !important;
-}
-
-/* dialog bubbles ABOVE params box (and above panels/charts if they overlap) */
-.thought-bubble,
-.bubble,
-.dialog-bubble,
-#bubble,
-#bubbleLeft,
-#bubbleRight,
-#dialogBubble,
-#dialogLeft,
-#dialogRight{
-  z-index: 2300 !important;
-}
-
-/* --- Layer tweak: laws panel above the left charts by at least +1 --- */
-.law-charts,
-#lawCharts,
-.left-charts,
-.chart-panel-left{
-  z-index: 1600 !important;
-}
-
-.laws,
-#laws,
-.laws-panel{
-  z-index: 1601 !important;
-}
-
-
-
-
-
-
+  /* override vivid green veins wi
