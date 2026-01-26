@@ -350,7 +350,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       pointer-events:none;
     }
 
-/* #btnXTOverlay{display:none !important;} */
+#btnXTOverlay{display:none !important;}
 </style>
 
 </head>
@@ -2308,37 +2308,50 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // Τοποθέτηση/πλάτος: μέσα στη δεξιά σταθερή κουρτίνα (curtain-side.right)
-  const stageEl = document.getElementById('stage');
-  const rightCurt = stageEl ? stageEl.querySelector('.curtain-side.right') : null;
+  // Θέση/μέγεθος XT overlay: "κουμπώνει" μέσα στη δεξιά ακίνητη κουρτίνα.
+  // Αν για οποιονδήποτε λόγο δεν βρεθεί κουρτίνα/σκηνή ή βγει πολύ στενό,
+  // κάνουμε ασφαλές fallback σε κεντρικό panel για να μην εξαφανίζεται.
+  const vw = Math.max(320, window.innerWidth || 0);
+  const vh = Math.max(240, window.innerHeight || 0);
 
-  if(stageEl && rightCurt){
-    const sRect = stageEl.getBoundingClientRect();
-    const rRect = rightCurt.getBoundingClientRect();
-
-    const pad = 16;
-
-    // Πλάτος όσο η δεξιά κουρτίνα (με padding)
-    const w = Math.max(190, Math.floor(rRect.width - pad*2));
-
-    // Ύψος: “λογικό” μέσα στη σκηνή, χωρίς να γίνεται τεράστιο
-    const h = Math.min(320, Math.max(140, Math.floor(sRect.height * 0.42)));
-
-    // Κεντράρισμα κατακόρυφα μέσα στη σκηνή, οριζόντια πάνω στη δεξιά κουρτίνα
-    const left = Math.round(rRect.left + pad);
-    const top  = Math.round(sRect.top + (sRect.height - h)/2);
-
+  function fallback(){
+    const w = Math.min(520, Math.round(vw * 0.55));
+    const h = Math.min(320, Math.round(vh * 0.40));
+    const left = Math.round((vw - w) / 2);
+    const top  = Math.round((vh - h) / 2);
     return { left, right: left + w, top, bottom: top + h };
   }
 
-  // Fallback (αν κάτι λείπει): center of viewport
-  const vw = Math.max(320, window.innerWidth || 0);
-  const vh = Math.max(240, window.innerHeight || 0);
-  const w = Math.min(520, Math.round(vw * 0.55));
-  const h = Math.min(320, Math.round(vh * 0.40));
-  const left = Math.round((vw - w) / 2);
-  const top  = Math.round((vh - h) / 2);
-  return { left, right: left + w, top, bottom: top + h };
+  const stageEl = document.getElementById('stage');
+  if(!stageEl) return fallback();
+
+  const rightCurt = stageEl.querySelector('.curtain-side.right');
+  if(!rightCurt) return fallback();
+
+  const sRect = stageEl.getBoundingClientRect();
+  const rRect = rightCurt.getBoundingClientRect();
+
+  const PAD = 16;
+
+  let left  = Math.round(rRect.left + PAD);
+  let right = Math.round(rRect.right - PAD);
+
+  // clamp στο viewport (fixed canvas)
+  left  = Math.max(0, Math.min(vw-1, left));
+  right = Math.max(left+1, Math.min(vw, right));
+
+  const W = right - left;
+  if(!isFinite(W) || W < 160) return fallback();
+
+  // Y περιοχή: μέσα στη σκηνή (όχι στο πάνω UI), με ασφαλή clamp
+  const yTopMin = Math.max(0, Math.round(sRect.top + 90));
+  const yBotMax = Math.min(vh, Math.round(sRect.bottom - 20));
+  const availH = Math.max(120, yBotMax - yTopMin);
+
+  const h = Math.min(320, Math.round(availH * 0.45));
+  const top = Math.max(0, Math.min(vh - h, yTopMin + 8));
+
+  return { left, right, top, bottom: top + h };
 }
 
 function xtOverlayPushSample(tObs, uMeters){
