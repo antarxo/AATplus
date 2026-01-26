@@ -2327,11 +2327,6 @@ function ensureXTOverlay(){
 
 function setXTOverlay(on){
   xtOverlayEnabled = !!on;
-
-  try{
-    const nowT = (obsStarted ? (playbackTime - obsStartPlaybackOffset) : 0);
-    if(xtOverlayEnabled && xtOverlayStartT===null) xtOverlayStartT = nowT;
-  }catch(_e){}
   ensureXTOverlay();
   if(!xtOverlayCan) return;
   xtOverlayCan.style.display = xtOverlayEnabled ? 'block' : 'none';
@@ -2342,48 +2337,28 @@ function setXTOverlay(on){
 }
 
 function xtOverlayLocalRect(){
-  // Bottom-right panel. Width = right curtain width, bottom touches stage bottom.
-  const rc = document.querySelector('.curtain-side.right');
-  if(!rc) return {left:0,right:0,top:0,bottom:0};
+  // DEBUG/confirm rendering: κεντρικό panel στη μέση της σκηνής
+  if(!stage) return {left:0,right:0,top:0,bottom:0};
 
-  const r = rc.getBoundingClientRect();
-  const stageR = stage.getBoundingClientRect();
-  const hud = document.getElementById('measureHUD');
+  const s = getStageScale();
+  const stageRect = stage.getBoundingClientRect();
+  const W = stage.clientWidth || 0;
+  const H = stage.clientHeight || 0;
 
-  const pad = 10;
-  const minH = 160;
+  const w = Math.min(560, Math.max(260, Math.round(W*0.55)));
+  const h = Math.min(320, Math.max(160, Math.round(H*0.38)));
 
-  const stageW = Math.max(2, stage.clientWidth);
-  const stageH = Math.max(2, stage.clientHeight);
+  const left  = Math.round((W - w)/2);
+  const top   = Math.round((H - h)/2);
 
-  const curtainW = Math.max(80, Math.round(r.width));
-
-  const right = stageW - pad;
-  const left  = Math.max(pad, right - curtainW + 2*pad);
-
-  const bottom = stageH - pad;
-
-  let top = pad;
-  if(hud){
-    const hr = hud.getBoundingClientRect();
-    if(hr.width > 10 && hr.height > 10){
-      top = Math.max(top, Math.round((hr.bottom - stageR.top) + 10));
-    }
-  }
-
-  if(bottom - top < minH){
-    top = bottom - minH;
-  }
-  if(top < pad) top = pad;
-
-  return {left,right,top,bottom};
+  return { left, right:left+w, top, bottom:top+h };
 }
 
 function xtOverlayPushSample(tObs, uMeters){
   if(!xtOverlayEnabled || !xtOverlayCan) return;
   if(!isFinite(tObs) || !isFinite(uMeters)) return;
 
-  const span = Math.max(24, 12*T); // ίδιο με το overlay window
+  const span = Math.max(12, 6*T); // ~6 περίοδοι
   xtOverlayBuf.push({t:tObs, u:uMeters});
 
   const cutoff = tObs - (span + 2*T);
@@ -2440,36 +2415,34 @@ function xtOverlayDraw(dt){
   const pyT = yTop + marginT;
   const pyB = yBot - marginB;
 
-  const spanT = Math.max(24, 12*T);
+  const span = Math.max(12, 6*T);
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
 
-  // Time window:
-  // Ξεκινάει από τη στιγμή που πρωτοεμφανίζεται (startT) ως t=0 της προβολής,
-  // γεμίζει το πλάτος μέχρι spanT, και μετά ολισθαίνει αριστερά κρατώντας πάντα το tNow δεξιά.
-   // πολλές περίοδοι σε στενό πλάτος
-  if(!xtOverlayBuf.length) return;
-
-  const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
-  if(xtOverlayStartT==null) xtOverlayStartT = tNow; // fallback ασφάλειας
-
-  const startT = xtOverlayStartT;
-
-  let t0, t1;
-  if((tNow - startT) < spanT){
-    t0 = startT;
-    t1 = startT + spanT;
+  // Time window: 0 στην αρχή, ολίσθηση μόνο όταν γεμίσει.
+  const desiredT0 = Math.max(0, tNow - span);
+  if(tNow <= span){
+    xtOverlayT0 = 0;
   }else{
-    t1 = tNow;
-    t0 = t1 - spanT;
+    // αργή ολίσθηση (inertia)
+    const alpha = Math.min(1, Math.max(0.02, (dt||0.016)*0.20));
+    xtOverlayT0 = xtOverlayT0 + (desiredT0 - xtOverlayT0)*alpha;
   }
+  const t0 = xtOverlayT0;
+  const t1 = t0 + span;
+
+  // Υ-κλίμακα: από τα δείγματα μέσα στο παράθυρο, αλλά με smoothing για να μη "τρεμοπαίζει".
+  let maxAbs = 0;
+  for(const p of xtOverlayBuf){
+    if(p.t < t0 || p.t > t1) continue;
+    const a = Math.abs(p.u);
+    if(a>maxAbs) maxAbs=a;
   }
-
-
-  // Υ-κλίμακα: σταθερή ±6.5 m (για να συγκρίνονται όλες οι περιπτώσεις, ειδικά η εξαναγκασμένη)
-  const uRange = 6.5;
-
+  const targetUR = Math.max(1.15*maxAbs, 3.2);
+  const beta = Math.min(1, Math.max(0.03, (dt||0.016)*0.25));
+  xtOverlayURange = xtOverlayURange + (targetUR - xtOverlayURange)*beta;
+  const uRange = xtOverlayURange;
 
   function tToX(t){
     return pxL + (t - t0) / (t1 - t0) * (pxR - pxL);
@@ -2485,15 +2458,13 @@ function xtOverlayDraw(dt){
   ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  // time ticks: labels αραιά (αλλιώς γίνεται σαλάτα όταν δείχνουμε πολλές περιόδους)
+  // time ticks: αραιά labels για να μη τρελαίνουν
   let step = 1;
-  if(spanT > 60) step = 10;
-  else if(spanT > 30) step = 5;
-  else if(spanT > 18) step = 2;
-  else step = 1;
+  if(span > 28) step = 6;
+  else if(span > 16) step = 4;
+  else if(span > 10) step = 2;
 
   const tStart = Math.ceil(t0/step)*step;
-
   for(let t=tStart; t<=t1+1e-9; t+=step){
     const x = tToX(t);
     ctx.beginPath();
@@ -2503,7 +2474,7 @@ function xtOverlayDraw(dt){
   }
 
   // u ticks
-  const uTicks = [-6.5, -3.25, 0, 3.25, 6.5];
+  const uTicks = [-uRange/2, 0, uRange/2];
   for(const u of uTicks){
     const y = uToY(u);
     ctx.beginPath();
@@ -2560,19 +2531,13 @@ function xtOverlayDraw(dt){
   ctx.fillText(title, pxL+6, pyT+14);
 
   ctx.font='10px system-ui';
-  // y labels
-  ctx.textAlign='right';
-  for(const u of uTicks){
-    const y = uToY(u);
-    ctx.fillText(u.toFixed(2), pxL-6, y+3);
-  }
   ctx.textAlign='center';
   for(let t=tStart; t<=t1+1e-9; t+=step){
     const x = tToX(t);
-    ctx.fillText(String(Math.round(t - startT)), x, pyB+12);
+    ctx.fillText(String(Math.round(t)), x, pyB+12);
   }
   ctx.textAlign='left';
-  ctx.fillText("t' (s)", pxR-32, y0-6);
+  ctx.fillText('t (s)', pxR-28, y0-6);
   ctx.fillText('x (m)', pxL+2, pyT-4);
   ctx.restore();
 }
@@ -3722,24 +3687,6 @@ function showDynBubble(ev){
 
 async function runAct1(){
   phase='act1';
-
-  // --- Act1 must be pure free undamped SHM: b=0, f=OFF, A=3m ---
-  try{
-    driveB = 0;
-    driveRatio = 0.00;     // OFF
-    driverOmega = omega * driveRatio;
-    driveInited = false;   // force re-seed to A=3m state
-    baseRefX = null;
-    basePrevX = null;
-    basePrevV = null;
-    // sync UI if present
-    if(elDriveB){ elDriveB.value = String(driveB); }
-    if(elDriveBVal){ elDriveBVal.textContent = `${driveB} kg/s`; }
-    if(elDriveRatio){ elDriveRatio.value = '0.00'; }
-    updateDriveFreqLabel && updateDriveFreqLabel();
-    syncDriveUI && syncDriveUI();
-  }catch(_e){}
-
   applySignboardForPhase('act1');
   try{ springEl.style.display='block'; }catch(_e){}
   for(const ev of ACT1){
@@ -4806,7 +4753,7 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const fRatio = driveRatio;
   if (typeof AFRecorder !== 'undefined') AFRecorder.update({ xMeters, dt, fHz, fRatio, bKgPerS: driveB });
   logMeasurement(tObs,xMeters);
-  xtOverlayPushSample(tObs, xMeters);
+  xtOverlayPushSample(tObs, driveU/pxPerMeter);
   xtOverlayDraw(dt);
 
   if(typeof XTmini !== 'undefined' && XTmini) XTmini.add(tObs, xMeters);
