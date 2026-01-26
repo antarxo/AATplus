@@ -2444,20 +2444,28 @@ function xtOverlayDraw(dt){
   if(!xtOverlayBuf.length) return;
 
   const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
+
+  // Time window:
+  // Ξεκινάει από τη στιγμή που πρωτοεμφανίζεται (startT) ως t=0 της προβολής,
+  // γεμίζει το πλάτος μέχρι spanT, και μετά ολισθαίνει αριστερά κρατώντας πάντα το tNow δεξιά.
+   // πολλές περίοδοι σε στενό πλάτος
+  if(!xtOverlayBuf.length) return;
+
+  const tNow = xtOverlayBuf[xtOverlayBuf.length-1].t;
   if(xtOverlayStartT==null) xtOverlayStartT = tNow; // fallback ασφάλειας
 
   const startT = xtOverlayStartT;
 
   let t0, t1;
   if((tNow - startT) < spanT){
-    // πριν γεμίσει το πλάτος: κρατάμε σταθερή κλίμακα και αφήνουμε τα δεδομένα να “γεμίσουν”
     t0 = startT;
     t1 = startT + spanT;
   }else{
-    // μετά: ολισθαίνει αριστερά κρατώντας πάντα το tNow δεξιά
     t1 = tNow;
     t0 = t1 - spanT;
   }
+  }
+
 
   // Υ-κλίμακα: σταθερή ±6.5 m (για να συγκρίνονται όλες οι περιπτώσεις, ειδικά η εξαναγκασμένη)
   const uRange = 6.5;
@@ -5152,15 +5160,14 @@ const AFRecorder = (() => {
     const B_SLOTS = {6:0, 12:1, 24:2, 30:3};
 
 const B_COL = {
-  6:  { stroke:'rgba(255,0,0,0.90)',    fill:'rgba(255,0,0,0.90)',    text:'rgba(255,0,0,0.90)' },       // κόκκινο
-  12: { stroke:'rgba(0,200,0,0.90)',    fill:'rgba(0,200,0,0.90)',    text:'rgba(0,200,0,0.90)' },       // πράσινο
-  24: { stroke:'rgba(80,180,255,0.90)', fill:'rgba(80,180,255,0.90)', text:'rgba(80,180,255,0.90)' },    // ανοιχτό μπλε
-  30: { stroke:'rgba(255,215,0,0.90)',  fill:'rgba(255,215,0,0.90)',  text:'rgba(255,215,0,0.90)' }      // κίτρινο
+  6:  'rgba(255,0,0,0.90)',       // κόκκινο
+  12: 'rgba(0,200,0,0.90)',       // πράσινο
+  24: 'rgba(80,180,255,0.90)',    // ανοιχτό μπλε
+  30: 'rgba(255,215,0,0.90)'      // κίτρινο
 };
-function colorForB(k){
-  return B_COL[k] || { stroke:'rgba(230,230,230,0.85)', fill:'rgba(230,230,230,0.85)', text:'rgba(230,230,230,0.90)' };
-}
-const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
+function colorForB(k){ return B_COL[k] || 'rgba(230,230,230,0.85)'; }
+
+    const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
 
     // axes
     ctx.strokeStyle='rgba(255,255,255,0.35)';
