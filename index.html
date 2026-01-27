@@ -511,7 +511,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
         <option value="1.20">1.20 f₀</option>
         <option value="1.50">1.50 f₀</option>
       </select>
-      <span class="dc-val" id="driveFreqVal">1.00 f₀ · – Hz</span>
+      <span class="dc-val" id="driveFreqVal">OFF · – Hz</span>
     </div>
     <div class="dc-row">
       <span class="dc-lbl">b</span>
@@ -522,7 +522,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
   <option value="24">24</option>
   <option value="30">30</option>
 </select>
-      <span class="dc-val" id="driveBVal">20 kg/s</span>
+      <span class="dc-val" id="driveBVal">0 kg/s</span>
     </div>
   </div>
 
@@ -1614,7 +1614,7 @@ const DRIVER_THETA0 = Math.PI/2;
 let driverTheta = DRIVER_THETA0;          // ξεκινάμε στο κέντρο (cos=0) για να "κουμπώνει"
 
 // Για να φαίνεται καθαρά ο συντονισμός, αλλάζουμε τη συχνότητα σε (υπο)πολλαπλάσια της ιδιοσυχνότητας f0.
-let driveRatio = 1.00;                    // f = driveRatio · f0
+let driveRatio = 0.00;                    // f = driveRatio · f0
 let driverOmega = omega * driveRatio;     // rad/s
 
 let driverDx  = 0;   // τρέχον translateX του slider (px, στο ίδιο σύστημα με το placement)
@@ -1639,7 +1639,7 @@ let basePrevX = null;  // px
 let basePrevV = null;  // px/s
 let baseRefX  = null;  // px (y0)
 
-let driveB = 12;       // kg/s  (b στη δύναμη -b·v)
+let driveB = 0;        // kg/s  (b στη δύναμη -b·v)
 
 const DRIVE_B_HARD_MIN = 0;   // επιτρέπουμε και b=0 (αμείωτη/χωρίς απόσβεση)
 const DRIVE_B_SAFE_MIN = 10;  // φυσικό/λειτουργικό κατώφλι του συστήματος
