@@ -92,72 +92,47 @@
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Ο m₁D₁ ήταν <b>ήδη σε κίνηση!</b>",
-      "right": ""
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "…σημαντικό! καταγράφηκε ως χρονική στιγμή <b>t₀=0</b>  το άνοιγμα της κουρτίνας!",
-      "right": ""
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… η κίνηση αυτή είναι <b>ευθύγραμμη και παλινδρομική!</b>",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… και επαναλαμβανόμενη, περιοδική, <b>άρα ταλάντωση!</b>",
-      "right": ""
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Μήπως είναι <b>Απλή Αρμονική Ταλάντωση;</b>",
-      "right": ""
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… αν όμως είναι Α.Α.Τ., τότε οι τιμές που μετράμε δε θα πρέπει να επαληθεύουν την <b>x=Αημ(ωt+φ₀);</b>",
-      "right": ""
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… άραγε, αν κάνουμε <b>διάγραμμα x–t</b>, μπορεί να το επιβεβαιώσει;",
-      "right": ""
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "Ξεκινάμε καθαρά: <b>ελεύθερη αμείωτη</b> (ιδανική).",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 0,
+          "ratio": 0.0
+        },
+        {
+          "type": "hideAF"
+        }
+      ]
     },
     {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "χμμ και ναι και όχι. Ας το κάνουμε όμως γιατί<b> συνήθως ένα διάγραμμα αποκαλύπτει στοιχεία!</b>",
+      "typeMs": 3000,
+      "pauseMs": 900,
+      "left": "Διεγέρτης OFF, τριβές OFF. Δεν υπάρχει δικαιολογία: ό,τι δεις εδώ είναι το «καθαρό» μοντέλο.",
+      "right": ""
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Ορισμός: <b>πλάτος A</b> = μέγιστη απομάκρυνση από ισορροπία.",
+      "right": "<b>A = max|x|</b>"
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3000,
+      "pauseMs": 900,
+      "left": "Στον χάρακα θα βλέπεις το x. Στο x–t βλέπεις το ίδιο πράγμα… αλλά στον χρόνο.",
       "right": "",
       "graph": "xt"
     },
@@ -165,182 +140,44 @@
       "viewer": 3,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "param": "A",
-      "left": "…Πάντως αν είναι ΑΑΤ, θα έχει πλάτος <b>A={A} m</b>!",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "param": "Tw",
-      "left": "… και περίοδο <b>T={T} s</b>! οπότε σ' αυτή την περίπτωση θα έχει και <b>ω={omega} rad/s</b>!",
-      "right": ""
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Αν η κίνηση είναι ΑΑΤ, τότε τα σημεία σε διάγραμμα <b>x σε σχέση με ημ(ωt+φ₀)</b> πρέπει να βρίσκονται σε ευθεία με κλίση Α! ",
-      "right": "",
-      "viewer": 3
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Πολύ σωστά! Αν επομένως,  η καμπύλη <b>x=A·ημ(ωt+φ₀)</b> περάσει το \"τεστ γραμμικότητας\" της γραφικής παράστασης <b>x–ημ(ωt+φ₀)</b> τότε, αποδεικνύεται ότι πρόκειται για ΑΑΤ!",
-      "right": "",
-      "viewer": 5
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Βεβαίως! όμως, φαίνεται να υπάρχει  η άγνωστη μέχρι τώρα αρχική φάση φ₀, που κάνει δυστυχώς αδύνατο το τέστ γραμμικότητας...",
-      "right": "",
-      "viewer": 4
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Αν βρούμε όμως, πάνω στο διάγραμμα x-t,  τη χρονική στιγμή t₁, που για <b>πρώτη φορά</b> η φάση γίνεται <b>0</b>, από εκεί και μετά σίγουρα ισχύει σχέση της μορφής  <b>x=A·ημωt</b> και για την ακρίβεια η <b>x=A·ημω(t-t₁)</b> ",
-      "right": "",
-      "viewer": 3
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "... ακριβώς! και έτσι το πρόβλημα γίνεται, απλό! Δείτε τι μπορούμε να κάνουμε! Μεταφέρουμε την αρχή των χρόνων εκεί που περνάει για πρώτη φορά η<b> x-t από τη θέση x=0</b> και η <b>ταχύτητα του ταλαντωτή (κλίση του διαγράμματος στο σημείο αυτό) είναι θετική</b>. Εδώ στο <b>t₁={tZero}s</b> εκεί που δείχνει το <b>κόκκινο βέλος</b> στην x-t... ",
-      "right": "",
-      "viewer": 2,
-      "xtMark": true,
-      "xtMarkTail": true,
-      "xtZeroMark": true
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "...Έτσι παίρνουμε την <b>κόκκινη καμπύλη</b> που αντιστοιχεί στην<b>x=A·ημω(t-t₁)</b> δηλαδή στην <b>x=Aημωt, μπορούμε να πούμε, από εκεί και μετά!</b>....",
-      "right": "",
-      "viewer": 3,
-      "xtMark": true,
-      "xtMarkTail": true,
-      "xtZeroMark": true
+      "typeMs": 3300,
+      "pauseMs": 900,
+      "left": "Περίοδος T: χρόνος για μία πλήρη επανάληψη. Στο x–t φαίνεται σαν «μοτίβο» που επαναλαμβάνεται.",
+      "right": "<b>T</b>: επανάληψη"
     },
     {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 400,
-      "param": "phi",
-      "left": "Τέλεια! \n1ον Βλέπουμε ότι ταιριάζει απολύτως η μια καμπύλη με την άλλη, αλλά κυρίως \n2ον Το γράφημα <b>x–ημωt</b> δείτε, είναι όντως ευθεία με κλίση Α!",
-      "right": "",
-      "plot": "xsin"
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "..., <b>άρα η κίνηση είναι ΑΑΤ! και αφού το <b>x₀={x0} m</b>, με {vSignSymbol}, θα υπάρχει αρχική φάση <b>φ₀={phi0}°={phi0rad}rad</b>. Χαχα, ένα το κρατούμενο! Προχωράμε!</b>",
-      "right": "<b>x=Αημ(ωt+φ₀) (1)</b>",
-      "param": true,
-      "alsoParams": true
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": " ",
-      "right": "",
-      "xtMark": false,
-      "xtMarkTail": false,
-      "xtZeroMark": false
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Κοίτα τις κορυφές/κοιλάδες: εκεί το υ μηδενίζεται. Δεν είναι μαγεία, είναι παράγωγος.",
+      "right": "<b>υ=0</b> στα άκρα"
     },
     {
       "viewer": 2,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "… επομένως η ταχύτητα δίνεται από τον νόμο <b>v=ωA·συν(ωt+φ₀)!</b>",
-      "right": "<b>v=ωA·συν(ωt+φ₀) (2)</b>",
-      "plot": "v"
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "…και η επιτάχυνση από τον Νόμο <b>a=−ω²A·ημ(ωt+φ₀)!</b>",
-      "right": "<b>a=−ω²A·ημ(ωt+φ₀) (3)</b>",
-      "plot": "a"
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Αλλά η σχέση <b>x=Αημ(ωt+φ₀) (1)</b> περιέχεται στην (3): a = -ω²<b>Αημ(ωt+φ₀)</b> = -ω²<b>x</b>! Δηλαδή ο νέος νόμος γράφεται και στη μορφή <b>a(x)= -ω²x</b>",
-      "right": "<b>a(x)=−ω²·x (4)</b>",
-      "plot": "ax"
+      "typeMs": 2800,
+      "pauseMs": 900,
+      "left": "Στο ιδανικό, το πλάτος μένει ίδιο: δεν υπάρχει απώλεια ενέργειας.",
+      "right": ""
     },
     {
       "viewer": 3,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "<b>Τέλεια! όλο το σετ των νόμων της Α.Α.Τ!</b>",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Χμμμ...<b>Μένει όμως να δούμε, πώς τα καταφέρνει ο m₁D₁ και πραγματοποιεί Α.Α.Τ!</b>",
-      "right": ""
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Τι καταφέραμε λοιπόν μέχρι τώρα και με ποια εργαλεία;\n1. Χρησιμοποιήσαμε αποκλειστικά τις<b> μετρήσεις x και t </b>\n2. Από τα χαρακτηριστικά της περιοδικής κίνησης διατυπώσαμε την <b>υπόθεση ότι η κίνηση είναι ΑΑΤ</b>\n3. <b>Αποδείξαμε μέσα από σειρά συλλογισμών ότι η κίνηση είναι ΑΑΤ</b>\n4. Αναδείξαμε <b>όλους τους νόμους</b> αυτής της κίνησης!",
-      "right": ""
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
+      "typeMs": 2400,
+      "pauseMs": 1200,
+      "left": "Οκ. Τώρα πάμε στο «όπως είναι πραγματικά»: βάζουμε τριβές.",
       "right": "",
-      "close": true
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "act2"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ],
   "act2": [
@@ -348,280 +185,168 @@
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "ωπ! δεμένος σε ελατήριο είναι αυτός ο m₁D₁! ",
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "Πράξη 2: <b>φθίνουσα</b>. Ίδιο σύστημα, αλλά με τριβές.",
       "right": "",
-      "gStart": false,
-      "gStop": false
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 6,
+          "ratio": 0.0
+        },
+        {
+          "type": "hideAF"
+        }
+      ]
     },
     {
-      "viewer": 5,
+      "viewer": 2,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Δείτε! στους τίτλους πλέον, αποκαλύπτεται η μάζα του   <b>m₁={m1}Kg! ... και στο ελατήριο υπάρχει η επιγραφή D₁</b>",
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Τώρα το πλάτος πέφτει με τον χρόνο. Η ενέργεια φεύγει — δεν «κρατιέται» μόνη της.",
+      "right": "",
+      "graph": "xt"
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3100,
+      "pauseMs": 900,
+      "left": "Αν αυξήσουμε το b, η απόσβεση γίνεται πιο γρήγορη. Για να το δεις, θα αλλάξω b live.",
       "right": ""
     },
     {
-      "viewer": 2,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "<b>...αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί</b> να \"σέρνει\" τον ίδιο μηχανισμό-ελατήριο σε άλλη παράσταση, <b>αλλά εκεί με άλλον παραγωγό!</b>",
+      "typeMs": 2200,
+      "pauseMs": 500,
+      "left": "Πρώτα: b=6.",
       "right": "",
-      "gStart": true,
-      "gStop": false
-    },
-    {
-      "viewer": 4,
-      "xShift": 1,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "...ναι και εκεί πάλι κινήθηκε εμμονικά<b> με την ίδια ακριβώς περίοδο Τ={T}s</b>   , <b>αλλά εκεί, με μεγαλύτερο πλάτος A=5m!</b>",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": " Τι τα θες, τι τα γυρεύεις; Ας δούμε, <b>τι ακριβώς κάνει εδώ και κυρίως, γιατί;</b>",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Χμμμ… εγώ καταλαβαίνω ότι <b>Πρωταγωνιστής</b> είναι, μάλλον ο κινούμενος ηθοποιός και τα εργαλεία του μαζί!",
-      "right": "",
-      "gStart": false,
-      "gStop": true
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 6
+        },
+        {
+          "type": "sleep",
+          "ms": 1200
+        }
+      ]
     },
     {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Τώρα βγάζει νόημα μάλλον, γιατί δεν τον λένε m₁ αλλά m₁,D₁!…",
+      "typeMs": 2200,
+      "pauseMs": 500,
+      "left": "Μετά: b=12.",
       "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… το m₁ είναι η μάζα του ηθοποιού αλλά, <b>ταλαντωτής</b> προφανώς νοείται η <b>σύμπραξη του ηθοποιού (m₁) και του «ελαστικού» αιτίου–δύναμη</b>, στο οποίο αναφέρεται ως φαίνεται το <b>D₁!</b>",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "…m₁ και D₁ δηλαδή, πάνε παντού πακέτο! και <b>τα δυο μαζί είναι ο ταλαντωτής – ο πρωταγωνιστής!</b>",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… δηλαδή κάθε ταλαντωτής χαρακτηρίζεται\n1. από τη μάζα του m και\n2. από το ελαστικό αίτιο–δύναμη, που του ρυθμίζει χρονικά (T) την ταλάντωση!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… αρχίζω να πείθομαι γιατί σαν χαρακτηριστικό όνομα έχει το <b>mD</b> και όχι σκέτο <b>m!</b>...",
-      "right": "",
-      "gStart": false,
-      "gStop": false
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 12
+        },
+        {
+          "type": "sleep",
+          "ms": 1200
+        }
+      ]
     },
     {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Επομένως η ιδιαιτερότητα του κάθε ταλαντωτή, δηλαδή η «εμμονή» του να έχει χαρακτηριστική περίοδο T (χαρακτηριστική επομένως f και ω) οφείλεται\n1. στον <b>«σωματότυπό»</b> του m και\n2. στο <b>ελαστικό αίτιο</b> (που πιθανώς εμπεριέχεται στο D του ονόματός του)!",
+      "typeMs": 2200,
+      "pauseMs": 700,
+      "left": "Και πιο βαριά: b=24.",
       "right": "",
-      "gStart": false,
-      "gStop": false
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 24
+        },
+        {
+          "type": "sleep",
+          "ms": 1400
+        }
+      ]
     },
     {
       "viewer": 2,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Πωωωω! ελάτε τώρα παιδιά! πολλή φλυαρία!  αφήστε τα να πάμε παρακάτω…!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Καλά! Να δούμε τότε, πώς γράφεται ο 2ος Νόμος του Νεύτωνα για την περίπτωση του ταλαντωτή;",
-      "right": "",
-      "gStart": false,
-      "gStop": false
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Το μάθημα: <b>μεγαλύτερο b ⇒ πιο γρήγορη απώλεια ⇒ μικρότερο A</b>.",
+      "right": "b↑ ⇒ A↓"
     },
     {
       "viewer": 3,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "… έεε,   <b>σιγά τα ωά!, ΣF = m·a</b>, αλλά... εδώ /όμως, με τη βοήθεια της (3) <b>ΣF = −mω²A·ημ(ωt+φ₀) (5)!</b>",
-      "right": "<b>ΣF(t)=−mω²A·ημ(ωt+φ₀) (5)</b>",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "… και με βάση την (4) μπορεί να γραφτεί και ως <b>ΣF = −mω²x (6)!</b>",
-      "right": "<b>ΣF(x)=−mω²x (6)</b>",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Παρατηρείτε ότι η (6) περιέχει τις δύο σταθερές του ηθοποιού που μας απασχόλησαν πριν λίγο;  <b>τον «σωματότυπο» του (m) και την «εμμονή» του (ω)</b>!",
+      "typeMs": 2800,
+      "pauseMs": 1100,
+      "left": "Και τώρα το κρίσιμο ερώτημα: αν η τριβή τρώει ενέργεια… ποιος την ξαναδίνει;",
       "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "<b>Να κάνουμε λέτε εμείς, τις δύο σταθερές μία και να την ονομάσουμε D = mω² (6’)</b>; Βγάζει νόημα;",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Λοιπόν ακούστε, αν αποδώσουμε τη νέα σταθερά στο ελαστικό αίτιο, ως δική του σταθερά D, τότε όλα βγάζουν νόημα:\n1. Ο ηθοποιός έχει τη δική του σταθερή μάζα <b>m₁</b>,\n2. το ελαστικό αίτιο τη δική του σταθερά <b>D₁</b>... ",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "... καλά τώρα, και έτσι... εξηγείται ότι <b>ο ηθοποιός ανεξαρτήτως σκηνής και παραγωγού «εμμονικά» διατηρεί την περίοδό του σταθερή</b>;",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": " ",
-      "right": ""
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "...Ακριβώς! Μας το δείχνει και η (6΄) <b>D = mω²</b>, που μας λέει ότι, με σταθερά τα m και D,  θα είναι και η <b>ω=√(D/m) επίσης σταθερή</b> για τον κινούμενο ηθοποιό! ",
-      "right": "<b>D=mω² (6')</b>",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… οπότε, δικαιολογημένα τον <b>πρωταγωνιστή–ταλαντωτή (=ηθοποιός + ελαστικό αίτιο) τον λένε (m,D)<b/>!",
-      "right": "",
-      "gStart": false,
-      "gStop": false
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Και εμείς πολύ απλά με μια αριθμητική αντικατάσταση, μπορούμε για τον συγκεκριμένο ηθοποιό m₁D₁ να υπολογίσουμε το D₁ του! <b>Θα είναι: D₁=m₁ω²={D1}N/m</b>",
-      "right": "",
-      "viewer": 1
-    },
-    {
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "…αλλά και η (6) – μη ξεχνιόμαστε! – γίνεται <b>ΣF = −D·x (7)!</b>",
-      "right": "<b>ΣF(x)=−D·x (7)</b>",
-      "viewer": 5
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2500,
-      "pauseMs": 800,
-      "left": "Η οποία αναδιατυπώνει τον 2ο Νόμο του Νεύτωνα για την ΑΑΤ.:\n<b>\"ένα σώμα εκτελεί ΑΑΤ αν και μόνο αν η συνισταμένη των δυνάμεων που ασκούνται σ αυτό είναι ανάλογη της θέσης τους και αντίθετης κατεύθυνσης από αυτήν\"</b>",
-      "right": ""
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "act3"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ],
   "foyer": [
+    {
+      "viewer": 1,
+      "typeMs": 2400,
+      "pauseMs": 600,
+      "left": "Καλωσήρθες στο φουαγιέ. Εδώ διαλέγεις *παράσταση* — δεν τα στριμώχνουμε όλα σε μία.\nΔιάλεξε τι θες να δεις, και θα σε πάω στην αντίστοιχη Πράξη.",
+      "right": "(Τα κουμπιά είναι επιλογές του χρήστη. Οι θεατές απλώς… σπρώχνουν τη ροή.)",
+      "buttons": [
+        {
+          "label": "Παράσταση 1: ΑΑΤ",
+          "start": "act1"
+        },
+        {
+          "label": "Παράσταση 2: Φθίνουσα",
+          "start": "act2"
+        },
+        {
+          "label": "Παράσταση 3: Εξαναγκασμένη/Συντονισμός",
+          "start": "act3"
+        }
+      ],
+      "waitForChoice": true
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "<b>Πράξη 1:</b> ΑΑΤ (ιδανική) — βασικές διαπιστώσεις.\n<b>Πράξη 2:</b> Φθίνουσα — τριβές και απόσβεση.\n<b>Πράξη 3:</b> Εξαναγκασμένη — και στο τέλος καμπύλες συντονισμού.",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2600,
+      "pauseMs": 1100,
+      "left": "Tip: Αν πας κατευθείαν στην Πράξη 3, θα σε στήσει μόνη της σε κατάλληλη κατάσταση (b,f) πριν το sweep.",
+      "right": ""
+    },
     {
       "viewer": 1,
       "xShift": 0,
@@ -931,28 +656,28 @@
   ],
   "uiTitles": {
     "act1": {
-      "signTitle": "Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά!",
+      "signTitle": "Πράξη 1η: ΑΑΤ (ελεύθερη αμείωτη)",
       "signLineA": "Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)",
       "signLineB": "στον μονόλογο <span class=\"hl\">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!",
       "signLineC": "Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης",
       "signLineD": "(*) ... εσείς"
     },
     "act2": {
-      "signTitle": "Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!",
+      "signTitle": "Πράξη 2η: Φθίνουσα ταλάντωση",
       "signLineA": "Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί",
       "signLineB": "στον μονόλογο <span class=\"hl\">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!",
       "signLineC": "m₁={m1}Kg",
       "signLineD": ""
     },
     "act3": {
-      "signTitle": "Πράξη 3η: Η Ενέργεια στα ... Αλγεβρικά!",
+      "signTitle": "Πράξη 3η: Εξαναγκασμένη & Συντονισμός",
       "signLineA": "Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί",
       "signLineB": "στον μονόλογο <span class=\"hl\">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!",
       "signLineC": "m₁={m1}Kg , D₁={D1}N/m , E<sub>Μηχ</sub>={Emech}J",
       "signLineD": ""
     },
     "foyer": {
-      "signTitle": "Φουαγιέ: Χώρος ελεύθερης συζήτησης!",
+      "signTitle": "Φουαγιέ: Επιλογή παράστασης",
       "signLineA": "Αναμονή έναρξης της 3ης Πράξης: Η Ενέργεια στα...Αλγεβρικά!",
       "signLineB": "",
       "signLineC": "",
@@ -961,39 +686,59 @@
   },
   "act3": [
     {
-      "viewer": null,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 600,
-      "left": "Πράξη 3η: Καμπύλες συντονισμού. Θα αλλάζουμε f, περιμένουμε σταθεροποίηση πλάτους, και τότε μπαίνει σημείο στο A–f.",
+      "typeMs": 2600,
+      "pauseMs": 900,
+      "left": "Πράξη 3: <b>εξαναγκασμένη</b>. Εδώ ο διεγέρτης δίνει ενέργεια.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setParams",
+          "b": 6,
+          "ratio": 0.9
+        },
+        {
+          "type": "showAF"
+        }
+      ]
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3100,
+      "pauseMs": 900,
+      "left": "Στην αρχή θα δεις transient. Μετά μένει η <b>μόνιμη κατάσταση</b>.",
       "right": ""
     },
     {
-      "viewer": null,
+      "viewer": 3,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Για καμπύλες συντονισμού, μετράμε πλάτος αφού σταθεροποιηθεί. Γι’ αυτό κάνουμε μικρές παύσεις.",
+      "right": ""
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3200,
+      "pauseMs": 900,
+      "left": "Θα χτίσουμε την καμπύλη A–f αλλάζοντας τη συχνότητα γύρω από f₀.",
+      "right": "<b>A(f)</b> (steady-state)"
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
       "pauseMs": 400,
-      "left": "Κανόνας: μέχρι να καταγραφεί σημείο, οι αλλαγές σε b και f είναι κλειδωμένες. Οι διάλογοι περιμένουν το flag (awaitAFRecord).",
-      "right": ""
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 200,
-      "left": "Ξεκινάμε sweep συχνότητας. (placeholder μέχρι να γράψουμε τους κανονικούς διαλόγους)",
-      "right": ""
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 200,
-      "left": "Θέσε f = 0.60·f₀ και περίμενε να σταθεροποιηθεί το πλάτος (καταγραφή σημείου).",
+      "left": "Sweep: βάζω <b>f/f₀ = 0.60</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -1007,12 +752,12 @@
       ]
     },
     {
-      "viewer": null,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 200,
-      "left": "Θέσε f = 0.75·f₀ και περίμενε να σταθεροποιηθεί το πλάτος (καταγραφή σημείου).",
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: βάζω <b>f/f₀ = 0.75</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -1026,12 +771,12 @@
       ]
     },
     {
-      "viewer": null,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 200,
-      "left": "Θέσε f = 0.90·f₀ και περίμενε να σταθεροποιηθεί το πλάτος (καταγραφή σημείου).",
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: βάζω <b>f/f₀ = 0.90</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -1045,12 +790,12 @@
       ]
     },
     {
-      "viewer": null,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 200,
-      "left": "Θέσε f = 1.00·f₀ και περίμενε να σταθεροποιηθεί το πλάτος (καταγραφή σημείου).",
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: βάζω <b>f/f₀ = 1.00</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -1064,12 +809,12 @@
       ]
     },
     {
-      "viewer": null,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 200,
-      "left": "Θέσε f = 1.10·f₀ και περίμενε να σταθεροποιηθεί το πλάτος (καταγραφή σημείου).",
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: βάζω <b>f/f₀ = 1.10</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -1083,12 +828,12 @@
       ]
     },
     {
-      "viewer": null,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 200,
-      "left": "Θέσε f = 1.25·f₀ και περίμενε να σταθεροποιηθεί το πλάτος (καταγραφή σημείου).",
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: βάζω <b>f/f₀ = 1.25</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -1102,14 +847,124 @@
       ]
     },
     {
-      "viewer": null,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Τέλος placeholder sweep. Συνεχίζουμε με το κανονικό script όταν το γράψουμε.",
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: βάζω <b>f/f₀ = 1.45</b> και περιμένω να «κάτσει».",
       "right": "",
-      "gotoAct": "foyer"
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.45
+        },
+        {
+          "type": "awaitAFRecord"
+        }
+      ]
+    },
+    {
+      "viewer": 2,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 3400,
+      "pauseMs": 900,
+      "left": "Τώρα αλλάζω απόσβεση και ξανακοιτάμε κοντά στο 1.00. Θα δεις: κορυφή χαμηλώνει, καμπύλη πλαταίνει.",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2200,
+      "pauseMs": 500,
+      "left": "Αλλάζω b σε 12.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 12
+        },
+        {
+          "type": "awaitAFRecord"
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Κοντά στον συντονισμό: f/f₀=0.90",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.9
+        },
+        {
+          "type": "awaitAFRecord"
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Και f/f₀=1.00",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.0
+        },
+        {
+          "type": "awaitAFRecord"
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 800,
+      "left": "Και f/f₀=1.10",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.1
+        },
+        {
+          "type": "awaitAFRecord"
+        }
+      ]
+    },
+    {
+      "viewer": 3,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2800,
+      "pauseMs": 1200,
+      "left": "Τέλος. Αυτό είναι το «πακέτο» συντονισμού: διεγέρτης + τριβές + καμπύλη A(f).",
+      "right": "",
+      "actions": [
+        {
+          "type": "gotoAct",
+          "act": "foyer"
+        }
+      ],
+      "actionsWhen": "afterType"
     }
   ]
 }
