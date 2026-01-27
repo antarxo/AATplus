@@ -3907,9 +3907,10 @@ async function runAct2(){
   updateMarbleTrack();
   setAudienceLights(true);
   phase='between2and3';
-  TM.setTimeout(()=>{
-    act3Break.style.display='flex';
-    try{ btnAct3.disabled=false; btnAct3.setAttribute('aria-disabled','false'); btnAct3.removeAttribute('title'); }catch(_e){}
+  window.setTimeout(()=>{
+    // auto-advance: Act 2 → Act 3 (χωρίς κλικ)
+    act3Break.style.display='none';
+    runAct3();
   },1200);
 }
 
