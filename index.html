@@ -3539,6 +3539,13 @@ function showBubbleForEvent(ev){
     const doActions = async ()=>{
       try{
         if(ev && Array.isArray(ev.actions)) await window.AAT?.actions(ev.actions);
+        // If dialogues requested Act 2, transition immediately (no manual click)
+        if(window.AAT && window.AAT.nextAct === 'act2'){
+          window.AAT.nextAct = null;
+          try{ await closeCurtainToAct2(); }catch(_e){}
+          try{ actBreak.style.display='none'; }catch(_e){}
+          try{ await runAct2(); }catch(_e){}
+        }
       }catch(e){ console.error(e); }
     };
 
@@ -3639,6 +3646,7 @@ function showDynBubble(ev){
 
 (function(){
   const AAT = (window.AAT = window.AAT || {});
+  AAT.nextAct = null;
 
   function _dispatchChange(el){
     if(!el) return;
@@ -3649,6 +3657,30 @@ function showDynBubble(ev){
   AAT.action = async function(action){
     if(!action || typeof action !== 'object') return;
     const type = action.type;
+
+    // Dialog-driven act transitions
+    if(type === 'gotoAct'){
+      // Defer/coordinate transitions: Act 1 transitions run immediately in showBubbleForEvent,
+      // Act 2/3 transitions are handled at end of the act runners.
+      AAT.nextAct = String(action.act || '');
+      return;
+    }
+
+    // Show/Hide forced-driver UI (AF)
+    if(type === 'hideAF'){
+      const dc = document.getElementById('driveCtrl');
+      if(dc) dc.style.display = 'none';
+      const dm = document.getElementById('driverMech');
+      if(dm){ dm.style.display='none'; dm.setAttribute('aria-hidden','true'); }
+      return;
+    }
+    if(type === 'showAF'){
+      const dc = document.getElementById('driveCtrl');
+      if(dc) dc.style.display = 'flex';
+      const dm = document.getElementById('driverMech');
+      if(dm){ dm.style.display='block'; dm.setAttribute('aria-hidden','false'); }
+      return;
+    }
 
     // Forced oscillator controls (Phase 3)
     if(type === 'setB'){
@@ -3904,6 +3936,14 @@ async function runAct2(){
   stage.classList.remove('open');
   updateMarbleTrack();
   setAudienceLights(true);
+
+  // Auto-advance to Act 3 if dialogues requested it
+  if(window.AAT && window.AAT.nextAct === 'act3'){
+    window.AAT.nextAct = null;
+    await runAct3();
+    return;
+  }
+
   phase='between2and3';
   TM.setTimeout(()=>{
     act3Break.style.display='flex';
@@ -3968,6 +4008,14 @@ async function runAct3(){
   stage.classList.remove('open');
   updateMarbleTrack();
   setAudienceLights(true);
+
+  // Auto-advance to Foyer if dialogues requested it
+  if(window.AAT && window.AAT.nextAct === 'foyer'){
+    window.AAT.nextAct = null;
+    runFoyer();
+    return;
+  }
+
   phase='between3andFoyer';
   TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
 }
