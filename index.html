@@ -1663,6 +1663,16 @@ const elDriveB       = document.getElementById('driveB');
 const elDriveFreqVal = document.getElementById('driveFreqVal');
 const elDriveBVal    = document.getElementById('driveBVal');
 
+// Act3 safety: κλείδωμα αλλαγών b και f μέχρι να σταθεροποιηθεί το πλάτος και να καταγραφεί.
+let afBFLocked = false;
+function setAFBFLocked(lock){
+  afBFLocked = !!lock;
+  const shouldLock = (phase === 'act3') && afBFLocked;
+  if(elDriveRatio){ elDriveRatio.disabled = shouldLock; elDriveRatio.setAttribute('aria-disabled', shouldLock?'true':'false'); }
+  if(elDriveB){     elDriveB.disabled     = shouldLock; elDriveB.setAttribute('aria-disabled', shouldLock?'true':'false'); }
+}
+
+
 function updateDriveFreqLabel(){
   const f  = (driverOmega / (2*Math.PI));
   if(!elDriveFreqVal) return;
@@ -3652,6 +3662,7 @@ function showDynBubble(ev){
 
     // Forced oscillator controls (Phase 3)
     if(type === 'setB'){
+      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked) return;
       const el = document.getElementById('driveB');
       if(!el) return;
       el.value = String(action.value);
@@ -3660,6 +3671,7 @@ function showDynBubble(ev){
     }
 
     if(type === 'setF' || type === 'setRatio'){
+      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked) return;
       const el = document.getElementById('driveRatio');
       if(!el) return;
       // ratio is numeric like 0.95, 1.15 etc
@@ -5389,6 +5401,8 @@ data.forEach(p=>{
       lastParamChangeT = t;
       lastSeenRatio = fRatio;
       lastSeenBKey  = bKey;
+      // Act3: κλείδωσε τα b,f μέχρι να καταγραφεί σταθερό πλάτος στο γράφημα
+      setAFBFLocked(true);
     }
 
     const k = ensureSeries(bKgPerS);
@@ -5448,6 +5462,8 @@ data.forEach(p=>{
       pruneTowardResonance(k, fRatio);
       if(typeof applyCapForCurrentBF === 'function') applyCapForCurrentBF(bKgPerS, fRatio);
       lastRecordStamp = t;
+      // Act3: ξεκλείδωμα αφού γράφτηκε σημείο
+      setAFBFLocked(false);
 
       // reset extrema για καθαρή νέα μέτρηση
       resetExtrema();
@@ -5474,6 +5490,8 @@ stable = nowStable;
         recordPoint(k, fRatio, Aavg);
       }
       lastRecordStamp = t;
+      // Act3: ξεκλείδωμα αφού γράφτηκε σημείο
+      setAFBFLocked(false);
 
       // reset window so the live xmin/xmax reflect the next steady-state segment
       xMin = Infinity;
