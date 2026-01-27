@@ -3701,14 +3701,6 @@ function showDynBubble(ev){
       _dispatchChange(el);
       return;
     }
-      const el = document.getElementById('driveRatio');
-      if(!el) return;
-      // ratio is numeric like 0.95, 1.15 etc
-      const raw = Number(action.ratio ?? action.value);
-      el.value = (Number.isFinite(raw) ? raw.toFixed(2) : String(action.ratio ?? action.value));
-      _dispatchChange(el);
-      return;
-    }
 
     if(type === 'setParams'){
       if(action.b!=null) await AAT.action({type:'setB', value: action.b});
