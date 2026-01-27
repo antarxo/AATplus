@@ -2287,7 +2287,7 @@ function ensureXTOverlay(){
   c.style.height = '100vh';
   c.style.pointerEvents = 'none';
   // Under measureHUD (z=9999), above background
-  c.style.zIndex = '8000';
+  c.style.zIndex = '9998';
   c.style.display = 'none';
   document.body.appendChild(c);
   xtOverlayCan = c;
