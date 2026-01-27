@@ -1958,12 +1958,13 @@ function updateRuler(){
   //   να “χάνονται” πίσω από τη δεξιά κουρτίνα (ανάλογα με τα z-index).
   const sRect = stage.getBoundingClientRect();
   const stageW = stage.clientWidth;
+  const s = getStageScale();
 
   let openLeft = 0;
   const leftCurt = stage.querySelector('.curtain-side.left');
   if(leftCurt){
     const lRect = leftCurt.getBoundingClientRect();
-    openLeft = Math.max(0, Math.round(lRect.right - sRect.left));
+    openLeft = Math.max(0, Math.round((lRect.right - sRect.left)/s));
   }
 
   const RULER_LEFT_INSET_PX = 14; // το 0 να φαίνεται μέσα στη σκηνή (όχι πάνω στην κουρτίνα)
