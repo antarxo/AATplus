@@ -3546,7 +3546,7 @@ function showBubbleForEvent(ev){
       typeWriterHTML(bubbleTextEl,html,typeMs,()=>{
         const chain = (when === 'afterType') ? doActions() : Promise.resolve();
         chain.then(()=>{
-          TM.setTimeout(()=>{
+          window.setTimeout(()=>{
             bubbleEl.classList.add('closing');
             TM.setTimeout(()=>{
               bubbleEl.classList.remove('active','closing');
