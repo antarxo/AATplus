@@ -2345,7 +2345,7 @@ function xtOverlayLocalRect(){
   const W = stage.clientWidth || 0;
   const H = stage.clientHeight || 0;
 
-  const w = Math.min(560, Math.max(260, Math.round(W*0.55)));
+  const w = Math.round(W*0.18);
   const h = Math.min(320, Math.max(160, Math.round(H*0.38)));
 
   const left  = Math.round((W - w)/2);
