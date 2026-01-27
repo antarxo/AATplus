@@ -912,12 +912,13 @@ const ACT1_UNLOCK_KEY = 'aat_act1_completed';
 // XT overlay toggle
 if(btnXTOverlay){
   btnXTOverlay.onclick = ()=>{
-    setXTOverlay(!xtOverlayEnabled);
-    btnXTOverlay.classList.toggle('active', xtOverlayEnabled);
+    // Toggle ΜΟΝΟ την ορατότητα. Η καταγραφή/ροή συνεχίζει όπως ο μετρητής χρόνου.
+    ensureXTOverlay();
+    const isShown = (!!xtOverlayCan && xtOverlayCan.style.display !== 'none');
+    setXTOverlay(!isShown);
+    btnXTOverlay.classList.toggle('active', !isShown);
   };
 }
-
-
 let bookUnlocked = (localStorage.getItem(ACT1_UNLOCK_KEY) === '1');
 
 function setBookUnlocked(on, persist=true){
@@ -2326,14 +2327,24 @@ function ensureXTOverlay(){
 }
 
 function setXTOverlay(on){
-  xtOverlayEnabled = !!on;
+  const wantShow = !!on;
   ensureXTOverlay();
   if(!xtOverlayCan) return;
-  xtOverlayCan.style.display = xtOverlayEnabled ? 'block' : 'none';
-  xtOverlayBuf = [];
-  xtOverlayT0 = 0;
-  xtOverlayLastNow = null;
-  xtOverlayURange = 3.5;
+
+  if(wantShow){
+    // Πρώτη ενεργοποίηση: αρχικοποίηση/μηδενισμός buffer.
+    if(!xtOverlayEnabled){
+      xtOverlayEnabled = true;
+      xtOverlayBuf = [];
+      xtOverlayT0 = 0;
+      xtOverlayLastNow = null;
+      xtOverlayURange = 3.5;
+    }
+    xtOverlayCan.style.display = 'block';
+  }else{
+    // Απόκρυψη μόνο. Δεν σταματάει ποτέ η καταγραφή.
+    xtOverlayCan.style.display = 'none';
+  }
 }
 
 function xtOverlayLocalRect(){
@@ -2367,6 +2378,7 @@ function xtOverlayPushSample(tObs, uMeters){
 
 function xtOverlayDraw(dt){
   if(!xtOverlayEnabled || !xtOverlayCan) return;
+  if(xtOverlayCan.style.display === 'none') return;
 
   const rect = xtOverlayLocalRect();
   const x0 = rect.left;
