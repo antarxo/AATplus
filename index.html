@@ -350,7 +350,7 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
       pointer-events:none;
     }
 
-#btnXTOverlay{display:inline-flex !important;}
+#btnXTOverlay{display:none !important;}
 </style>
 
 </head>
@@ -2312,7 +2312,7 @@ function xtOverlayLocalRect(){
   const vw = Math.max(320, window.innerWidth || 0);
   const vh = Math.max(240, window.innerHeight || 0);
 
-  const w = Math.round(vw * 0.18);
+  const w = Math.min(520, Math.round(vw * 0.55));
   const h = Math.min(320, Math.round(vh * 0.40));
 
   const left = Math.round((vw - w) / 2);
