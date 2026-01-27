@@ -3675,7 +3675,11 @@ function showDynBubble(ev){
 
     // Forced oscillator controls (Phase 3)
     if(type === 'setB'){
-      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked) return;
+      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked){
+        const raw = Number(action.ratio ?? action.value);
+        // Εξαίρεση: αν είμαστε στο OFF (driveRatio=0) και οι διάλογοι ζητούν f>0, άσε την εκκίνηση να γίνει.
+        if(!(driveRatio === 0 && Number.isFinite(raw) && raw > 0)) return;
+      }
       const el = document.getElementById('driveB');
       if(!el) return;
       el.value = String(action.value);
