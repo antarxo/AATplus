@@ -1671,6 +1671,19 @@ function setAFBFLocked(lock){
   if(elDriveRatio){ elDriveRatio.disabled = shouldLock; elDriveRatio.setAttribute('aria-disabled', shouldLock?'true':'false'); }
   if(elDriveB){     elDriveB.disabled     = shouldLock; elDriveB.setAttribute('aria-disabled', shouldLock?'true':'false'); }
 }
+let afRecordSeq = 0;
+function notifyAFRecorded(){
+  afRecordSeq++;
+  try{ window.dispatchEvent(new CustomEvent('af:recorded', {detail:{seq:afRecordSeq}})); }catch(_e){}
+}
+async function waitNextAFRecord(){
+  const last = afRecordSeq;
+  await new Promise(resolve=>{
+    const h = ()=>{ if(afRecordSeq !== last){ window.removeEventListener('af:recorded', h); resolve(); } };
+    window.addEventListener('af:recorded', h);
+  });
+}
+
 
 
 function updateDriveFreqLabel(){
@@ -3693,7 +3706,13 @@ function showDynBubble(ev){
       return;
     }
 
-    // future-proof no-ops (won't crash old dialogues)
+    
+    if(type === 'awaitAFRecord'){
+      // Act3 gate: περίμενε να καταγραφεί νέο σημείο A–f (σταθεροποίηση πλάτους)
+      await waitNextAFRecord();
+      return;
+    }
+// future-proof no-ops (won't crash old dialogues)
     if(type === 'setMode' || type === 'record' || type === 'mark'){
       return;
     }
@@ -5462,7 +5481,8 @@ data.forEach(p=>{
       pruneTowardResonance(k, fRatio);
       if(typeof applyCapForCurrentBF === 'function') applyCapForCurrentBF(bKgPerS, fRatio);
       lastRecordStamp = t;
-      // Act3: ξεκλείδωμα αφού γράφτηκε σημείο
+      // Act3: γράφτηκε σημείο → σήμα & ξεκλείδωμα
+      notifyAFRecorded();
       setAFBFLocked(false);
 
       // reset extrema για καθαρή νέα μέτρηση
@@ -5490,7 +5510,8 @@ stable = nowStable;
         recordPoint(k, fRatio, Aavg);
       }
       lastRecordStamp = t;
-      // Act3: ξεκλείδωμα αφού γράφτηκε σημείο
+      // Act3: γράφτηκε σημείο → σήμα & ξεκλείδωμα
+      notifyAFRecorded();
       setAFBFLocked(false);
 
       // reset window so the live xmin/xmax reflect the next steady-state segment
