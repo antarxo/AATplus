@@ -1535,6 +1535,13 @@ function centerX(){
   return base;
 }
 
+function equilibriumXpx(){
+  // Θέση ισορροπίας/μηδενισμός: στο 10 m του χάρακα.
+  // (Δηλ. ο ηθοποιός ταλαντώνεται γύρω από 7–13 m όταν A=3 m)
+  if(!isFinite(rulerZeroX) || !isFinite(pxPerMeter) || pxPerMeter<=0) return centerX();
+  return rulerZeroX + 10*pxPerMeter;
+}
+
 
 // --- Driver mech placement (Phase 1) ---
 // Στόχος: το άκρο πρόσδεσης του slider να κάθεται πάνω στο σταθερό στήριγμα (anchorX)
@@ -4707,12 +4714,13 @@ function animate(now){
   // Initialize so we don't "jump" when switching from the old SHM demo
   if(!driveInited){
     // Start from the same SHM state used in the original AAT demo, referenced to the ruler zero (cx).
-    const x0 = cx + A_px*Math.sin(omega*playbackTime);
+    const xEq = equilibriumXpx();
+    const x0 = xEq + A_px*Math.sin(omega*playbackTime);
     const v0 = A_px*omega*Math.cos(omega*playbackTime);
 
     // Lock y0 at entry and define L0 so that the equilibrium aligns with the ruler zero.
     if(baseRefX === null) baseRefX = baseX; // y0
-    const L0 = cx - baseRefX;
+    const L0 = xEq - baseRefX;
 
     // u = (x - y) - L0
     driveU  = (x0 - baseX) - L0;
@@ -4734,7 +4742,8 @@ function animate(now){
   }
 
   // Absolute (stage) x-position of the actor (center)
-  const L0 = cx - (baseRefX ?? baseX);
+  const xEq = equilibriumXpx();
+  const L0 = xEq - (baseRefX ?? baseX);
   const hookX = baseX + L0 + driveU;
 
 const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
@@ -4757,7 +4766,8 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const fRatio = driveRatio;
   if (typeof AFRecorder !== 'undefined') AFRecorder.update({ xMeters, dt, fHz, fRatio, bKgPerS: driveB });
   logMeasurement(tObs,xMeters);
-  xtOverlayPushSample(tObs, driveU/pxPerMeter);
+  const xRelMeters = xMeters - 10;
+  xtOverlayPushSample(tObs, xRelMeters);
   xtOverlayDraw(dt);
 
   if(typeof XTmini !== 'undefined' && XTmini) XTmini.add(tObs, xMeters);
