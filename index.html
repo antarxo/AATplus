@@ -3782,6 +3782,8 @@ async function runAct1(){
       triggerXtZeroMark(ev);
     }
   }
+  // Fallback: αν για οποιονδήποτε λόγο δεν ήρθε ev.close, προχωράμε αυτόματα.
+  await closeCurtainToAct2();
 }
 
 /* Ghost / Act 2 */
