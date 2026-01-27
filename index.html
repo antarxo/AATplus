@@ -3688,7 +3688,19 @@ function showDynBubble(ev){
     }
 
     if(type === 'setF' || type === 'setRatio'){
-      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked) return;
+      const raw = Number(action.ratio ?? action.value);
+      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked){
+        // Εξαίρεση: αν είμαστε στο OFF (driveRatio=0) και ζητάμε f>0, αφήνουμε την εκκίνηση.
+        const canStart = (typeof driveRatio !== 'undefined' && driveRatio === 0 && Number.isFinite(raw) && raw > 0);
+        if(!canStart) return;
+      }
+      const el = document.getElementById('driveRatio');
+      if(!el) return;
+      // ratio is numeric like 0.95, 1.15 etc
+      el.value = (Number.isFinite(raw) ? raw.toFixed(2) : String(action.ratio ?? action.value));
+      _dispatchChange(el);
+      return;
+    }
       const el = document.getElementById('driveRatio');
       if(!el) return;
       // ratio is numeric like 0.95, 1.15 etc
@@ -3951,6 +3963,8 @@ async function runAct2(){
 
 
 async function runAct3(){
+  // Act3: ξεκινάμε ξεκλείδωτοι (lock θα μπει μετά από αλλαγή παραμέτρων)
+  setAFBFLocked(false);
   act3Break.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
