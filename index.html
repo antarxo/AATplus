@@ -3045,7 +3045,8 @@ function getVSignWord(v0){
 
 function showParamsBox(){
   const phi0deg = getPhi0Deg();
-  paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
+  const Ashow = (Number.isFinite(A_m) && Math.abs(A_m-Math.round(A_m))<1e-9) ? String(Math.round(A_m)) : A_m.toFixed(2);
+  paramAEl.textContent  = 'A = '+Ashow+' m';
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
