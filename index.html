@@ -3690,6 +3690,12 @@ function showDynBubble(ev){
 
     if(type === 'setF' || type === 'setRatio'){
       const raw = Number(action.ratio ?? action.value);
+      // Act3 ειδικός κανόνας: για b=6 ΔΕΝ επιχειρούμε f=f0 (ratio≈1.00). Το προσπερνάμε ώστε να μην μπλοκάρουν οι διάλογοι.
+      if(phase === 'act3' && typeof driveB !== 'undefined' && Number(driveB) === 6 && Number.isFinite(raw) && Math.abs(raw - 1.0) <= 0.005){
+        try{ notifyAFRecorded(); }catch(_e){}
+        try{ setAFBFLocked(false); }catch(_e){}
+        return;
+      }
       if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked){
         // Εξαίρεση: αν είμαστε στο OFF (driveRatio=0) και ζητάμε f>0, αφήνουμε την εκκίνηση.
         const canStart = (typeof driveRatio !== 'undefined' && driveRatio === 0 && Number.isFinite(raw) && raw > 0);
@@ -5048,7 +5054,7 @@ const AFRecorder = (() => {
 
   // per-b curves
   const series = new Map(); // bKey -> [{ratio, A}]
-  let yMaxAuto = 8.0; // σταθερή κλίμακα 0..8
+  let yMaxAuto = AMP_LIMIT_METERS; // σταθερή κλίμακα 0..6.5
 
   // tuning
   const EXTREMA_NEED = 2;
