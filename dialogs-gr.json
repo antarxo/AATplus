@@ -1007,54 +1007,44 @@
         }
       ]
     },
-        {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2100,
-      "pauseMs": 800,
-      "left": "Και f/f₀=0.75",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.75
-        },
-        {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2100,
-      "pauseMs": 800,
-      "left": "Και f/f₀=0.60",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.60
-        },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2800,
-      "pauseMs": 1200,
-      "left": "Τέλος. Αυτό είναι το «πακέτο» συντονισμού: διεγέρτης + τριβές + καμπύλη A(f).",
-      "right": "",
-      "actions": [
-        {
-          "type": "gotoAct",
-          "act": "foyer"
-        }
-      ],
-      "actionsWhen": "afterType"
-    }
+ {
+  "viewer": 1,
+  "xShift": 0,
+  "yOffset": 0,
+  "typeMs": 2100,
+  "pauseMs": 800,
+  "left": "Και f/f₀=0.75",
+  "right": "",
+  "actionsWhen": "beforeType",
+  "actions": [
+    { "type": "setRatio", "ratio": 0.75 },
+    { "type": "awaitAFRecord" }
   ]
+},
+{
+  "viewer": 1,
+  "xShift": 0,
+  "yOffset": 0,
+  "typeMs": 2100,
+  "pauseMs": 800,
+  "left": "Και f/f₀=0.60",
+  "right": "",
+  "actionsWhen": "beforeType",
+  "actions": [
+    { "type": "setRatio", "ratio": 0.60 },
+    { "type": "awaitAFRecord" }
+  ]
+},
+{
+  "viewer": 3,
+  "xShift": 0,
+  "yOffset": 0,
+  "typeMs": 2800,
+  "pauseMs": 1200,
+  "left": "Τέλος. Αυτό είναι το «πακέτο» συντονισμού: διεγέρτης + τριβές + καμπύλη A(f).",
+  "right": "",
+  "actions": [
+    { "type": "gotoAct", "act": "foyer" }
+  ],
+  "actionsWhen": "afterType"
 }
