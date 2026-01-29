@@ -373,6 +373,13 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
   
   /* Disable mini x(t) widget near navigation (not used) */
   #btnXTmini, #xtMiniCanvas{ display:none !important; }
+
+/* Marble track styling (b-dependent) */
+#marbleTrack{ background: #e9e9e9; transition: width 900ms ease, left 900ms ease, background 300ms linear; }
+#marbleTrack.marble-b6{ background:#2E7D32; }
+#marbleTrack.marble-b12{ background:#1565C0; }
+#marbleTrack.marble-b24{ background:#6A1B9A; }
+#marbleTrack.marble-bOther{ background:#455A64; }
 </style>
 
 </head>
@@ -1394,6 +1401,8 @@ function setFoyerTitles(){
 
 /* ---------- Βοηθητικά για σκηνή ---------- */
 
+let _lastMarbleB = null;
+let _marbleGrowT0 = 0;
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
   const trackGhost = document.getElementById('marbleTrackGhost');
@@ -1431,12 +1440,44 @@ function updateMarbleTrack(){
   // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
   const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
 
-  // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
+  // Οριζόντια έκταση μαρμάρου:
+  // - Για b=0: μικρό “μάρμαρο” (x=-3 έως +3) όπως πριν.
+  // - Για b≠0: “τρέχει” από το κέντρο προς τα δεξιά και μεγαλώνει από 0 → μέχρι το τέλος της σκηνής.
   const cx = centerX();
-  const leftPx  = cx - 3*pxPerMeter;
-  const rightPx = cx + 3*pxPerMeter;
-  track.style.left   = leftPx + 'px';
-  track.style.width  = Math.max(0, rightPx - leftPx) + 'px';
+
+  const bNow = (()=>{
+    const el = document.getElementById('driveB');
+    const v = el ? parseFloat(el.value) : 0;
+    return isFinite(v) ? v : 0;
+  })();
+
+  // Color/class per b
+  track.classList.remove('marble-b6','marble-b12','marble-b24','marble-bOther');
+  if(bNow===6) track.classList.add('marble-b6');
+  else if(bNow===12) track.classList.add('marble-b12');
+  else if(bNow===24) track.classList.add('marble-b24');
+  else if(bNow!==0) track.classList.add('marble-bOther');
+
+  // Reset grow timer when b changes or when we re-enter acts.
+  if(_lastMarbleB===null || _lastMarbleB!==bNow){
+    _lastMarbleB = bNow;
+    _marbleGrowT0 = performance.now();
+  }
+
+  let leftPx, widthPx;
+  if(bNow===0){
+    leftPx  = cx - 3*pxPerMeter;
+    widthPx = Math.max(0, 6*pxPerMeter);
+  }else{
+    const targetWidth = Math.max(0, (stage.clientWidth || 0) - cx);
+    const t = Math.max(0, performance.now() - _marbleGrowT0);
+    const g = Math.max(0, Math.min(1, t/900)); // ~0.9s grow
+    leftPx  = cx;
+    widthPx = targetWidth * g;
+  }
+
+  track.style.left  = leftPx + 'px';
+  track.style.width = Math.max(0, widthPx) + 'px';
   track.style.bottom = bottomPx + 'px';
   track.style.height = h + 'px';
   track.style.display = (h>0) ? 'block' : 'none';
@@ -1672,6 +1713,7 @@ function setAFBFLocked(lock){
   if(elDriveB){     elDriveB.disabled     = shouldLock; elDriveB.setAttribute('aria-disabled', shouldLock?'true':'false'); }
 }
 let afRecordSeq = 0;
+const afLastRecordedSeqByKey = Object.create(null);
 function currentAFKey(){
   // μοναδικό “κλειδί” για το record που περιμένουμε: (b | ratio)
   const b = Number(driveB);
@@ -1680,6 +1722,8 @@ function currentAFKey(){
 }
 function notifyAFRecorded(){
   afRecordSeq++;
+  const _k = currentAFKey();
+  afLastRecordedSeqByKey[_k] = afRecordSeq;
   const key = currentAFKey();
   try{
     window.dispatchEvent(new CustomEvent('af:recorded', {
@@ -1688,27 +1732,31 @@ function notifyAFRecorded(){
   }catch(_e){}
 }
 async function waitNextAFRecord(expectedKey){
-  // Αν δοθεί expectedKey, περιμένουμε record ΜΟΝΟ για αυτό το (b,ratio).
-  // Έτσι δεν “τρώμε” παλιά/άσχετα events και δεν πηδάει βήματα το sweep.
-  if(expectedKey){
-    await new Promise(resolve=>{
-      const h = (e)=>{
-        const got = e && e.detail && e.detail.key;
-        if(got === expectedKey){
-          window.removeEventListener('af:recorded', h);
-          resolve();
-        }
-      };
-      window.addEventListener('af:recorded', h);
-    });
-    return;
-  }
+  return new Promise((resolve)=>{
+    // Capture the "state of the world" when we start waiting.
+    const startSeq = afRecordSeq;
+    const startSeen = expectedKey ? (afLastRecordedSeqByKey[expectedKey] || 0) : 0;
 
-  // fallback: “οποιοδήποτε νέο record”
-  const last = afRecordSeq;
-  await new Promise(resolve=>{
-    const h = ()=>{ if(afRecordSeq !== last){ window.removeEventListener('af:recorded', h); resolve(); } };
-    window.addEventListener('af:recorded', h);
+    // If it was already recorded after we last changed params, resolve immediately.
+    if(expectedKey && startSeen > 0 && startSeen >= startSeq){
+      resolve({seq: startSeen, key: expectedKey});
+      return;
+    }
+
+    const handler = (e)=>{
+      const keyOk = !expectedKey ? true : (e && e.detail && e.detail.key === expectedKey);
+      if(!keyOk) return;
+
+      const seen = expectedKey ? (afLastRecordedSeqByKey[expectedKey] || 0) : afRecordSeq;
+      const seqOk = seen > 0 && (seen > startSeen) && (seen >= startSeq);
+
+      if(seqOk){
+        window.removeEventListener('afrecord', handler);
+        resolve({seq: seen, key: expectedKey});
+      }
+    };
+
+    window.addEventListener('afrecord', handler);
   });
 }
 
@@ -3587,7 +3635,10 @@ function showBubbleForEvent(ev){
     const typeMs =ev.typeMs  || 2500;
     const pauseMs=ev.pauseMs || 800;
 
-    const when = (ev && ev.actionsWhen) ? String(ev.actionsWhen) : 'afterType';
+    let when = (ev && ev.actionsWhen) ? String(ev.actionsWhen) : 'afterType';
+    // Announcement-first: if this step changes b/ratio/params, apply after the line is spoken.
+    const _hasParamActions = !!(ev && Array.isArray(ev.actions) && ev.actions.some(a=>a && (a.type==='setRatio' || a.type==='setB' || a.type==='setParams')));
+    if(when==='beforeType' && _hasParamActions) when='afterType';
     const doActions = async ()=>{
       try{
         if(ev && Array.isArray(ev.actions)) await window.AAT?.actions(ev.actions);
