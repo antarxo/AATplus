@@ -732,13 +732,13 @@
       "left": "Θα χτίσουμε την καμπύλη A–f αλλάζοντας τη συχνότητα γύρω από f₀.",
       "right": "<b>A(f)</b> (steady-state)"
     },
-  {
-      "viewer": 4,
+    {
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
-      "typeMs": 2300,
-      "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 0.75</b> και περιμένω να «κάτσει».",
+      "typeMs": 2100,
+      "pauseMs": 800,
+      "left": "Και f/f₀=0.75",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -746,11 +746,6 @@
           "type": "setRatio",
           "ratio": 0.75
         },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
     {
       "viewer": 4,
       "xShift": 0,
