@@ -733,7 +733,7 @@
       "right": "<b>A(f)</b> (steady-state)"
     },
     {
-      "viewer": 1,
+      "viewer": 4,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2300,
@@ -752,7 +752,7 @@
       ]
     },
     {
-      "viewer": 1,
+      "viewer": 4,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2300,
@@ -763,7 +763,7 @@
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 0.9
+          "ratio": 0.90
         },
         {
           "type": "awaitAFRecord"
