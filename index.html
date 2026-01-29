@@ -1829,7 +1829,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
     opt.textContent = (r === 0 ? 'OFF' : (r*100).toFixed(0) + '%');
 
     // Dynamic forbid (cap) για το συγκεκριμένο b + ειδικός κανόνας: για b=6 απενεργοποιείται το 100%
-    opt.disabled = (bKey === 6 && opt.value === '1.00');
+    opt.disabled = isDisabledRatioForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
 
     elDriveRatio.appendChild(opt);
   }
@@ -5071,6 +5071,7 @@ const AFRecorder = (() => {
   let lastParamChangeT = 0;      // time of last (f,b) change
   let lastSeenRatio = null;
   let lastSeenBKey  = null;
+  let lastNotifiedKey = null; // one af:recorded per (b,ratio) change
 
 
   function bKeyFrom(b){ return Math.round(b); }
@@ -5437,6 +5438,7 @@ data.forEach(p=>{
       lastParamChangeT = t;
       lastSeenRatio = fRatio;
       lastSeenBKey  = bKey;
+      lastNotifiedKey = null;
       // Act3: κλείδωσε τα b,f μέχρι να καταγραφεί σταθερό πλάτος στο γράφημα
       setAFBFLocked(true);
     }
