@@ -1672,11 +1672,39 @@ function setAFBFLocked(lock){
   if(elDriveB){     elDriveB.disabled     = shouldLock; elDriveB.setAttribute('aria-disabled', shouldLock?'true':'false'); }
 }
 let afRecordSeq = 0;
+function currentAFKey(){
+  // μοναδικό “κλειδί” για το record που περιμένουμε: (b | ratio)
+  const b = Number(driveB);
+  const r = Number(driveRatio);
+  return `${Number.isFinite(b)?b:0}|${Number.isFinite(r)?r.toFixed(2):'0.00'}`;
+}
 function notifyAFRecorded(){
   afRecordSeq++;
-  try{ window.dispatchEvent(new CustomEvent('af:recorded', {detail:{seq:afRecordSeq}})); }catch(_e){}
+  const key = currentAFKey();
+  try{
+    window.dispatchEvent(new CustomEvent('af:recorded', {
+      detail:{ seq: afRecordSeq, key, b: Number(driveB), ratio: Number(driveRatio) }
+    }));
+  }catch(_e){}
 }
-async function waitNextAFRecord(){
+async function waitNextAFRecord(expectedKey){
+  // Αν δοθεί expectedKey, περιμένουμε record ΜΟΝΟ για αυτό το (b,ratio).
+  // Έτσι δεν “τρώμε” παλιά/άσχετα events και δεν πηδάει βήματα το sweep.
+  if(expectedKey){
+    await new Promise(resolve=>{
+      const h = (e)=>{
+        const got = e && e.detail && e.detail.key;
+        if(got === expectedKey){
+          window.removeEventListener('af:recorded', h);
+          resolve();
+        }
+      };
+      window.addEventListener('af:recorded', h);
+    });
+    return;
+  }
+
+  // fallback: “οποιοδήποτε νέο record”
   const last = afRecordSeq;
   await new Promise(resolve=>{
     const h = ()=>{ if(afRecordSeq !== last){ window.removeEventListener('af:recorded', h); resolve(); } };
@@ -3724,7 +3752,7 @@ function showDynBubble(ev){
     
     if(type === 'awaitAFRecord'){
       // Act3 gate: περίμενε να καταγραφεί νέο σημείο A–f (σταθεροποίηση πλάτους)
-      await waitNextAFRecord();
+      await waitNextAFRecord(currentAFKey());
       return;
     }
 // future-proof no-ops (won't crash old dialogues)
@@ -5071,7 +5099,6 @@ const AFRecorder = (() => {
   let lastParamChangeT = 0;      // time of last (f,b) change
   let lastSeenRatio = null;
   let lastSeenBKey  = null;
-  let lastNotifiedKey = null; // one af:recorded per (b,ratio) change
 
 
   function bKeyFrom(b){ return Math.round(b); }
@@ -5438,7 +5465,6 @@ data.forEach(p=>{
       lastParamChangeT = t;
       lastSeenRatio = fRatio;
       lastSeenBKey  = bKey;
-      lastNotifiedKey = null;
       // Act3: κλείδωσε τα b,f μέχρι να καταγραφεί σταθερό πλάτος στο γράφημα
       setAFBFLocked(true);
     }
