@@ -1469,10 +1469,10 @@ function updateMarbleTrack(){
     leftPx  = cx - 3*pxPerMeter;
     widthPx = Math.max(0, 6*pxPerMeter);
   }else{
-    const targetWidth = Math.max(0, (stage.clientWidth || 0) - cx);
+    const targetWidth = Math.max(0, (stage.clientWidth || 0));
     const t = Math.max(0, performance.now() - _marbleGrowT0);
     const g = Math.max(0, Math.min(1, t/900)); // ~0.9s grow
-    leftPx  = cx;
+    leftPx  = 0;
     widthPx = targetWidth * g;
   }
 
@@ -1751,12 +1751,12 @@ async function waitNextAFRecord(expectedKey){
       const seqOk = seen > 0 && (seen > startSeen) && (seen >= startSeq);
 
       if(seqOk){
-        window.removeEventListener('afrecord', handler);
+        window.removeEventListener('af:recorded', handler);
         resolve({seq: seen, key: expectedKey});
       }
     };
 
-    window.addEventListener('afrecord', handler);
+    window.addEventListener('af:recorded', handler);
   });
 }
 
