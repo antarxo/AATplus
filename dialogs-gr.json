@@ -684,7 +684,7 @@
       "signLineD": ""
     }
   },
-  "act3": [
+ "act3": [
     {
       "viewer": 1,
       "xShift": 0,
@@ -733,7 +733,26 @@
       "right": "<b>A(f)</b> (steady-state)"
     },
     {
-      "viewer": 4,
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2300,
+      "pauseMs": 400,
+      "left": "Sweep: βάζω <b>f/f₀ = 0.6</b> και περιμένω να «κάτσει».",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.6
+        },
+        {
+          "type": "awaitAFRecord"
+        }
+      ]
+    },
+    {
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2300,
@@ -752,18 +771,18 @@
       ]
     },
     {
-      "viewer": 4,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2300,
       "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 0.90</b> και περιμένω να «κάτσει».",
+      "left": "Sweep: βάζω <b>f/f₀ = 0.9</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 0.90
+          "ratio": 0.9
         },
         {
           "type": "awaitAFRecord"
@@ -771,7 +790,7 @@
       ]
     },
     {
-      "viewer": 4,
+      "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2300,
@@ -801,7 +820,7 @@
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 1
+          "ratio": 1.0
         },
         {
           "type": "awaitAFRecord"
@@ -852,7 +871,7 @@
       "yOffset": 0,
       "typeMs": 2300,
       "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 1.30</b> και περιμένω να «κάτσει».",
+      "left": "Sweep: βάζω <b>f/f₀ = 1.3</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -890,7 +909,7 @@
       "yOffset": 0,
       "typeMs": 3400,
       "pauseMs": 900,
-      "left": "Τώρα αλλάζω απόσβεση και ξανακοιτάμε κοντά στο 1.00. Θα δεις: κορυφή χαμηλώνει, καμπύλη πλαταίνει.",
+      "left": "Τώρα αλλάζω απόσβεση και ξανακοιτάμε (χωρίς το 1.00). Θα δεις: κορυφή χαμηλώνει, καμπύλη πλαταίνει.",
       "right": ""
     },
     {
@@ -917,8 +936,8 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 350,
-      "left": "Κοντά στον συντονισμό: f/f₀=1.45",
+      "pauseMs": 500,
+      "left": "Και f/f₀=1.45",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -936,8 +955,8 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 350,
-      "left": "Και f/f₀=1.30",
+      "pauseMs": 500,
+      "left": "Και f/f₀=1.3",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -955,7 +974,7 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 800,
+      "pauseMs": 500,
       "left": "Και f/f₀=1.15",
       "right": "",
       "actionsWhen": "beforeType",
@@ -974,7 +993,7 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 800,
+      "pauseMs": 500,
       "left": "Και f/f₀=1.05",
       "right": "",
       "actionsWhen": "beforeType",
@@ -993,14 +1012,14 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 800,
-      "left": "Και f/f₀=0.60",
+      "pauseMs": 500,
+      "left": "Και f/f₀=0.95",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 0.60
+          "ratio": 0.95
         },
         {
           "type": "awaitAFRecord"
@@ -1012,7 +1031,26 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 800,
+      "pauseMs": 500,
+      "left": "Και f/f₀=0.9",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.9
+        },
+        {
+          "type": "awaitAFRecord"
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 500,
       "left": "Και f/f₀=0.75",
       "right": "",
       "actionsWhen": "beforeType",
@@ -1031,33 +1069,14 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 800,
-      "left": "Και f/f₀=0.9",
+      "pauseMs": 500,
+      "left": "Και f/f₀=0.6",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 0.90
-        },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2100,
-      "pauseMs": 800,
-      "left": "Και f/f₀=0.95",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.95
+          "ratio": 0.6
         },
         {
           "type": "awaitAFRecord"
