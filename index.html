@@ -375,7 +375,18 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
   #btnXTmini, #xtMiniCanvas{ display:none !important; }
 
 /* Marble track styling (b-dependent) */
-#marbleTrack{ background: #e9e9e9; transition: width 900ms ease, left 900ms ease, background 300ms linear; }
+/* Marble track (floor color cue per damping b) */
+  #marbleTrack{
+    position:absolute;
+    left:0;
+    top:0;
+    height:14px;
+    border-radius:10px;
+    opacity:0.95;
+    pointer-events:none;
+    z-index:6;
+    display:none;
+  }
 #marbleTrack.marble-b6{ background:#2E7D32; }
 #marbleTrack.marble-b12{ background:#1565C0; }
 #marbleTrack.marble-b24{ background:#6A1B9A; }
@@ -1406,17 +1417,42 @@ let _marbleGrowT0 = 0;
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
   const trackGhost = document.getElementById('marbleTrackGhost');
-  const actorImg = document.querySelector('#actor img');
 
-  if(!track || !actorImg || !stage) return;
+  // Active in all Acts (1–3). In foyer we hide it.
+  const inActs = (currentAct === 'act1' || currentAct === 'act2' || currentAct === 'act3');
+  if(!inActs || !track) return;
 
-  // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
-  const inActs = (phase==='act1' || phase==='act2');
-  if(!inActs){
+  // Ensure visible (CSS does the rest)
+  track.style.display = 'block';
+  if(trackGhost) trackGhost.style.display = 'none';
+
+  // Geometry: from ruler 0 to the far right edge of the stage
+  const stageEl = document.getElementById('stage');
+  const stageW = stageEl ? stageEl.clientWidth : 0;
+
+  // rulerZeroX is in stage coordinates (px). Fallback to x of 0m if anything goes weird.
+  const x0 = (typeof rulerZeroX === 'number' && isFinite(rulerZeroX)) ? rulerZeroX : xForMeters(0);
+
+  const left = Math.max(0, Math.min(stageW, x0));
+  const width = Math.max(0, stageW - left);
+
+  // Vertical placement: sit on the "floor" (same constant used before)
+  const top = (stageEl ? stageEl.clientHeight : 0) - 52;
+
+  track.style.left = left + 'px';
+  track.style.top = top + 'px';
+  track.style.width = width + 'px';
+
+  // Color cue: b=0 => no cue (hide). Otherwise map b to a palette.
+  const b = params && typeof params.b === 'number' ? params.b : 0;
+  if(b <= 0){
     track.style.display = 'none';
-    if(trackGhost) trackGhost.style.display = 'none';
     return;
   }
+
+  const marbleColor = getMarbleColorForB(b);
+  track.style.background = marbleColor;
+}
 
   // IMPORTANT: η σκηνή πλέον κλιμακώνεται με CSS transform.
   // Άρα ό,τι μετράμε με getBoundingClientRect() είναι SCALED.
@@ -1469,12 +1505,13 @@ function updateMarbleTrack(){
     leftPx  = cx - 3*pxPerMeter;
     widthPx = Math.max(0, 6*pxPerMeter);
   }else{
-    // b≠0: μάρμαρο από x=0 του χάρακα (αριστερό άκρο σκηνής) μέχρι δεξί άκρο σκηνής
+    // b≠0: μάρμαρο από x=0 του χάρακα μέχρι δεξί άκρο σκηνής
+    const x0 = Math.max(0, equilibriumXpx() - stageRect.left);
     const stageW = (stage.clientWidth || 0);
-    const targetWidth = Math.max(0, stageW);
+    const targetWidth = Math.max(0, stageW - x0);
     const t = Math.max(0, performance.now() - _marbleGrowT0);
     const g = Math.max(0, Math.min(1, t/900)); // ~0.9s grow
-    leftPx  = 0;
+    leftPx  = x0;
     widthPx = targetWidth * g;
   }
 
@@ -1500,7 +1537,7 @@ function updateMarbleTrack(){
       trackGhost.style.display = 'none';
     }
   }
-}
+
 
 
 function measureSpringNaturalSize(){
@@ -5022,7 +5059,7 @@ function initViewersAvatars(){
 
 async function loadDialogs(){
   try{
-    const url=(currentLang==='en')?'dialogs-en.json':'dialogs-gr.json';
+    const url=(currentLang==='en')?'dialogs-en.json':'dialogs-gr.fixed.awaitAF.json';
     const resp=await fetch(url,{cache:'no-store'});
     if(!resp.ok){
       console.error('Δε βρέθηκε '+url);
