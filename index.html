@@ -1469,12 +1469,13 @@ function updateMarbleTrack(){
     leftPx  = cx - 3*pxPerMeter;
     widthPx = Math.max(0, 6*pxPerMeter);
   }else{
-    // b≠0: μάρμαρο από x=0 του χάρακα (αριστερό άκρο σκηνής) μέχρι δεξί άκρο σκηνής
+    // b≠0: μάρμαρο από x=0 του χάρακα μέχρι δεξί άκρο σκηνής
+    const x0 = Math.max(0, equilibriumXpx() - stageRect.left);
     const stageW = (stage.clientWidth || 0);
-    const targetWidth = Math.max(0, stageW);
+    const targetWidth = Math.max(0, stageW - x0);
     const t = Math.max(0, performance.now() - _marbleGrowT0);
     const g = Math.max(0, Math.min(1, t/900)); // ~0.9s grow
-    leftPx  = 0;
+    leftPx  = x0;
     widthPx = targetWidth * g;
   }
 
