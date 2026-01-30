@@ -373,24 +373,6 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
   
   /* Disable mini x(t) widget near navigation (not used) */
   #btnXTmini, #xtMiniCanvas{ display:none !important; }
-
-/* Marble track styling (b-dependent) */
-/* Marble track (floor color cue per damping b) */
-  #marbleTrack{
-    position:absolute;
-    left:0;
-    top:0;
-    height:14px;
-    border-radius:10px;
-    opacity:0.95;
-    pointer-events:none;
-    z-index:6;
-    display:none;
-  }
-#marbleTrack.marble-b6{ background:#2E7D32; }
-#marbleTrack.marble-b12{ background:#1565C0; }
-#marbleTrack.marble-b24{ background:#6A1B9A; }
-#marbleTrack.marble-bOther{ background:#455A64; }
 </style>
 
 </head>
@@ -1412,65 +1394,71 @@ function setFoyerTitles(){
 
 /* ---------- Βοηθητικά για σκηνή ---------- */
 
-let _lastMarbleB = null;
-let _marbleGrowT0 = 0;
-function updateMarbleTrack() {
+function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
-  if (!track || !stage) return;
+  const trackGhost = document.getElementById('marbleTrackGhost');
+  const actorImg = document.querySelector('#actor img');
 
-  // Show marble only when damping exists (b>0). Same strip used for acts 2 & 3.
-  const bNow = (typeof driveB === 'number' && Number.isFinite(driveB)) ? driveB : 0;
-  const show = bNow > 0;
-  track.style.display = show ? 'block' : 'none';
-  if (!show) return;
+  if(!track || !actorImg || !stage) return;
+
+  // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
+  const inActs = (phase==='act1' || phase==='act2');
+  if(!inActs){
+    track.style.display = 'none';
+    if(trackGhost) trackGhost.style.display = 'none';
+    return;
+  }
+
+  // IMPORTANT: η σκηνή πλέον κλιμακώνεται με CSS transform.
+  // Άρα ό,τι μετράμε με getBoundingClientRect() είναι SCALED.
+  // Εδώ δουλεύουμε σε *design px* (unscaled), οπότε διαιρούμε με scale.
+  const s = (()=>{
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
+    return (isFinite(v) && v>0) ? v : 1;
+  })();
 
   const stageRect = stage.getBoundingClientRect();
-  const stageW = stageRect.width;
-  const stageH = stageRect.height;
+  const aRect = actorImg.getBoundingClientRect();
 
-  // Start from x=0 of the ruler (not from the equilibrium mark at x=10).
-  let x0 = 0;
-  try {
-    if (typeof rulerXForMeters === 'function') x0 = rulerXForMeters(0);
-    else if (typeof xForMeters === 'function') x0 = xForMeters(0);
-    // Convert to stage-local px
-    if (x0 && typeof x0 === 'number' && x0 > stageRect.left) x0 = x0 - stageRect.left;
-  } catch (e) {
-    x0 = 0;
+  const stageH = stage.clientHeight || 0;
+  const actorBottomLocal = (aRect.bottom - stageRect.top) / s;
+
+  // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
+  const curtainBottomClosedLocal = (0.70 * stageH) + 8;
+
+  // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
+  const h = Math.max(0, curtainBottomClosedLocal - actorBottomLocal);
+  // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
+  const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
+
+  // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
+  const cx = centerX();
+  const leftPx  = cx - 3*pxPerMeter;
+  const rightPx = cx + 3*pxPerMeter;
+  track.style.left   = leftPx + 'px';
+  track.style.width  = Math.max(0, rightPx - leftPx) + 'px';
+  track.style.bottom = bottomPx + 'px';
+  track.style.height = h + 'px';
+  track.style.display = (h>0) ? 'block' : 'none';
+
+  // Ghost “δοκός”/μάρμαρο: από -5 έως +5, μόνο όταν ο ghost είναι ορατός.
+  if(trackGhost){
+    const gVis = (typeof ghostVisibility==='number') ? ghostVisibility : 0;
+    if(phase==='act2' && gVis>0.02 && h>0){
+      const gLeft  = cx - 5*pxPerMeter;
+      const gRight = cx + 5*pxPerMeter;
+      trackGhost.style.left   = gLeft + 'px';
+      trackGhost.style.width  = Math.max(0, gRight - gLeft) + 'px';
+      trackGhost.style.bottom = bottomPx + 'px';
+      trackGhost.style.height = h + 'px';
+      trackGhost.style.display = 'block';
+      trackGhost.style.opacity = Math.min(0.65, 0.15 + 0.5*gVis).toString();
+    }else{
+      trackGhost.style.display = 'none';
+    }
   }
-  x0 = Math.max(0, Math.min(stageW, x0 || 0));
-
-  // Grow from 0→full (x0→right) whenever b changes; stable until next b change.
-  if (typeof _marbleGrowB === 'undefined') window._marbleGrowB = null;
-  if (typeof _marbleGrowT0 === 'undefined') window._marbleGrowT0 = null;
-
-  if (window._marbleGrowB !== bNow) {
-    window._marbleGrowB = bNow;
-    window._marbleGrowT0 = performance.now();
-  }
-
-  const growDur = 900; // ms
-  const t = (window._marbleGrowT0 == null) ? 1 : Math.min(1, (performance.now() - window._marbleGrowT0) / growDur);
-
-  const fullW = stageW - x0;
-  const w = Math.max(0, fullW * t);
-
-  track.style.left = `${x0}px`;
-  track.style.top = `${Math.max(0, stageH - 52)}px`;
-  track.style.width = `${w}px`;
-  track.style.height = '14px';
-  track.style.borderRadius = '999px';
-
-  // Color sync with resonance curve (hard colors). Mapping by b.
-  const colorMap = {
-    6: '#00BFFF',
-    12: '#FF2D55',
-    24: '#00E676'
-  };
-  const c = colorMap[bNow] || '#8E8E93';
-  track.style.background = c;
-  track.style.opacity = '0.95';
 }
+
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
@@ -1684,7 +1672,6 @@ function setAFBFLocked(lock){
   if(elDriveB){     elDriveB.disabled     = shouldLock; elDriveB.setAttribute('aria-disabled', shouldLock?'true':'false'); }
 }
 let afRecordSeq = 0;
-const afLastRecordedSeqByKey = Object.create(null);
 function currentAFKey(){
   // μοναδικό “κλειδί” για το record που περιμένουμε: (b | ratio)
   const b = Number(driveB);
@@ -1693,8 +1680,6 @@ function currentAFKey(){
 }
 function notifyAFRecorded(){
   afRecordSeq++;
-  const _k = currentAFKey();
-  afLastRecordedSeqByKey[_k] = afRecordSeq;
   const key = currentAFKey();
   try{
     window.dispatchEvent(new CustomEvent('af:recorded', {
@@ -1703,31 +1688,27 @@ function notifyAFRecorded(){
   }catch(_e){}
 }
 async function waitNextAFRecord(expectedKey){
-  return new Promise((resolve)=>{
-    // Capture the "state of the world" when we start waiting.
-    const startSeq = afRecordSeq;
-    const startSeen = expectedKey ? (afLastRecordedSeqByKey[expectedKey] || 0) : 0;
+  // Αν δοθεί expectedKey, περιμένουμε record ΜΟΝΟ για αυτό το (b,ratio).
+  // Έτσι δεν “τρώμε” παλιά/άσχετα events και δεν πηδάει βήματα το sweep.
+  if(expectedKey){
+    await new Promise(resolve=>{
+      const h = (e)=>{
+        const got = e && e.detail && e.detail.key;
+        if(got === expectedKey){
+          window.removeEventListener('af:recorded', h);
+          resolve();
+        }
+      };
+      window.addEventListener('af:recorded', h);
+    });
+    return;
+  }
 
-    // If it was already recorded after we last changed params, resolve immediately.
-    if(expectedKey && startSeen > 0 && startSeen >= startSeq){
-      resolve({seq: startSeen, key: expectedKey});
-      return;
-    }
-
-    const handler = (e)=>{
-      const keyOk = !expectedKey ? true : (e && e.detail && e.detail.key === expectedKey);
-      if(!keyOk) return;
-
-      const seen = expectedKey ? (afLastRecordedSeqByKey[expectedKey] || 0) : afRecordSeq;
-      const seqOk = seen > 0 && (seen > startSeen) && (seen >= startSeq);
-
-      if(seqOk){
-        window.removeEventListener('af:recorded', handler);
-        resolve({seq: seen, key: expectedKey});
-      }
-    };
-
-    window.addEventListener('af:recorded', handler);
+  // fallback: “οποιοδήποτε νέο record”
+  const last = afRecordSeq;
+  await new Promise(resolve=>{
+    const h = ()=>{ if(afRecordSeq !== last){ window.removeEventListener('af:recorded', h); resolve(); } };
+    window.addEventListener('af:recorded', h);
   });
 }
 
@@ -1903,10 +1884,7 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
 }
 
 // αντικαθιστά το παλιό “κόψιμο” συχνοτήτων
-let _suppressFreqSafetyOnce = false; // για διαλόγους: μην αφήνεις το safety να αντικαθιστά ratio που μόλις βάλαμε
-
 function applyFrequencySafetyByB(bKgPerS){
-  if(_suppressFreqSafetyOnce){ _suppressFreqSafetyOnce = false; return; }
   rebuildDriveRatioOptions(bKgPerS, null);
 }
 
@@ -3609,10 +3587,7 @@ function showBubbleForEvent(ev){
     const typeMs =ev.typeMs  || 2500;
     const pauseMs=ev.pauseMs || 800;
 
-    let when = (ev && ev.actionsWhen) ? String(ev.actionsWhen) : 'afterType';
-    // Announcement-first: if this step changes b/ratio/params, apply after the line is spoken.
-    const _hasParamActions = !!(ev && Array.isArray(ev.actions) && ev.actions.some(a=>a && (a.type==='setRatio' || a.type==='setB' || a.type==='setParams')));
-    if(when==='beforeType' && _hasParamActions) when='afterType';
+    const when = (ev && ev.actionsWhen) ? String(ev.actionsWhen) : 'afterType';
     const doActions = async ()=>{
       try{
         if(ev && Array.isArray(ev.actions)) await window.AAT?.actions(ev.actions);
