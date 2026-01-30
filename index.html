@@ -1414,113 +1414,63 @@ function setFoyerTitles(){
 
 let _lastMarbleB = null;
 let _marbleGrowT0 = 0;
-function updateMarbleTrack(){
+function updateMarbleTrack() {
   const track = document.getElementById('marbleTrack');
-  const trackGhost = document.getElementById('marbleTrackGhost');
+  if (!track || !stage) return;
 
-  // Active in all Acts (1–3). In foyer we hide it.
-  const inActs = (currentAct === 'act1' || currentAct === 'act2' || currentAct === 'act3');
-  if(!inActs || !track) return;
+  // Show marble only when damping exists (b>0). Same strip used for acts 2 & 3.
+  const bNow = (simParams && typeof simParams.b === 'number') ? simParams.b : (typeof driveB !== 'undefined' ? Number(driveB.value) : 0);
+  const show = bNow > 0;
+  track.style.display = show ? 'block' : 'none';
+  if (!show) return;
 
-  // Ensure visible (CSS does the rest)
-  track.style.display = 'block';
-  if(trackGhost) trackGhost.style.display = 'none';
+  const stageRect = stage.getBoundingClientRect();
+  const stageW = stageRect.width;
+  const stageH = stageRect.height;
 
-  // Geometry: from ruler 0 to the far right edge of the stage
-  const stageEl = document.getElementById('stage');
-  const stageW = stageEl ? stageEl.clientWidth : 0;
+  // Start from x=0 of the ruler (not from the equilibrium mark at x=10).
+  let x0 = 0;
+  try {
+    if (typeof rulerXForMeters === 'function') x0 = rulerXForMeters(0);
+    else if (typeof xForMeters === 'function') x0 = xForMeters(0);
+    // Convert to stage-local px
+    if (x0 && typeof x0 === 'number' && x0 > stageRect.left) x0 = x0 - stageRect.left;
+  } catch (e) {
+    x0 = 0;
+  }
+  x0 = Math.max(0, Math.min(stageW, x0 || 0));
 
-  // rulerZeroX is in stage coordinates (px). Fallback to x of 0m if anything goes weird.
-  const x0 = (typeof rulerZeroX === 'number' && isFinite(rulerZeroX)) ? rulerZeroX : xForMeters(0);
+  // Grow from 0→full (x0→right) whenever b changes; stable until next b change.
+  if (typeof _marbleGrowB === 'undefined') window._marbleGrowB = null;
+  if (typeof _marbleGrowT0 === 'undefined') window._marbleGrowT0 = null;
 
-  const left = Math.max(0, Math.min(stageW, x0));
-  const width = Math.max(0, stageW - left);
-
-  // Vertical placement: sit on the "floor" (same constant used before)
-  const top = (stageEl ? stageEl.clientHeight : 0) - 52;
-
-  track.style.left = left + 'px';
-  track.style.top = top + 'px';
-  track.style.width = width + 'px';
-
-  // Color cue: b=0 => no cue (hide). Otherwise map b to a palette.
-  const b = params && typeof params.b === 'number' ? params.b : 0;
-  if(b <= 0){
-    track.style.display = 'none';
-    return;
+  if (window._marbleGrowB !== bNow) {
+    window._marbleGrowB = bNow;
+    window._marbleGrowT0 = performance.now();
   }
 
-  const marbleColor = getMarbleColorForB(b);
-  track.style.background = marbleColor;
+  const growDur = 900; // ms
+  const t = (window._marbleGrowT0 == null) ? 1 : Math.min(1, (performance.now() - window._marbleGrowT0) / growDur);
+
+  const fullW = stageW - x0;
+  const w = Math.max(0, fullW * t);
+
+  track.style.left = `${x0}px`;
+  track.style.top = `${Math.max(0, stageH - 52)}px`;
+  track.style.width = `${w}px`;
+  track.style.height = '14px';
+  track.style.borderRadius = '999px';
+
+  // Color sync with resonance curve (hard colors). Mapping by b.
+  const colorMap = {
+    6: '#00BFFF',
+    12: '#FF2D55',
+    24: '#00E676'
+  };
+  const c = colorMap[bNow] || '#8E8E93';
+  track.style.background = c;
+  track.style.opacity = '0.95';
 }
-
-  const h = Math.max(0, curtainBottomClosedLocal - actorBottomLocal);
-  // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
-  const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
-
-  // Οριζόντια έκταση μαρμάρου:
-  // - Για b=0: μικρό “μάρμαρο” (x=-3 έως +3) όπως πριν.
-  // - Για b≠0: “τρέχει” από το κέντρο προς τα δεξιά και μεγαλώνει από 0 → μέχρι το τέλος της σκηνής.
-  const cx = centerX();
-
-  const bNow = (()=>{
-    const el = document.getElementById('driveB');
-    const v = el ? parseFloat(el.value) : 0;
-    return isFinite(v) ? v : 0;
-  })();
-
-  // Color/class per b
-  track.classList.remove('marble-b6','marble-b12','marble-b24','marble-bOther');
-  if(bNow===6) track.classList.add('marble-b6');
-  else if(bNow===12) track.classList.add('marble-b12');
-  else if(bNow===24) track.classList.add('marble-b24');
-  else if(bNow!==0) track.classList.add('marble-bOther');
-
-  // Reset grow timer when b changes or when we re-enter acts.
-  if(_lastMarbleB===null || _lastMarbleB!==bNow){
-    _lastMarbleB = bNow;
-    _marbleGrowT0 = performance.now();
-  }
-
-  let leftPx, widthPx;
-  if(bNow===0){
-    leftPx  = cx - 3*pxPerMeter;
-    widthPx = Math.max(0, 6*pxPerMeter);
-  }else{
-    // b≠0: μάρμαρο από x=0 του χάρακα μέχρι δεξί άκρο σκηνής
-    const x0 = Math.max(0, equilibriumXpx() - stageRect.left);
-    const stageW = (stage.clientWidth || 0);
-    const targetWidth = Math.max(0, stageW - x0);
-    const t = Math.max(0, performance.now() - _marbleGrowT0);
-    const g = Math.max(0, Math.min(1, t/900)); // ~0.9s grow
-    leftPx  = x0;
-    widthPx = targetWidth * g;
-  }
-
-  track.style.left  = leftPx + 'px';
-  track.style.width = Math.max(0, widthPx) + 'px';
-  track.style.bottom = bottomPx + 'px';
-  track.style.height = h + 'px';
-  track.style.display = (h>0) ? 'block' : 'none';
-
-  // Ghost “δοκός”/μάρμαρο: από -5 έως +5, μόνο όταν ο ghost είναι ορατός.
-  if(trackGhost){
-    const gVis = (typeof ghostVisibility==='number') ? ghostVisibility : 0;
-    if(phase==='act2' && gVis>0.02 && h>0){
-      const gLeft  = cx - 5*pxPerMeter;
-      const gRight = cx + 5*pxPerMeter;
-      trackGhost.style.left   = gLeft + 'px';
-      trackGhost.style.width  = Math.max(0, gRight - gLeft) + 'px';
-      trackGhost.style.bottom = bottomPx + 'px';
-      trackGhost.style.height = h + 'px';
-      trackGhost.style.display = 'block';
-      trackGhost.style.opacity = Math.min(0.65, 0.15 + 0.5*gVis).toString();
-    }else{
-      trackGhost.style.display = 'none';
-    }
-  }
-
-
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
