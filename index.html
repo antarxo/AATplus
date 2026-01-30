@@ -1419,7 +1419,7 @@ function updateMarbleTrack() {
   if (!track || !stage) return;
 
   // Show marble only when damping exists (b>0). Same strip used for acts 2 & 3.
-  const bNow = (simParams && typeof simParams.b === 'number') ? simParams.b : (typeof driveB !== 'undefined' ? Number(driveB.value) : 0);
+  const bNow = (typeof driveB === 'number' && Number.isFinite(driveB)) ? driveB : 0;
   const show = bNow > 0;
   track.style.display = show ? 'block' : 'none';
   if (!show) return;
