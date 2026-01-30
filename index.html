@@ -1454,24 +1454,6 @@ function updateMarbleTrack(){
   track.style.background = marbleColor;
 }
 
-  // IMPORTANT: η σκηνή πλέον κλιμακώνεται με CSS transform.
-  // Άρα ό,τι μετράμε με getBoundingClientRect() είναι SCALED.
-  // Εδώ δουλεύουμε σε *design px* (unscaled), οπότε διαιρούμε με scale.
-  const s = (()=>{
-    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
-    return (isFinite(v) && v>0) ? v : 1;
-  })();
-
-  const stageRect = stage.getBoundingClientRect();
-  const aRect = actorImg.getBoundingClientRect();
-
-  const stageH = stage.clientHeight || 0;
-  const actorBottomLocal = (aRect.bottom - stageRect.top) / s;
-
-  // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
-  const curtainBottomClosedLocal = (0.70 * stageH) + 8;
-
-  // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
   const h = Math.max(0, curtainBottomClosedLocal - actorBottomLocal);
   // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
   const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
