@@ -4991,7 +4991,7 @@ function initViewersAvatars(){
 
 async function loadDialogs(){
   try{
-    const url=(currentLang==='en')?'dialogs-en.json':'dialogs-gr.fixed.awaitAF.json';
+    const url=(currentLang==='en')?'dialogs-en.json':'dialogs-gr.json';
     const resp=await fetch(url,{cache:'no-store'});
     if(!resp.ok){
       console.error('Δε βρέθηκε '+url);
