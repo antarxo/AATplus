@@ -684,7 +684,7 @@
       "signLineD": ""
     }
   },
- "act3": [
+  "act3": [
     {
       "viewer": 1,
       "xShift": 0,
@@ -697,8 +697,8 @@
       "actions": [
         {
           "type": "setParams",
-          "b": 12,
-          "ratio": 0.6
+          "b": 6,
+          "ratio": 0.9
         },
         {
           "type": "showAF"
@@ -738,7 +738,7 @@
       "yOffset": 0,
       "typeMs": 2300,
       "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 0.6</b> και περιμένω να «κάτσει».",
+      "left": "Sweep: βάζω <b>f/f₀ = 0.60</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -747,7 +747,8 @@
           "ratio": 0.6
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1800
         }
       ]
     },
@@ -766,7 +767,8 @@
           "ratio": 0.75
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1800
         }
       ]
     },
@@ -776,7 +778,7 @@
       "yOffset": 0,
       "typeMs": 2300,
       "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 0.9</b> και περιμένω να «κάτσει».",
+      "left": "Sweep: βάζω <b>f/f₀ = 0.90</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -785,7 +787,8 @@
           "ratio": 0.9
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1800
         }
       ]
     },
@@ -795,26 +798,7 @@
       "yOffset": 0,
       "typeMs": 2300,
       "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 0.95</b> και περιμένω να «κάτσει».",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.95
-        },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2300,
-      "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 1</b> και περιμένω να «κάτσει».",
+      "left": "Sweep: βάζω <b>f/f₀ = 1.00</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
@@ -823,7 +807,8 @@
           "ratio": 1.0
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1800
         }
       ]
     },
@@ -833,16 +818,17 @@
       "yOffset": 0,
       "typeMs": 2300,
       "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 1.05</b> και περιμένω να «κάτσει».",
+      "left": "Sweep: βάζω <b>f/f₀ = 1.10</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 1.05
+          "ratio": 1.1
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1800
         }
       ]
     },
@@ -852,35 +838,17 @@
       "yOffset": 0,
       "typeMs": 2300,
       "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 1.15</b> και περιμένω να «κάτσει».",
+      "left": "Sweep: βάζω <b>f/f₀ = 1.25</b> και περιμένω να «κάτσει».",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 1.15
+          "ratio": 1.25
         },
         {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2300,
-      "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 1.3</b> και περιμένω να «κάτσει».",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 1.3
-        },
-        {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1800
         }
       ]
     },
@@ -899,7 +867,8 @@
           "ratio": 1.45
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1800
         }
       ]
     },
@@ -909,8 +878,88 @@
       "yOffset": 0,
       "typeMs": 3400,
       "pauseMs": 900,
-      "left": "Τώρα αλλάζω απόσβεση και ξανακοιτάμε (χωρίς το 1.00). Θα δεις: κορυφή χαμηλώνει, καμπύλη πλαταίνει.",
+      "left": "Τώρα αλλάζω απόσβεση και ξανακοιτάμε κοντά στο 1.00. Θα δεις: κορυφή χαμηλώνει, καμπύλη πλαταίνει.",
       "right": ""
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2200,
+      "pauseMs": 500,
+      "left": "Αλλάζω b σε 12.",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setB",
+          "value": 12
+        },
+        {
+          "type": "sleep",
+          "ms": 1500
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Κοντά στον συντονισμό: f/f₀=0.90",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.9
+        },
+        {
+          "type": "sleep",
+          "ms": 1600
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Και f/f₀=1.00",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.0
+        },
+        {
+          "type": "sleep",
+          "ms": 2000
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 800,
+      "left": "Και f/f₀=1.10",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.1
+        },
+        {
+          "type": "sleep",
+          "ms": 1600
+        }
+      ]
     },
     {
       "viewer": 1,
@@ -927,7 +976,8 @@
           "value": 6
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1200
         }
       ]
     },
@@ -936,17 +986,18 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 500,
-      "left": "Και f/f₀=1.45",
+      "pauseMs": 350,
+      "left": "Και f/f₀=0.60",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 1.45
+          "ratio": 0.6
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1500
         }
       ]
     },
@@ -955,102 +1006,7 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 500,
-      "left": "Και f/f₀=1.3",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 1.3
-        },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2100,
-      "pauseMs": 500,
-      "left": "Και f/f₀=1.15",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 1.15
-        },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2100,
-      "pauseMs": 500,
-      "left": "Και f/f₀=1.05",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 1.05
-        },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2100,
-      "pauseMs": 500,
-      "left": "Και f/f₀=0.95",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.95
-        },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2100,
-      "pauseMs": 500,
-      "left": "Και f/f₀=0.9",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.9
-        },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2100,
-      "pauseMs": 500,
+      "pauseMs": 350,
       "left": "Και f/f₀=0.75",
       "right": "",
       "actionsWhen": "beforeType",
@@ -1060,7 +1016,8 @@
           "ratio": 0.75
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1500
         }
       ]
     },
@@ -1069,17 +1026,118 @@
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2100,
-      "pauseMs": 500,
-      "left": "Και f/f₀=0.6",
+      "pauseMs": 350,
+      "left": "Και f/f₀=0.90",
       "right": "",
       "actionsWhen": "beforeType",
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 0.6
+          "ratio": 0.9
         },
         {
-          "type": "awaitAFRecord"
+          "type": "sleep",
+          "ms": 1500
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Και f/f₀=0.95",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 0.95
+        },
+        {
+          "type": "sleep",
+          "ms": 1500
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Και f/f₀=1.05",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.05
+        },
+        {
+          "type": "sleep",
+          "ms": 1500
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Και f/f₀=1.15",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.15
+        },
+        {
+          "type": "sleep",
+          "ms": 1500
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Και f/f₀=1.30",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.3
+        },
+        {
+          "type": "sleep",
+          "ms": 1500
+        }
+      ]
+    },
+    {
+      "viewer": 1,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 2100,
+      "pauseMs": 350,
+      "left": "Και f/f₀=1.45",
+      "right": "",
+      "actionsWhen": "beforeType",
+      "actions": [
+        {
+          "type": "setRatio",
+          "ratio": 1.45
+        },
+        {
+          "type": "sleep",
+          "ms": 1500
         }
       ]
     },
@@ -1100,5 +1158,4 @@
       "actionsWhen": "afterType"
     }
   ]
-
 }
