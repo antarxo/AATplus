@@ -1411,7 +1411,7 @@ function updateMarbleTrack(){
   if(!track || !actorImg || !stage) return;
 
   // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
-  const inActs = (phase==='act1' || phase==='act2');
+  const inActs = (phase==='act1' || phase==='act2' || phase==='act3');
   if(!inActs){
     track.style.display = 'none';
     if(trackGhost) trackGhost.style.display = 'none';
