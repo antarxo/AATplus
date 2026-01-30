@@ -1432,8 +1432,11 @@ function updateMarbleTrack(){
   const stageH = stage.clientHeight || 0;
   const actorBottomLocal = (aRect.bottom - stageRect.top) / s;
 
-  // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
-  const curtainBottomClosedLocal = (0.70 * stageH) + 8;
+  // Χρησιμοποιούμε το πραγματικό κάτω άκρο της κουρτίνας (πιο robust από hardcoded %).
+  const curtainUpper = document.querySelector('.curtain-upper');
+  const curtainBottomClosedLocal = curtainUpper
+    ? ((curtainUpper.getBoundingClientRect().bottom - stageRect.top) / s)
+    : ((0.70 * stageH) + 8);
 
   // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
   const h = Math.max(0, curtainBottomClosedLocal - actorBottomLocal);
@@ -1732,31 +1735,60 @@ function notifyAFRecorded(){
   }catch(_e){}
 }
 async function waitNextAFRecord(expectedKey){
+  const WAIT_TIMEOUT_MS = 12000; // safety net so a bad/slow stabilization doesn't deadlock the dialogue
   return new Promise((resolve)=>{
-    // Capture the "state of the world" when we start waiting.
     const startSeq = afRecordSeq;
-    const startSeen = expectedKey ? (afLastRecordedSeqByKey[expectedKey] || 0) : 0;
+    const startSeen = expectedKey ? (afLastRecordedSeqByKey.get(expectedKey) || 0) : 0;
+    const t0 = performance.now();
+    let done = false;
 
-    // If it was already recorded after we last changed params, resolve immediately.
-    if(expectedKey && startSeen > 0 && startSeen >= startSeq){
-      resolve({seq: startSeen, key: expectedKey});
-      return;
-    }
+    const finish = ()=>{ if(done) return; done = true; resolve(true); };
 
-    const handler = (e)=>{
-      const keyOk = !expectedKey ? true : (e && e.detail && e.detail.key === expectedKey);
-      if(!keyOk) return;
+    const handler = ()=>{
+      if(done) return;
 
-      const seen = expectedKey ? (afLastRecordedSeqByKey[expectedKey] || 0) : afRecordSeq;
-      const seqOk = seen > 0 && (seen > startSeen) && (seen >= startSeq);
+      if(!expectedKey){
+        if(afRecordSeq > startSeq){
+          window.removeEventListener('af:recorded', handler);
+          finish();
+        }
+        return;
+      }
 
-      if(seqOk){
+      const seen = afLastRecordedSeqByKey.get(expectedKey) || 0;
+      if(seen > startSeen && seen >= startSeq){
         window.removeEventListener('af:recorded', handler);
-        resolve({seq: seen, key: expectedKey});
+        finish();
+        return;
+      }
+
+      if(performance.now() - t0 > WAIT_TIMEOUT_MS){
+        try{
+          const curKey = currentAFKey();
+          if(curKey === expectedKey){
+            const xmn = (typeof window.__xMin === 'number') ? window.__xMin : xMin;
+            const xmx = (typeof window.__xMax === 'number') ? window.__xMax : xMax;
+            const Araw = Math.abs(xmx - xmn) / 2;
+            const A = Math.min(6.5, (isFinite(Araw) ? Araw : 0));
+            const bNow = (window.simState && typeof window.simState.b === 'number') ? window.simState.b : (window.currentB ?? 0);
+            const k = (typeof bKeyFrom === 'function') ? bKeyFrom(bNow) : ('b' + bNow);
+            recordPoint(k, (typeof window.driveRatio === 'number' ? window.driveRatio : driveRatio), A, true);
+            notifyAFRecorded(k, (typeof window.driveRatio === 'number' ? window.driveRatio : driveRatio));
+          }
+        }catch(_e){}
+        window.removeEventListener('af:recorded', handler);
+        finish();
       }
     };
 
     window.addEventListener('af:recorded', handler);
+
+    const tick = ()=>{
+      handler();
+      if(done) return;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   });
 }
 
