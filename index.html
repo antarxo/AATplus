@@ -5196,10 +5196,7 @@ const AFRecorder = (() => {
     const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
     const w=x1-x0, h=y1-y0;
 
-    // legend slots (σταθερές θέσεις για b=6,12,24,30)
-    const B_SLOTS = {6:0, 12:1, 24:2, 30:3};
-
-const B_COL = {
+	const B_COL = {
       low:  { stroke:'#F9A825', fill:'rgba(249,168,37,0.28)' },  // yellow  (0 < b < 10)
       mid:  { stroke:'#1565C0', fill:'rgba(21,101,192,0.28)' },  // blue    (10 ≤ b < 20)
       high: { stroke:'#C62828', fill:'rgba(198,40,40,0.28)' },   // red     (b ≥ 20)
@@ -5222,7 +5219,10 @@ const B_COL = {
     }
 
 
-    const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
+	    const legendY = (bk)=> {
+	      const idx = B_SLOTS.indexOf(bk);
+	      return y0 + 14 + ((idx === -1 ? 99 : idx) * 14);
+	    };
 
     // axes
     ctx.strokeStyle='rgba(255,255,255,0.35)';
