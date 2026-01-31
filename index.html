@@ -1415,8 +1415,8 @@ function updateMarbleTrack(){
   ghost.style.display = show ? 'block' : 'none';
   if(!show) return;
 
-  // Pick damping value for coloring (free: simB, forced: driveB)
-  const bVal = (act === 'act3') ? Number(driveB) : Number(simB);
+  // Pick damping value for coloring (free: driveB, forced: driveB)
+  const bVal = (act === 'act3') ? Number(driveB) : Number(driveB);
 
   // Band coloring: b=0 -> white, (0,10) -> yellow, [10,20) -> blue, >=20 -> red
   const bandCls = (!Number.isFinite(bVal) || Math.abs(bVal) < 1e-9) ? ''
