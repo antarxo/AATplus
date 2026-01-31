@@ -1409,8 +1409,8 @@ function updateMarbleTrack(){
   if(!track) return;
 
   // Μάρμαρο: θέλουμε να φαίνεται σε Πράξεις με απόσβεση/εξαναγκασμένη (Act2 + Act3).
-  const phase = currentAct;
-  const inAct23 = (phase==='act2' || phase==='act3');
+  const phaseLocal = (typeof phase !== 'undefined' && phase) ? phase : 'act1';
+  const inAct23 = (phaseLocal==='act2' || phaseLocal==='act3');
   if(!inAct23){
     track.style.display = 'none';
     if(trackGhost) trackGhost.style.display = 'none';
