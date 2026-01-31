@@ -312,7 +312,7 @@ function num(v,fallback=0){
 .drive-controls input[type="range"]{ width:150px; }
 
 /* κρύβεται στο intro veil όπως τα άλλα UI */
-body.intro-open #driveCtrl{display:none !important; visibility:hidden !important; }
+body.intro-open #driveCtrl{ visibility:hidden !important; }
 
 
     /* === Measurement HUD + A–f plot (DEV overlay) === */
@@ -376,10 +376,10 @@ body.intro-open #driveCtrl{display:none !important; visibility:hidden !important
 
 /* Marble track styling (b-dependent) */
 #marbleTrack{ background: #e9e9e9; transition: width 900ms ease, left 900ms ease, background 300ms linear; }
-#marbleTrack.marble-b6{ background:#F9A825; }
+#marbleTrack.marble-b6{ background:#2E7D32; }
 #marbleTrack.marble-b12{ background:#1565C0; }
-#marbleTrack.marble-b24{ background:#C62828; }
-#marbleTrack.marble-bOther{ background:#C62828; }
+#marbleTrack.marble-b24{ background:#6A1B9A; }
+#marbleTrack.marble-bOther{ background:#455A64; }
 </style>
 
 </head>
@@ -1403,40 +1403,80 @@ function setFoyerTitles(){
 
 let _lastMarbleB = null;
 let _marbleGrowT0 = 0;
-function updateMarbleTrack(){
-  const track = document.getElementById('marbleTrack');
-  const ghost = document.getElementById('marbleTrackGhost');
-  if(!track || !ghost || !stage) return;
 
-  // Show in Acts 1–3 only
-  const act = (typeof phase === 'string') ? phase : 'act1';
-  const show = (act === 'act1' || act === 'act2' || act === 'act3');
-  track.style.display = show ? 'block' : 'none';
-  ghost.style.display = show ? 'block' : 'none';
-  if(!show) return;
+function _bandColorForB(b){
+  const bb = Number(b);
+  if(!Number.isFinite(bb) || bb <= 0) return '#f4f4f4'; // white marble for b=0
+  if(bb < 10) return '#2b6cff';   // blue  (around 6)
+  if(bb < 20) return '#ffd400';   // yellow(around 12)
+  return '#ff2b2b';               // red   (around 24)
+}
 
-  // Pick damping value for coloring (free: driveB, forced: driveB)
-  const bVal = (act === 'act3') ? Number(driveB) : Number(driveB);
+function _marbleBg(colorHex){
+  // "hard" color with a tiny fake vein so it still reads as marble.
+  return `linear-gradient(90deg, ${colorHex} 0%, ${colorHex} 46%, rgba(255,255,255,0.18) 50%, ${colorHex} 54%, ${colorHex} 100%)`;
+}
 
-  // Band coloring: b=0 -> white, (0,10) -> yellow, [10,20) -> blue, >=20 -> red
-  const bandCls = (!Number.isFinite(bVal) || Math.abs(bVal) < 1e-9) ? ''
-                : (bVal < 10 ? 'marble-b6' : (bVal < 20 ? 'marble-b12' : 'marble-b24'));
+function updateMarbleTrack(force=false){
+  if(!marbleTrack || !marbleGhost || !stageEl) return;
 
-  track.classList.remove('marble-b6','marble-b12','marble-b24','marble-bOther');
-  ghost.classList.remove('marble-b6','marble-b12','marble-b24','marble-bOther');
-  if(bandCls){ track.classList.add(bandCls); ghost.classList.add(bandCls); }
+  const actNow = (typeof currentAct === 'string' && currentAct) ? currentAct : 'act1';
 
-  const stageRect = stage.getBoundingClientRect();
+  if(actNow === 'foyer'){
+    marbleTrack.style.display = 'none';
+    marbleGhost.style.display = 'none';
+    return;
+  }
 
-  // Start from ruler's 0 and extend to the right edge of the stage
-  const leftPx = Math.max(stageRect.left, Number(rulerZeroX || stageRect.left));
-  const rightPx = stageRect.right;
+  // show in acts 1–3
+  marbleTrack.style.display = 'block';
+  marbleGhost.style.display = 'block';
 
-  track.style.left  = (leftPx - stageRect.left) + 'px';
-  track.style.width = Math.max(0, rightPx - leftPx) + 'px';
+  const bNow = Number(driveB);
+  const color = _bandColorForB(bNow);
+  marbleTrack.style.background = _marbleBg(color);
 
-  ghost.style.left  = track.style.left;
-  ghost.style.width = track.style.width;
+  // position: from ruler x=0 to the right edge of the stage
+  const stageW = stageEl.clientWidth || 0;
+  const stageH = stageEl.clientHeight || 0;
+  const r0 = (typeof rulerZeroX === 'number' && isFinite(rulerZeroX)) ? rulerZeroX : 0;
+
+  // vertical placement: sit right on top of the floor
+  const floorEl = stageEl.querySelector('.floor');
+  const floorTop = floorEl ? floorEl.offsetTop : Math.round(stageH*0.82);
+  const trackH = 22;
+  const trackY = Math.max(0, floorTop - trackH);
+
+  marbleTrack.style.left = `${Math.max(0, r0)}px`;
+  marbleTrack.style.top  = `${trackY}px`;
+  marbleTrack.style.height = `${trackH}px`;
+
+  // grow animation ONLY when b changes (user request)
+  if(force || bNow !== _marbleLastB){
+    _marbleLastB = bNow;
+    _marbleGrowT0 = performance.now();
+  }
+
+  const fullW = Math.max(0, stageW - Math.max(0, r0));
+  const t = Math.min(1, (performance.now() - (_marbleGrowT0 || performance.now())) / 900);
+  const g = 1 - Math.pow(1 - t, 3);
+
+  // for b=0 keep the white marble constant (full) — it is just "the" stage.
+  const w = (bNow <= 0) ? fullW : (fullW * g);
+  marbleTrack.style.width = `${w}px`;
+  marbleTrack.style.opacity = (bNow <= 0) ? '0.92' : '0.90';
+
+  // ghost keeps the "previous" color (acts 2 & 3 only), for the eye.
+  if(actNow === 'act1'){
+    marbleGhost.style.display = 'none';
+  } else {
+    marbleGhost.style.display = 'block';
+    marbleGhost.style.left = `${Math.max(0, r0)}px`;
+    marbleGhost.style.top  = `${trackY}px`;
+    marbleGhost.style.height = `${trackH}px`;
+    marbleGhost.style.width  = `${fullW}px`;
+    marbleGhost.style.opacity = '0.14';
+  }
 }
 
 
@@ -1622,20 +1662,14 @@ let baseRefX  = null;  // px (y0)
 let driveB = 0;        // kg/s  (b στη δύναμη -b·v)
 
 const DRIVE_B_HARD_MIN = 0;   // επιτρέπουμε και b=0 (αμείωτη/χωρίς απόσβεση)
-const DRIVE_B_SAFE_MIN = 0;  // φυσικό/λειτουργικό κατώφλι του συστήματος
+const DRIVE_B_SAFE_MIN = 10;  // φυσικό/λειτουργικό κατώφλι του συστήματος
 const DRIVE_B_MAX = 50;
 
 
 
 function snapBToPresets(v){
-  const presets = [0,6,12,24,30];
-  let best = presets[0], bestd = Infinity;
-  for(const p of presets){
-    const d = Math.abs(p - v);
-    if(d < bestd){ bestd = d; best = p; }
+    return Number.isFinite(Number(v)) ? Number(v) : 0;
   }
-  return best;
-}
 
 // --- Driver controls hookup (f as ratio, b as kg/s) ---
 const elDriveRatio   = document.getElementById('driveRatio');
@@ -1732,7 +1766,6 @@ function syncDriveUI(){
     if(elDriveBVal) elDriveBVal.textContent = `${Math.min(DRIVE_B_MAX, Math.max(DRIVE_B_HARD_MIN, Math.round(driveB)))} kg/s`;
   }
   // ασφάλεια συχνοτήτων όταν b < 10
-  applyFrequencySafetyByB(driveB);
 
 }
 
@@ -1763,113 +1796,86 @@ const DRIVE_RATIOS_DENSE = (() => {
 })();
 
 // bKey -> { leftCap: number|null, rightCap: number|null }
-const capsByB = new Map();
 
-function bKeyFromB(bKgPerS){ return Math.max(0, Math.round(bKgPerS)); }
+  // --- Continuous drive params (dialog-driven) ---
+  // We keep the UI <select> elements for compatibility, but we do NOT quantize or block values.
 
-function getCaps(bKey){
-  if(!capsByB.has(bKey)) capsByB.set(bKey, { leftCap: null, rightCap: null });
-  return capsByB.get(bKey);
-}
-
-function setCap(bKey, ratio){
-  const c = getCaps(bKey);
-  const r = Number(ratio);
-  if(!Number.isFinite(r)) return;
-
-  // Κρατάμε cap “πιο κοντά” στο 1.00 (προς τον συντονισμό) ανά πλευρά.
-  if(r < 1.0){
-    c.leftCap = (c.leftCap == null) ? r : Math.max(c.leftCap, r);
-  } else if(r > 1.0){
-    c.rightCap = (c.rightCap == null) ? r : Math.min(c.rightCap, r);
-  }
-}
-
-// Απαγόρευση ΜΟΝΟ προς f0 στην ίδια πλευρά
-function isRatioDisabledForB(bKey, ratio){
-  const c = getCaps(bKey);
-  const r = Number(ratio);
-  if(!Number.isFinite(r)) return false;
-
-  if(c.leftCap != null && r < 1.0 && r >= c.leftCap) return true;   // [leftCap, 1)
-  if(c.rightCap != null && r > 1.0 && r <= c.rightCap) return true; // (1, rightCap]
-  return false;
-}
-
-// backward-compatible alias (παλιό όνομα που χρησιμοποιούν κάποια σημεία)
-function isDisabledRatioForB(bKey, ratio){
-  return isRatioDisabledForB(bKey, ratio);
-}
-
-
-function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
-  let enabled = options.filter(o => !o.disabled).map(o => Number(o.value)).filter(Number.isFinite);
-  if(!enabled.length) return null;
-
-  // Μην επιλέγεις αυτόματα το OFF (0.00) αν υπάρχουν άλλες διαθέσιμες επιλογές.
-  if(enabled.length > 1) enabled = enabled.filter(v => Math.abs(v) > 1e-12);
-
-  let pool = enabled;
-  if(preferSide === 'right'){
-    const r = enabled.filter(v => v > 1.0);
-    if(r.length) pool = r;
-  } else if(preferSide === 'left'){
-    const l = enabled.filter(v => v < 1.0);
-    if(l.length) pool = l;
+  function _fmtPct(r){
+    const rr = Number(r);
+    if(!Number.isFinite(rr)) return '';
+    const p = Math.round(rr * 100);
+    // keep one decimal only when needed
+    const asInt = (Math.abs(rr*100 - p) < 1e-9);
+    return asInt ? `${p}%` : `${(rr*100).toFixed(1)}%`;
   }
 
-  // “ασφαλέστερο”: πιο μακριά από 1.00
-  let best = pool[0], bestScore = -Infinity;
-  for(const v of pool){
-    const score = Math.abs(v - 1.0);
-    if(score > bestScore){ bestScore = score; best = v; }
+  function _fmtB(b){
+    const bb = Number(b);
+    if(!Number.isFinite(bb)) return '';
+    return (Math.abs(bb - Math.round(bb)) < 1e-9) ? String(Math.round(bb)) : String(bb);
   }
-  return best;
-}
 
-function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
-  // UI επιλογέα συχνοτήτων: τον κρατάμε μόνο για ένδειξη/συμβατότητα.
-  // Δεν ξαναχτίζουμε λίστα preset τιμών εδώ, γιατί οι διάλογοι μπορούν να δώσουν *οποιαδήποτε* τιμή.
-  return;
-}
+  function _ensureSingleOption(sel, value, label){
+    if(!sel) return;
+    const v = String(value);
+    // reuse existing option if already there
+    let opt = Array.from(sel.options).find(o => o.value === v);
+    sel.innerHTML = '';
+    if(!opt){
+      opt = document.createElement('option');
+      opt.value = v;
+    }
+    opt.textContent = label ?? v;
+    sel.appendChild(opt);
+    sel.value = v;
+  }
 
-// αντικαθιστά το παλιό “κόψιμο” συχνοτήτων
-let _suppressFreqSafetyOnce = false; // για διαλόγους: μην αφήνεις το safety να αντικαθιστά ratio που μόλις βάλαμε
+  function setDriveRatioContinuous(r){
+    const rr = Number(r);
+    if(!Number.isFinite(rr)) return;
+    driveRatio = rr;
+    _ensureSingleOption(elDriveRatio, driveRatio, _fmtPct(driveRatio));
+    // keep the existing small HUD indicator (if present)
+    if(typeof updateHUD === 'function') updateHUD();
+  }
 
-function applyFrequencySafetyByB(bKgPerS){
-  // Δεν εφαρμόζουμε “safety/κόψιμο” — οι διάλογοι καθοδηγούν τις τιμές.
-  return;
-}
+  function setDriveBContinuous(b){
+    const bb = Number(b);
+    if(!Number.isFinite(bb)) return;
+    driveB = bb;
+    _ensureSingleOption(elDriveB, driveB, _fmtB(driveB));
+    if(typeof updateMarbleTrack === 'function') updateMarbleTrack(true);
+    if(typeof updateHUD === 'function') updateHUD();
+  }
 
-// Καλείται από τον recorder όταν “σκάσει” ένα (b,f): θέτει cap + ανανεώνει επιλογές
-function applyCapForCurrentBF(bKgPerS, fRatio){
-  // Δεν εφαρμόζουμε caps που αλλάζουν/απενεργοποιούν τιμές — οι διάλογοι καθοδηγούν τις τιμές.
-  return;
-}
+  if(elDriveRatio){
+    elDriveRatio.addEventListener('change', ()=>{
+      setDriveRatioContinuous(parseFloat(elDriveRatio.value));
+    });
+  }
 
-if(elDriveRatio){
-  elDriveRatio.addEventListener('change', () => {
-    const r = Math.max(0.0, parseFloat(elDriveRatio.value) || 0.0);
-    driveRatio = r;
-    driverOmega = omega * driveRatio;
-    updateDriveFreqLabel();
-    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
-  });
-}
+  if(elDriveB){
+    elDriveB.addEventListener('change', ()=>{
+      setDriveBContinuous(parseFloat(elDriveB.value));
+    });
+  }
 
-if(elDriveB){
-  elDriveB.addEventListener('change', () => {
-    const raw = parseFloat(elDriveB.value);
-    driveB = (Number.isFinite(raw) ? raw : 12);
-    elDriveB.value = String(driveB);
-    applyFrequencySafetyByB(driveB);
-    if(elDriveBVal) elDriveBVal.textContent = `${driveB} kg/s`;
-    if (typeof AFRecorder !== 'undefined') AFRecorder.onBChange();
-  });
-}
+  function syncDriveUI(){
+    // Keep whatever values are currently set in the DOM (baseline), but collapse the UI lists.
+    if(elDriveRatio){
+      const r0 = parseFloat(elDriveRatio.value);
+      if(Number.isFinite(r0)) driveRatio = r0;
+    }
+    if(elDriveB){
+      const b0 = parseFloat(elDriveB.value);
+      if(Number.isFinite(b0)) driveB = b0;
+    }
+    setDriveRatioContinuous(driveRatio);
+    setDriveBContinuous(driveB);
+  }
 
-// αρχικοποίηση UI από τις τρέχουσες τιμές
-syncDriveUI();
+  syncDriveUI();
+
 
 function applyDriverTransform(){
   if(!drvWheel || !drvPin || !drvSlider) return;
@@ -3651,46 +3657,39 @@ function showDynBubble(ev){
     if(!action || typeof action !== 'object') return;
     const type = action.type;
 
-
-
-
     // Forced oscillator controls (Phase 3)
-    // Note: driveB and driveRatio are <select>. To accept arbitrary values from dialogues,
-    // we inject missing <option> values on the fly (no quantization, no skipping).
-    function _ensureSelectValue(selectEl, valueStr, labelStr){
-      if(!selectEl) return;
-      const v = String(valueStr);
-      const has = Array.from(selectEl.options).some(o => o.value === v);
-      if(!has){
-        const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = labelStr ?? v;
-        selectEl.appendChild(opt);
-      }
-    }
-
     if(type === 'setB'){
+      const raw = Number(action.value ?? action.b);
+      if(!Number.isFinite(raw)) return;
+      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked){
+        // Lock: επιτρέπουμε αλλαγή b μόνο όταν είμαστε στο OFF (driveRatio=0)
+        const canChange = (typeof driveRatio !== 'undefined' && driveRatio === 0);
+        if(!canChange) return;
+      }
+      try{ setDriveBContinuous(raw); return; }catch(_e){}
       const el = document.getElementById('driveB');
       if(!el) return;
-      const v = Number(action.value);
-      const vStr = Number.isFinite(v) ? String(v) : String(action.value);
-      _ensureSelectValue(el, vStr, vStr);
-      el.value = vStr;
+      el.value = String(raw);
       _dispatchChange(el);
       return;
     }
 
     if(type === 'setF' || type === 'setRatio'){
       const raw = Number(action.ratio ?? action.value);
+      if(!Number.isFinite(raw)) return;
+      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked){
+        // Εξαίρεση: αν είμαστε στο OFF (driveRatio=0) και ζητάμε f>0, αφήνουμε την εκκίνηση.
+        const canStart = (typeof driveRatio !== 'undefined' && driveRatio === 0 && raw > 0);
+        if(!canStart) return;
+      }
+      try{ setDriveRatioContinuous(raw); return; }catch(_e){}
       const el = document.getElementById('driveRatio');
       if(!el) return;
-      const v = Number.isFinite(raw) ? raw : Number(action.value);
-      const vStr = Number.isFinite(v) ? v.toFixed(2) : String(action.ratio ?? action.value);
-      _ensureSelectValue(el, vStr, vStr);
-      el.value = vStr;
+      el.value = String(raw);
       _dispatchChange(el);
       return;
     }
+
     if(type === 'setParams'){
       if(action.b!=null) await AAT.action({type:'setB', value: action.b});
       if(action.ratio!=null) await AAT.action({type:'setF', ratio: action.ratio});
@@ -3703,13 +3702,13 @@ function showDynBubble(ev){
       return;
     }
 
-    
     if(type === 'awaitAFRecord'){
       // Act3 gate: περίμενε να καταγραφεί νέο σημείο A–f (σταθεροποίηση πλάτους)
       await waitNextAFRecord(currentAFKey());
       return;
     }
-// future-proof no-ops (won't crash old dialogues)
+
+    // future-proof no-ops (won't crash old dialogues)
     if(type === 'setMode' || type === 'record' || type === 'mark'){
       return;
     }
@@ -5055,7 +5054,11 @@ const AFRecorder = (() => {
   let lastSeenBKey  = null;
 
 
-  function bKeyFrom(b){ return Math.round(b); }
+  function bKeyFrom(b){
+      const bb = Number(b);
+      if(!Number.isFinite(bb)) return '0';
+      return String(bb);
+    }
 
   function ensureSeries(b){
     const k = bKeyFrom(b);
@@ -5152,33 +5155,30 @@ const AFRecorder = (() => {
     const x0=padL, y0=padT, x1=W-padR, y1=H-padB;
     const w=x1-x0, h=y1-y0;
 
-	const B_COL = {
-      low:  { stroke:'#F9A825', fill:'rgba(249,168,37,0.28)' },  // yellow  (0 < b < 10)
-      mid:  { stroke:'#1565C0', fill:'rgba(21,101,192,0.28)' },  // blue    (10 ≤ b < 20)
-      high: { stroke:'#C62828', fill:'rgba(198,40,40,0.28)' },   // red     (b ≥ 20)
-      zero: { stroke:'#FFFFFF', fill:'rgba(255,255,255,0.18)' }  // white   (b = 0)
-    };
+    // legend (όσες καμπύλες έχουν καταγραφεί)
+    const legendKeys = [...dataByB.keys()].sort((a,b)=>Number(a)-Number(b));
 
-    // Keep series buckets stable (so curves don't constantly re-index), but color by bands.
-    const B_SLOTS = ['low','mid','high','zero'];
-
-    function bBandFromB(b){
-      const v = Number(b);
-      if(!Number.isFinite(v) || Math.abs(v) < 1e-9) return 'zero';
-      if(v < 10) return 'low';
-      if(v < 20) return 'mid';
-      return 'high';
+    function _rgba(hex, a){
+      const m = /^#?([0-9a-f]{6})$/i.exec(String(hex||'').trim());
+      if(!m) return `rgba(255,255,255,${a})`;
+      const n = parseInt(m[1], 16);
+      const r = (n >> 16) & 255;
+      const g = (n >> 8) & 255;
+      const b = n & 255;
+      return `rgba(${r},${g},${b},${a})`;
     }
 
-    function colorForB(b){
-      return B_COL[bBandFromB(b)] || B_COL.mid;
+    function colorForB(k){
+      const bb = Number(k);
+      if(!Number.isFinite(bb) || bb === 0) return 'rgba(245,245,245,0.95)';
+      const hex = _bandColorForB(bb);
+      return _rgba(hex, 0.92);
     }
 
-
-	    const legendY = (bk)=> {
-	      const idx = B_SLOTS.indexOf(bk);
-	      return y0 + 14 + ((idx === -1 ? 99 : idx) * 14);
-	    };
+    function legendYForKey(k){
+      const idx = legendKeys.indexOf(k);
+      return y0 + 14 + (idx < 0 ? 0 : idx) * 14;
+    }
 
     // axes
     ctx.strokeStyle='rgba(255,255,255,0.35)';
@@ -5388,8 +5388,8 @@ data.forEach(p=>{
       // legend (δεξί περιθώριο)
       ctx.save();
       ctx.textAlign = 'right';
-      ctx.fillStyle = col.stroke;
-      ctx.fillText(`b=${k} kg/s`, x1-4, legendY(k));
+      ctx.fillStyle = col.text;
+      ctx.fillText(`b=${k} kg/s`, x1-4, legendYForKey(k));
       ctx.restore();
     });
   }
