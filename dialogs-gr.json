@@ -1000,7 +1000,7 @@
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 0.95
+          "ratio": 0.93
         },
         {
           "type": "awaitAFRecord"
@@ -1019,7 +1019,7 @@
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 1.05
+          "ratio": 1.10
         },
         {
           "type": "awaitAFRecord"
