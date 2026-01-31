@@ -376,9 +376,9 @@ body.intro-open #driveCtrl{ visibility:hidden !important; }
 
 /* Marble track styling (b-dependent) */
 #marbleTrack{ background: #e9e9e9; transition: width 900ms ease, left 900ms ease, background 300ms linear; }
-#marbleTrack.marble-b6{ background:#2E7D32; }
+#marbleTrack.marble-b6{ background:#FFD400; }
 #marbleTrack.marble-b12{ background:#1565C0; }
-#marbleTrack.marble-b24{ background:#6A1B9A; }
+#marbleTrack.marble-b24{ background:#D22828; }
 #marbleTrack.marble-bOther{ background:#455A64; }
 </style>
 
@@ -1406,88 +1406,67 @@ let _marbleGrowT0 = 0;
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
   const trackGhost = document.getElementById('marbleTrackGhost');
-  const actorImg = document.querySelector('#actor img');
+  if(!track) return;
 
-  if(!track || !actorImg || !stage) return;
-
-  // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
-  const inActs = (phase==='act1' || phase==='act2' || phase==='act3');
-  if(!inActs){
+  // Μάρμαρο: θέλουμε να φαίνεται σε Πράξεις με απόσβεση/εξαναγκασμένη (Act2 + Act3).
+  const phase = currentAct;
+  const inAct23 = (phase==='act2' || phase==='act3');
+  if(!inAct23){
     track.style.display = 'none';
     if(trackGhost) trackGhost.style.display = 'none';
     return;
   }
 
-  // IMPORTANT: η σκηνή πλέον κλιμακώνεται με CSS transform.
-  // Άρα ό,τι μετράμε με getBoundingClientRect() είναι SCALED.
-  // Εδώ δουλεύουμε σε *design px* (unscaled), οπότε διαιρούμε με scale.
-  const s = (()=>{
-    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
-    return (isFinite(v) && v>0) ? v : 1;
-  })();
+  const stageW = stage.clientWidth;
+  const stageH = stage.clientHeight;
 
-  const stageRect = stage.getBoundingClientRect();
-  const aRect = actorImg.getBoundingClientRect();
+  // bottom/height κουμπώνουν στο πάτωμα (ίδιο reference με τις κουρτίνες)
+  const bottomPx = (typeof curtainBottomClosedLocal === 'number') ? curtainBottomClosedLocal : 0;
+  const h = Math.max(0, Math.min(18, stageH * 0.018)); // λεπτό “μάρμαρο”
 
-  const stageH = stage.clientHeight || 0;
-  const actorBottomLocal = (aRect.bottom - stageRect.top) / s;
+  // b από το sim (continuous)
+  const bNow = (window.simParams && Number.isFinite(simParams.bKgPerS)) ? simParams.bKgPerS : 0;
 
-  // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
-  const curtainBottomClosedLocal = (0.70 * stageH) + 8;
-
-  // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
-  const h = Math.max(0, curtainBottomClosedLocal - actorBottomLocal);
-  // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
-  const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
-
-  // Οριζόντια έκταση μαρμάρου:
-  // - Για b=0: μικρό “μάρμαρο” (x=-3 έως +3) όπως πριν.
-  // - Για b≠0: “τρέχει” από το κέντρο προς τα δεξιά και μεγαλώνει από 0 → μέχρι το τέλος της σκηνής.
-  const cx = centerX();
-
-  const bNow = (()=>{
-    const el = document.getElementById('driveB');
-    const v = el ? parseFloat(el.value) : 0;
-    return isFinite(v) ? v : 0;
-  })();
-
-  // Color/class per b
+  // κλάση χρώματος με banding
   track.classList.remove('marble-b6','marble-b12','marble-b24','marble-bOther');
-  if(bNow===6) track.classList.add('marble-b6');
-  else if(bNow===12) track.classList.add('marble-b12');
-  else if(bNow===24) track.classList.add('marble-b24');
-  else if(bNow!==0) track.classList.add('marble-bOther');
+  const bKey = bKeyFromB(bNow);
+  if(bKey===6) track.classList.add('marble-b6');
+  else if(bKey===12) track.classList.add('marble-b12');
+  else if(bKey===24) track.classList.add('marble-b24');
+  else track.classList.add('marble-bOther');
 
-  // Reset grow timer when b changes or when we re-enter acts.
-  if(_lastMarbleB===null || _lastMarbleB!==bNow){
-    _lastMarbleB = bNow;
-    _marbleGrowT0 = performance.now();
-  }
-
-  let leftPx, widthPx;
   if(bNow===0){
-    leftPx  = cx - 3*pxPerMeter;
-    widthPx = Math.max(0, 6*pxPerMeter);
-  }else{
-    // b≠0: μάρμαρο από x=0 του χάρακα (αριστερό άκρο σκηνής) μέχρι δεξί άκρο σκηνής
-    const stageW = (stage.clientWidth || 0);
-    const targetWidth = Math.max(0, stageW);
-    const t = Math.max(0, performance.now() - _marbleGrowT0);
-    const g = Math.max(0, Math.min(1, t/900)); // ~0.9s grow
-    leftPx  = 0;
-    widthPx = targetWidth * g;
+    track.style.display = 'none';
+    if(trackGhost) trackGhost.style.display = 'none';
+    return;
   }
 
-  track.style.left  = leftPx + 'px';
-  track.style.width = Math.max(0, widthPx) + 'px';
+  // Θέλουμε να ξεκινάει από το 0 του χάρακα (αριστερό άκρο σκηνής) και να μεγαλώνει μέχρι δεξιά.
+  // Το “grow” reset γίνεται όταν αλλάζει b-band (για να μη σπαμάρει σε μικρο-αλλαγές του b).
+  const bandKey = bKeyFromB(bNow);
+  if(updateMarbleTrack._lastBandKey !== bandKey){
+    updateMarbleTrack._lastBandKey = bandKey;
+    updateMarbleTrack._growT0 = performance.now();
+  }
+  const t = Math.max(0, performance.now() - (updateMarbleTrack._growT0 || performance.now()));
+  const g = Math.max(0, Math.min(1, t/900)); // ~0.9s grow
+
+  const targetWidth = stageW;
+  const leftPx = 0;
+  const widthPx = targetWidth * g;
+
+  track.style.left   = leftPx + 'px';
+  track.style.width  = Math.max(0, Math.min(targetWidth, widthPx)) + 'px';
   track.style.bottom = bottomPx + 'px';
   track.style.height = h + 'px';
   track.style.display = (h>0) ? 'block' : 'none';
 
-  // Ghost “δοκός”/μάρμαρο: από -5 έως +5, μόνο όταν ο ghost είναι ορατός.
+  // Ghost “δοκός”: κρατάμε μόνο στην Act2 όπως ήταν (αν χρησιμοποιείται).
   if(trackGhost){
     const gVis = (typeof ghostVisibility==='number') ? ghostVisibility : 0;
     if(phase==='act2' && gVis>0.02 && h>0){
+      const pxPerMeter = (typeof rulerPxPerMeter==='number') ? rulerPxPerMeter : (stageW/20);
+      const cx = (typeof rulerZeroX==='number') ? rulerZeroX : (stageW*0.18);
       const gLeft  = cx - 5*pxPerMeter;
       const gRight = cx + 5*pxPerMeter;
       trackGhost.style.left   = gLeft + 'px';
@@ -1691,15 +1670,11 @@ const DRIVE_B_MAX = 50;
 
 
 function snapBToPresets(v){
-  const presets = [0,6,12,24,30];
-  let best = presets[0], bestd = Infinity;
-  for(const p of presets){
-    const d = Math.abs(p - v);
-    if(d < bestd){ bestd = d; best = p; }
-  }
-  return best;
+  // Continuous mode: accept any b from dialogs/UI (no snapping).
+  v = Number(v);
+  if(!Number.isFinite(v)) return 0;
+  return Math.max(DRIVE_B_HARD_MIN, Math.min(DRIVE_B_MAX, v));
 }
-
 // --- Driver controls hookup (f as ratio, b as kg/s) ---
 const elDriveRatio   = document.getElementById('driveRatio');
 const elDriveB       = document.getElementById('driveB');
@@ -1828,7 +1803,15 @@ const DRIVE_RATIOS_DENSE = (() => {
 // bKey -> { leftCap: number|null, rightCap: number|null }
 const capsByB = new Map();
 
-function bKeyFromB(bKgPerS){ return Math.max(0, Math.round(bKgPerS)); }
+function bKeyFromB(bKgPerS){
+  // banding: 0, <10, 10–<20, 20–<30, >=30
+  const b = Math.max(0, Number(bKgPerS) || 0);
+  if(b === 0) return 0;
+  if(b < 10) return 6;
+  if(b < 20) return 12;
+  if(b < 30) return 24;
+  return 30;
+}
 
 function getCaps(bKey){
   if(!capsByB.has(bKey)) capsByB.set(bKey, { leftCap: null, rightCap: null });
@@ -1850,15 +1833,10 @@ function setCap(bKey, ratio){
 
 // Απαγόρευση ΜΟΝΟ προς f0 στην ίδια πλευρά
 function isRatioDisabledForB(bKey, ratio){
-  const c = getCaps(bKey);
-  const r = Number(ratio);
-  if(!Number.isFinite(r)) return false;
-
-  if(c.leftCap != null && r < 1.0 && r >= c.leftCap) return true;   // [leftCap, 1)
-  if(c.rightCap != null && r > 1.0 && r <= c.rightCap) return true; // (1, rightCap]
+  // Continuous mode: never disable ratios.
+  // Protection is handled by amplitude cap + stable-state logic, not by forbidding values.
   return false;
 }
-
 // backward-compatible alias (παλιό όνομα που χρησιμοποιούν κάποια σημεία)
 function isDisabledRatioForB(bKey, ratio){
   return isRatioDisabledForB(bKey, ratio);
@@ -1893,43 +1871,44 @@ function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
 function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   if(!elDriveRatio) return;
 
-  const bKey = bKeyFromB(bKgPerS);
+  // Προεπιλογές για το dropdown (UI). Οι διάλογοι μπορούν να βάζουν ΟΠΟΙΑΔΗΠΟΤΕ τιμή.
+  const baseRatios = [0.00, 0.60, 0.75, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.45];
 
-  // Σταθερές προεπιλεγμένες τιμές συχνοτήτων για ΟΛΑ τα b
-  const ratios = [0.00, 0.60, 0.75, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.45];
+  const prevVal = String(elDriveRatio.value || '');
+  const currentVal = Number.isFinite(driveRatio) ? driveRatio : (parseFloat(prevVal) || 0);
 
-  const prev = String(elDriveRatio.value || '');
+  // Αν η τρέχουσα τιμή δεν υπάρχει στη λίστα, την “καρφώνουμε” ως επιλογή για να μη γίνεται auto-replace.
+  const ratios = baseRatios.slice();
+  const hasCurrent = ratios.some(r => Math.abs(r - currentVal) < 1e-9);
+  if(!hasCurrent && currentVal > 0){
+    ratios.push(currentVal);
+    ratios.sort((a,b)=>a-b);
+  }
+
   elDriveRatio.innerHTML = '';
 
   for(const r of ratios){
     const opt = document.createElement('option');
     opt.value = r.toFixed(2);
     opt.textContent = (r === 0 ? 'OFF' : (r*100).toFixed(0) + '%');
-
-    // Dynamic forbid (cap) για το συγκεκριμένο b + ειδικός κανόνας: για b=6 απενεργοποιείται το 100%
-    opt.disabled = isDisabledRatioForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
-
+    // continuous mode: no disabling here (caps are handled by recorder/logic)
+    opt.disabled = false;
     elDriveRatio.appendChild(opt);
   }
 
-  // προσπάθησε να κρατήσεις την προηγούμενη επιλογή αν επιτρέπεται
-  const canKeep = Array.from(elDriveRatio.options).some(o => o.value === prev && !o.disabled);
-  if(canKeep){
-    elDriveRatio.value = prev;
-    return;
+  // κράτα ό,τι είχαμε (ακόμα κι αν είναι “μη-στάνταρ”)
+  if(prevVal){
+    const exists = Array.from(elDriveRatio.options).some(o => o.value === prevVal);
+    if(exists){
+      elDriveRatio.value = prevVal;
+      return;
+    }
   }
-
-  // αλλιώς διάλεξε αυτόματα
-  const best = pickBestEnabledRatio(Array.from(elDriveRatio.options), preferSide);
-  if(best != null){
-    elDriveRatio.value = best.toFixed(2);
-
-    // ενημέρωση κινητήρα (χωρίς να βασιζόμαστε στο 'change' event)
-    const rr = Math.max(0.0, parseFloat(elDriveRatio.value) || 0.0);
-    driveRatio = rr;
-    driverOmega = omega * driveRatio;
-    updateDriveFreqLabel();
-    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
+  // αλλιώς βάλε την τρέχουσα driveRatio (αν υπάρχει)
+  if(currentVal){
+    const v=currentVal.toFixed(2);
+    const exists = Array.from(elDriveRatio.options).some(o => o.value === v);
+    if(exists) elDriveRatio.value = v;
   }
 }
 
@@ -5157,7 +5136,14 @@ const AFRecorder = (() => {
   let lastSeenBKey  = null;
 
 
-  function bKeyFrom(b){ return Math.round(b); }
+  function bKeyFrom(b){
+    const v = Math.max(0, Number(b) || 0);
+    if(v === 0) return 0;
+    if(v < 10) return 6;
+    if(v < 20) return 12;
+    if(v < 30) return 24;
+    return 30;
+  }
 
   function ensureSeries(b){
     const k = bKeyFrom(b);
@@ -5258,14 +5244,13 @@ const AFRecorder = (() => {
     const B_SLOTS = {6:0, 12:1, 24:2, 30:3};
 
 const B_COL = {
-      0:  { stroke: "#9E9E9E", fill: "#9E9E9E" },
-      6:  { stroke: "#2E7D32", fill: "#2E7D32" },
-      12: { stroke: "#1565C0", fill: "#1565C0" },
-      24: { stroke: "#6A1B9A", fill: "#6A1B9A" }
-    };
-function colorForB(k){ return B_COL[k] || { stroke: "#455A64", fill: "#455A64" }; }
-
-    const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
+  6:  'rgba(255,212,0,0.95)',     // κίτρινο (b<10)
+  12: 'rgba(20,110,200,0.95)',    // μπλε (10–<20)
+  24: 'rgba(210,40,40,0.95)',     // κόκκινο (20–<30)
+  30: 'rgba(210,40,40,0.95)'      // κόκκινο (>=30)
+};
+function colorForB(k){ return B_COL[k] || 'rgba(230,230,230,0.85)'; }
+const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
 
     // axes
     ctx.strokeStyle='rgba(255,255,255,0.35)';
