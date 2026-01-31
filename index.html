@@ -1411,7 +1411,7 @@ function updateMarbleTrack(){
   if(!track || !actorImg || !stage) return;
 
   // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
-  const inActs = (phase==='act1' || phase==='act2');
+  const inActs = (phase==='act1' || phase==='act2' || phase==='act3');
   if(!inActs){
     track.style.display = 'none';
     if(trackGhost) trackGhost.style.display = 'none';
@@ -1890,18 +1890,6 @@ function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
   return best;
 }
 
-
-  function ensureSelectHasValue(selectEl, valueStr, labelStr) {
-    if (!selectEl) return;
-    for (const opt of Array.from(selectEl.options)) {
-      if (opt.value === valueStr) return;
-    }
-    const opt = document.createElement('option');
-    opt.value = valueStr;
-    opt.textContent = (labelStr ?? valueStr);
-    selectEl.appendChild(opt);
-  }
-
 function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
   if(!elDriveRatio) return;
 
@@ -1918,8 +1906,8 @@ function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
     opt.value = r.toFixed(2);
     opt.textContent = (r === 0 ? 'OFF' : (r*100).toFixed(0) + '%');
 
-    // Dynamic forbid (cap) για το συγκεκριμένο b
-    opt.disabled = isDisabledRatioForB(bKey, opt.value);
+    // Dynamic forbid (cap) για το συγκεκριμένο b + ειδικός κανόνας: για b=6 απενεργοποιείται το 100%
+    opt.disabled = isDisabledRatioForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
 
     elDriveRatio.appendChild(opt);
   }
@@ -3786,15 +3774,21 @@ function showDynBubble(ev){
 
     if(type === 'setF' || type === 'setRatio'){
       const raw = Number(action.ratio ?? action.value);
+      // Act3 ειδικός κανόνας: για b=6 ΔΕΝ επιχειρούμε f=f0 (ratio≈1.00). Το προσπερνάμε ώστε να μην μπλοκάρουν οι διάλογοι.
+      if(phase === 'act3' && typeof driveB !== 'undefined' && Number(driveB) === 6 && Number.isFinite(raw) && Math.abs(raw - 1.0) <= 0.005){
+        try{ notifyAFRecorded(); }catch(_e){}
+        try{ setAFBFLocked(false); }catch(_e){}
+        return;
+      }
+      if(phase === 'act3' && typeof afBFLocked !== 'undefined' && afBFLocked){
+        // Εξαίρεση: αν είμαστε στο OFF (driveRatio=0) και ζητάμε f>0, αφήνουμε την εκκίνηση.
+        const canStart = (typeof driveRatio !== 'undefined' && driveRatio === 0 && Number.isFinite(raw) && raw > 0);
+        if(!canStart) return;
+      }
       const el = document.getElementById('driveRatio');
       if(!el) return;
-      // Allow ANY frequency ratio coming from dialogues. If it's not one of the built-in options,
-      // we inject it into the select and then apply it.
-      const valStr = (Number.isFinite(raw) ? raw.toFixed(2) : String(action.ratio ?? action.value));
-      const n = Number(valStr);
-      const label = Number.isFinite(n) ? (Math.round(n * 100) + '%') : valStr;
-      ensureSelectHasValue(el, valStr, label);
-      el.value = valStr;
+      // ratio is numeric like 0.95, 1.15 etc
+      el.value = (Number.isFinite(raw) ? raw.toFixed(2) : String(action.ratio ?? action.value));
       _dispatchChange(el);
       return;
     }
@@ -5264,12 +5258,12 @@ const AFRecorder = (() => {
     const B_SLOTS = {6:0, 12:1, 24:2, 30:3};
 
 const B_COL = {
-  6:  'rgba(255,0,0,0.90)',       // κόκκινο
-  12: 'rgba(0,200,0,0.90)',       // πράσινο
-  24: 'rgba(80,180,255,0.90)',    // ανοιχτό μπλε
-  30: 'rgba(255,215,0,0.90)'      // κίτρινο
-};
-function colorForB(k){ return B_COL[k] || 'rgba(230,230,230,0.85)'; }
+      0:  { stroke: "#9E9E9E", fill: "#9E9E9E" },
+      6:  { stroke: "#2E7D32", fill: "#2E7D32" },
+      12: { stroke: "#1565C0", fill: "#1565C0" },
+      24: { stroke: "#6A1B9A", fill: "#6A1B9A" }
+    };
+function colorForB(k){ return B_COL[k] || { stroke: "#455A64", fill: "#455A64" }; }
 
     const legendY = (bk)=> y0 + 14 + ((B_SLOTS[bk] ?? 99) * 14);
 
