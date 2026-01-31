@@ -312,7 +312,7 @@ function num(v,fallback=0){
 .drive-controls input[type="range"]{ width:150px; }
 
 /* κρύβεται στο intro veil όπως τα άλλα UI */
-body.intro-open #driveCtrl{ visibility:hidden !important; }
+body.intro-open #driveCtrl{display:none !important; visibility:hidden !important; }
 
 
     /* === Measurement HUD + A–f plot (DEV overlay) === */
@@ -1828,67 +1828,23 @@ function pickBestEnabledRatio(options, preferSide /* 'left'|'right'|null */){
 }
 
 function rebuildDriveRatioOptions(bKgPerS, preferSide=null){
-  if(!elDriveRatio) return;
-
-  const bKey = bKeyFromB(bKgPerS);
-
-  // Σταθερές προεπιλεγμένες τιμές συχνοτήτων για ΟΛΑ τα b
-  const ratios = [0.00, 0.60, 0.75, 0.90, 0.95, 1.00, 1.05, 1.15, 1.30, 1.45];
-
-  const prev = String(elDriveRatio.value || '');
-  elDriveRatio.innerHTML = '';
-
-  for(const r of ratios){
-    const opt = document.createElement('option');
-    opt.value = r.toFixed(2);
-    opt.textContent = (r === 0 ? 'OFF' : (r*100).toFixed(0) + '%');
-
-    // Dynamic forbid (cap) για το συγκεκριμένο b + ειδικός κανόνας: για b=6 απενεργοποιείται το 100%
-    opt.disabled = isDisabledRatioForB(bKey, opt.value) || (bKey === 6 && opt.value === '1.00');
-
-    elDriveRatio.appendChild(opt);
-  }
-
-  // προσπάθησε να κρατήσεις την προηγούμενη επιλογή αν επιτρέπεται
-  const canKeep = Array.from(elDriveRatio.options).some(o => o.value === prev && !o.disabled);
-  if(canKeep){
-    elDriveRatio.value = prev;
-    return;
-  }
-
-  // αλλιώς διάλεξε αυτόματα
-  const best = pickBestEnabledRatio(Array.from(elDriveRatio.options), preferSide);
-  if(best != null){
-    elDriveRatio.value = best.toFixed(2);
-
-    // ενημέρωση κινητήρα (χωρίς να βασιζόμαστε στο 'change' event)
-    const rr = Math.max(0.0, parseFloat(elDriveRatio.value) || 0.0);
-    driveRatio = rr;
-    driverOmega = omega * driveRatio;
-    updateDriveFreqLabel();
-    if (typeof AFRecorder !== 'undefined') AFRecorder.onFChange();
-  }
+  // UI επιλογέα συχνοτήτων: τον κρατάμε μόνο για ένδειξη/συμβατότητα.
+  // Δεν ξαναχτίζουμε λίστα preset τιμών εδώ, γιατί οι διάλογοι μπορούν να δώσουν *οποιαδήποτε* τιμή.
+  return;
 }
 
 // αντικαθιστά το παλιό “κόψιμο” συχνοτήτων
 let _suppressFreqSafetyOnce = false; // για διαλόγους: μην αφήνεις το safety να αντικαθιστά ratio που μόλις βάλαμε
 
 function applyFrequencySafetyByB(bKgPerS){
-  if(_suppressFreqSafetyOnce){ _suppressFreqSafetyOnce = false; return; }
-  rebuildDriveRatioOptions(bKgPerS, null);
+  // Δεν εφαρμόζουμε “safety/κόψιμο” — οι διάλογοι καθοδηγούν τις τιμές.
+  return;
 }
 
 // Καλείται από τον recorder όταν “σκάσει” ένα (b,f): θέτει cap + ανανεώνει επιλογές
 function applyCapForCurrentBF(bKgPerS, fRatio){
-  const bKey = bKeyFromB(bKgPerS);
-  const r = Number(fRatio);
-  if(!Number.isFinite(r)) return;
-
-  setCap(bKey, r);
-
-  // Αν έσκασε στην αριστερή πλευρά, προτίμησε δεξιά (και αντίστροφα)
-  const prefer = (r < 1.0) ? 'right' : (r > 1.0 ? 'left' : null);
-  rebuildDriveRatioOptions(bKgPerS, prefer);
+  // Δεν εφαρμόζουμε caps που αλλάζουν/απενεργοποιούν τιμές — οι διάλογοι καθοδηγούν τις τιμές.
+  return;
 }
 
 if(elDriveRatio){
@@ -1904,7 +1860,7 @@ if(elDriveRatio){
 if(elDriveB){
   elDriveB.addEventListener('change', () => {
     const raw = parseFloat(elDriveB.value);
-    driveB = snapBToPresets(Number.isFinite(raw) ? raw : 12);
+    driveB = (Number.isFinite(raw) ? raw : 12);
     elDriveB.value = String(driveB);
     applyFrequencySafetyByB(driveB);
     if(elDriveBVal) elDriveBVal.textContent = `${driveB} kg/s`;
@@ -5432,7 +5388,7 @@ data.forEach(p=>{
       // legend (δεξί περιθώριο)
       ctx.save();
       ctx.textAlign = 'right';
-      ctx.fillStyle = col.text;
+      ctx.fillStyle = col.stroke;
       ctx.fillText(`b=${k} kg/s`, x1-4, legendY(k));
       ctx.restore();
     });
