@@ -339,6 +339,7 @@ body.intro-open #driveCtrl{display:none !important; visibility:hidden !important
       color:#fff;
       font: 13px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial;
       pointer-events:none;
+      display:none !important;
     }
     #measureHUD .mh-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
     #measureHUD .mh-title{font-weight:700; letter-spacing:.2px;}
@@ -1418,13 +1419,11 @@ function updateMarbleTrack(){
   const ghost = document.getElementById('marbleTrackGhost');
   if(!track || !ghost || !stage) return;
 
-  // Show in Acts 1–3 only
-  const act = (typeof phase === 'string') ? phase : 'act1';
-  const show = (act === 'act1' || act === 'act2' || act === 'act3');
-  track.style.display = show ? 'block' : 'none';
-  ghost.style.display = show ? 'block' : 'none';
-  if(!show) return;
+// Show in all acts
+track.style.display = 'block';
+ghost.style.display = 'block';
 
+const act = (typeof phase === 'string') ? phase : 'act1';
   // Pick damping value for coloring (free: driveB, forced: driveB)
   const bVal = (act === 'act3') ? Number(driveB) : Number(driveB);
 
@@ -2347,6 +2346,8 @@ let xtOverlayBuf = [];
 let xtOverlayT0 = 0;
 let xtOverlayLastNow = null;
 let xtOverlayURange = 3.5;
+let xtStabilityStable = false; // AF stable/unstable flag for x–t overlay LEDs
+
 
 function getStageScale(){
   const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
@@ -2552,6 +2553,23 @@ function xtOverlayDraw(dt){
   ctx.rect(pxL,pyT,pxR-pxL,pyB-pyT);
   ctx.stroke();
   ctx.restore();
+
+
+// Stability LEDs (green=stable, red=unstable) — στο αριστερό περιθώριο του x–t
+(function(){
+  const xLed = pxL - 14;
+  const yLed = pyT + 12;
+  const rLed = 4.2;
+
+  ctx.save();
+  // πράσινο (stable)
+  ctx.fillStyle = 'rgba(0,255,80,' + (xtStabilityStable ? '0.95' : '0.25') + ')';
+  ctx.beginPath(); ctx.arc(xLed, yLed, rLed, 0, Math.PI*2); ctx.fill();
+  // κόκκινο (unstable)
+  ctx.fillStyle = 'rgba(255,50,50,' + (xtStabilityStable ? '0.25' : '0.95') + ')';
+  ctx.beginPath(); ctx.arc(xLed, yLed + 14, rLed, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+})();
 
   // plot
   ctx.save();
@@ -5281,6 +5299,29 @@ const AFRecorder = (() => {
       }
     }
 
+
+// A0 (πλάτος αμείωτης αρχικής αμείωτης) — γραμμή σύγκρισης
+// Χρησιμοποιούμε το A_m (αμείωτη ελεύθερη) ως σταθερή αναφορά.
+if(typeof A_m === 'number'){
+  const A0 = Math.abs(A_m);
+  const yy0 = Y(A0);
+  if(Number.isFinite(yy0)){
+    ctx.save();
+    ctx.setLineDash([2,3]);
+    ctx.strokeStyle='rgba(255,255,255,0.45)';
+    ctx.lineWidth=1.25;
+    ctx.beginPath();
+    ctx.moveTo(x0,yy0); ctx.lineTo(x1,yy0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,255,255,0.70)';
+    ctx.font='10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.textAlign='right';
+    ctx.fillText('A0', x1-4, yy0-4);
+    ctx.restore();
+  }
+}
+
     // y grid/ticks (σταθερά 0..8 ανά 2)
     ctx.save();
     ctx.font='10px system-ui, -apple-system, Segoe UI, Roboto, Arial';
@@ -5454,6 +5495,7 @@ data.forEach(p=>{
     elStable.textContent = stable ? 'stable' : 'unstable';
     elStable.style.background = stable ? 'rgba(0,255,140,0.18)' : 'rgba(255,255,255,0.08)';
     elStable.style.borderColor = stable ? 'rgba(0,255,140,0.35)' : 'rgba(255,255,255,0.25)';
+    xtStabilityStable = !!stable;
   }
 
   function update({ xMeters, dt, fHz, fRatio, bKgPerS }){
