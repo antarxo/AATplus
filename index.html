@@ -1501,22 +1501,32 @@ const act = (typeof phase === 'string') ? phase : 'act1';
 
   ghost.style.left  = track.style.left;
   ghost.style.width = track.style.width;
-  // Vertical placement: align with actor's bottom (rolling line)
-  const actorEl = document.getElementById('actor');
-  let baseBottom = 0;
-  if(actorEl){
-    const bb = parseFloat(getComputedStyle(actorEl).bottom);
-    baseBottom = isFinite(bb) ? bb : 0;
+  // Vertical placement: align track TOP with the ruler scale line
+  const rulerEl = document.getElementById('ruler');
+  const trackH = track.offsetHeight || parseFloat(getComputedStyle(track).height) || 0;
+  const ghostH = ghost.offsetHeight || parseFloat(getComputedStyle(ghost).height) || 0;
+
+  if(rulerEl){
+    const rr = rulerEl.getBoundingClientRect();
+    // Use the bottom edge of the ruler as the "scale line"
+    const scaleY = Math.round(rr.bottom - stageRect.top);
+    track.style.top = scaleY + 'px';
+    track.style.bottom = '';
+    ghost.style.top = (scaleY + 2) + 'px';
+    ghost.style.bottom = '';
+  }else{
+    // Fallback: align with actor bottom edge
+    const actorEl = document.getElementById('actor');
+    let baseBottom = 0;
+    if(actorEl){
+      const bb = parseFloat(getComputedStyle(actorEl).bottom);
+      baseBottom = isFinite(bb) ? bb : 0;
+    }
+    track.style.bottom = Math.max(0, baseBottom - trackH) + 'px';
+    track.style.top = '';
+    ghost.style.bottom = Math.max(0, baseBottom - ghostH - 2) + 'px';
+    ghost.style.top = '';
   }
-  track.style.bottom = (() => {
-    const trackH = track.offsetHeight || parseFloat(getComputedStyle(track).height) || 0;
-    // Set track TOP to actor bottom edge => bottom = actorBottom - trackHeight
-    return Math.max(0, baseBottom - trackH);
-  })() + 'px';
-  ghost.style.bottom = (() => {
-    const ghostH = ghost.offsetHeight || parseFloat(getComputedStyle(ghost).height) || 0;
-    return Math.max(0, baseBottom - ghostH - 2);
-  })() + 'px';
 }
 
 
@@ -2485,9 +2495,13 @@ function setXTOverlay(on){
       xtOverlayURange = 3.5;
     }
     xtOverlayCan.style.display = 'block';
+    const leds = document.getElementById('xtStabilityLEDs');
+    if(leds) leds.style.display = 'flex';
   }else{
     // Απόκρυψη μόνο. Δεν σταματάει ποτέ η καταγραφή.
     xtOverlayCan.style.display = 'none';
+    const leds = document.getElementById('xtStabilityLEDs');
+    if(leds) leds.style.display = 'none';
   }
 }
 
@@ -2570,6 +2584,16 @@ function xtOverlayDraw(dt){
   const pxR = x1 - marginR;
   const pyT = yTop + marginT;
   const pyB = yBot - marginB;
+
+  // Place stability LEDs inside the XT chart left margin (between panel edge and y-axis)
+  const leds = document.getElementById('xtStabilityLEDs');
+  if(leds){
+    const ledW = 10;
+    const cx = (x0 + pxL) * 0.5;
+    leds.style.left = Math.round(cx - ledW*0.5) + 'px';
+    leds.style.top  = Math.round(pyT + 4) + 'px';
+    leds.style.display = (xtOverlayCan && xtOverlayCan.style.display !== 'none') ? 'flex' : 'none';
+  }
 
   const span = Math.max(12, 15*T);
   if(!xtOverlayBuf.length) return;
@@ -4853,8 +4877,22 @@ const XTmini = (()=>{
 /* ---------- Animation loop ---------- */
 
 function animate(now){
-  const realDt=(now-lastFrame)/1000;
-  lastFrame=now;
+  // Guard against huge dt jumps (resize/tab switch/background)
+  const rawGapMs = now - lastFrame;
+  if(!isFinite(rawGapMs) || rawGapMs < 0) {
+    lastFrame = now;
+  }
+  // If we were away for a while, don't advance physics/clock in one leap.
+  if(rawGapMs > 250){
+    // keep the simulation time continuous
+    lastFrame = now;
+    t0 = now - (playbackTime||0)*1000;
+  }
+  let realDt = (now - lastFrame)/1000;
+  lastFrame = now;
+  if(!isFinite(realDt) || realDt < 0) realDt = 0;
+  const DT_MAX = 0.05; // 50 ms
+  if(realDt > DT_MAX) realDt = DT_MAX;
   const dt = (mode==='run') ? realDt : 0;
 
   updateRuler();
@@ -5019,7 +5057,18 @@ const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   if(axCan)drawAxChart();
   if(xsCan)drawXSinChart();
 
-  requestAnimationFrame(animate);
+  
+// --- Keep simulation stable across tab switches / viewport changes ---
+document.addEventListener('visibilitychange', () => {
+  // Reset frame timing so we don't get a huge dt on return
+  lastFrame = performance.now();
+  t0 = lastFrame - (playbackTime||0)*1000;
+});
+window.addEventListener('resize', () => {
+  lastFrame = performance.now();
+  t0 = lastFrame - (playbackTime||0)*1000;
+});
+requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
 
