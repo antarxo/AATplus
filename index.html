@@ -391,6 +391,60 @@ body.intro-open #driveCtrl{display:none !important; visibility:hidden !important
 #marbleTrack.marble-b12{ background:#1565C0; }
 #marbleTrack.marble-b24{ background:#C62828; }
 #marbleTrack.marble-bOther{ background:#C62828; }
+
+
+/* --- PATCH: hide old Measurement HUD (xmin/xmax/etc) --- */
+#measureHUD{ display:none !important; }
+
+/* --- PATCH: XT stability LEDs --- */
+#xtStabilityLEDs{
+  position:absolute;
+  left:2px;            /* centered between left edge and y-axis (margin=14px) */
+  top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  z-index:999999;
+  pointer-events:none;
+}
+.xtLed{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.20) inset;
+}
+#xtLedStable{
+  background:#0b3a14;          /* deeper green when off */
+}
+#xtLedUnstable{
+  background:#3a0b0b;          /* deeper red when off */
+}
+#xtLedStable.on{
+  background:#1cff4a;
+  box-shadow:0 0 10px rgba(28,255,74,0.8), 0 0 3px rgba(28,255,74,0.9);
+}
+#xtLedUnstable.on{
+  background:#ff2b2b;
+  box-shadow:0 0 10px rgba(255,43,43,0.8), 0 0 3px rgba(255,43,43,0.9);
+}
+
+/* --- PATCH: marble track (always visible) --- */
+#marbleTrack, #marbleTrackGhost{
+  position:absolute;
+  height:10px;
+  bottom:0;
+  border-radius:8px;
+  opacity:0.95;
+  z-index:4;
+  pointer-events:none;
+}
+#marbleTrackGhost{
+  height:4px;
+  opacity:0.25;
+  z-index:3;
+  filter: blur(0.2px);
+}
+
 </style>
 
 </head>
@@ -1417,7 +1471,8 @@ let _marbleGrowT0 = 0;
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
   const ghost = document.getElementById('marbleTrackGhost');
-  if(!track || !ghost || !stage) return;
+  const stageEl = document.getElementById('stage') || stage;
+  if(!track || !ghost || !stageEl) return;
 
 // Show in all acts
 track.style.display = 'block';
@@ -1435,7 +1490,7 @@ const act = (typeof phase === 'string') ? phase : 'act1';
   ghost.classList.remove('marble-b6','marble-b12','marble-b24','marble-bOther');
   if(bandCls){ track.classList.add(bandCls); ghost.classList.add(bandCls); }
 
-  const stageRect = stage.getBoundingClientRect();
+  const stageRect = stageEl.getBoundingClientRect();
 
   // Start from ruler's 0 and extend to the right edge of the stage
   const leftPx = Math.max(stageRect.left, Number(rulerZeroX || stageRect.left));
@@ -1446,6 +1501,15 @@ const act = (typeof phase === 'string') ? phase : 'act1';
 
   ghost.style.left  = track.style.left;
   ghost.style.width = track.style.width;
+  // Vertical placement: align with actor's bottom (rolling line)
+  const actorEl = document.getElementById('actor');
+  let baseBottom = 0;
+  if(actorEl){
+    const bb = parseFloat(getComputedStyle(actorEl).bottom);
+    baseBottom = isFinite(bb) ? bb : 0;
+  }
+  track.style.bottom = baseBottom + 'px';
+  ghost.style.bottom = Math.max(0, baseBottom-2) + 'px';
 }
 
 
@@ -2366,9 +2430,38 @@ function ensureXTOverlay(){
   c.style.pointerEvents = 'none';
   c.style.zIndex = '1500';
   c.style.display = 'none';
-  stage.appendChild(c);
+  
+  // --- XT stability LEDs (green/red) ---
+  let leds = document.getElementById('xtStabilityLEDs');
+  if(!leds){
+    leds = document.createElement('div');
+    leds.id = 'xtStabilityLEDs';
+    leds.setAttribute('aria-hidden','true');
+
+    const g = document.createElement('div');
+    g.id = 'xtLedStable';
+    g.className = 'xtLed';
+
+    const r = document.createElement('div');
+    r.id = 'xtLedUnstable';
+    r.className = 'xtLed';
+
+    leds.appendChild(g);
+    leds.appendChild(r);
+    stage.appendChild(leds);
+  }
+stage.appendChild(c);
   xtOverlayCan = c;
 }
+
+function setXTStability(isStable){
+  const g = document.getElementById('xtLedStable');
+  const r = document.getElementById('xtLedUnstable');
+  if(!g || !r) return;
+  g.classList.toggle('on', !!isStable);
+  r.classList.toggle('on', !isStable);
+}
+
 
 function setXTOverlay(on){
   const wantShow = !!on;
@@ -5493,6 +5586,7 @@ data.forEach(p=>{
     elB.textContent = `${fmt(b,1)} kg/s`;
 
     elStable.textContent = stable ? 'stable' : 'unstable';
+    setXTStability(stable);
     elStable.style.background = stable ? 'rgba(0,255,140,0.18)' : 'rgba(255,255,255,0.08)';
     elStable.style.borderColor = stable ? 'rgba(0,255,140,0.35)' : 'rgba(255,255,255,0.25)';
     xtStabilityStable = !!stable;
