@@ -414,10 +414,10 @@ body.intro-open #driveCtrl{display:none !important; visibility:hidden !important
   box-shadow:0 0 0 1px rgba(255,255,255,0.20) inset;
 }
 #xtLedStable{
-  background:#0b3a14;          /* deeper green when off */
+  background:#666;             /* off: grey */
 }
 #xtLedUnstable{
-  background:#3a0b0b;          /* deeper red when off */
+  background:#666;             /* off: grey */
 }
 #xtLedStable.on{
   background:#1cff4a;
@@ -1508,8 +1508,15 @@ const act = (typeof phase === 'string') ? phase : 'act1';
     const bb = parseFloat(getComputedStyle(actorEl).bottom);
     baseBottom = isFinite(bb) ? bb : 0;
   }
-  track.style.bottom = baseBottom + 'px';
-  ghost.style.bottom = Math.max(0, baseBottom-2) + 'px';
+  track.style.bottom = (() => {
+    const trackH = track.offsetHeight || parseFloat(getComputedStyle(track).height) || 0;
+    // Set track TOP to actor bottom edge => bottom = actorBottom - trackHeight
+    return Math.max(0, baseBottom - trackH);
+  })() + 'px';
+  ghost.style.bottom = (() => {
+    const ghostH = ghost.offsetHeight || parseFloat(getComputedStyle(ghost).height) || 0;
+    return Math.max(0, baseBottom - ghostH - 2);
+  })() + 'px';
 }
 
 
