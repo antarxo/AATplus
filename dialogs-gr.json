@@ -903,11 +903,7 @@
         }
       ]
     },
-        {
-          "type": "awaitAFRecord"
-        }
-      ]
-    },
+      
     {
       "viewer": 2,
       "xShift": 0,
