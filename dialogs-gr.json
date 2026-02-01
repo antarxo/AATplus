@@ -903,20 +903,6 @@
         }
       ]
     },
-      {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 2300,
-      "pauseMs": 400,
-      "left": "Sweep: βάζω <b>f/f₀ = 0.60</b> και περιμένω να «κάτσει».",
-      "right": "",
-      "actionsWhen": "beforeType",
-      "actions": [
-        {
-          "type": "setRatio",
-          "ratio": 0.60
-        },
         {
           "type": "awaitAFRecord"
         }
