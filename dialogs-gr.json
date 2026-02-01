@@ -925,6 +925,8 @@
         {
           "type": "setB",
           "value": 6
+          "type": "setRatio",
+          "ratio": 0.60 
         },
         {
           "type": "awaitAFRecord"
