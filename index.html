@@ -5158,7 +5158,7 @@ const AFRecorder = (() => {
     const w=x1-x0, h=y1-y0;
 
     // legend (όσες καμπύλες έχουν καταγραφεί)
-    const legendKeys = [...series.keys()].sort((a,b)=>Number(a)-Number(b));
+    const legendKeys = [...dataByB.keys()].sort((a,b)=>Number(a)-Number(b));
 
     function _rgba(hex, a){
       const m = /^#?([0-9a-f]{6})$/i.exec(String(hex||'').trim());
@@ -5172,12 +5172,9 @@ const AFRecorder = (() => {
 
     function colorForB(k){
       const bb = Number(k);
-      if(!Number.isFinite(bb) || bb === 0){
-        return { stroke: 'rgba(245,245,245,0.95)', fill: 'rgba(245,245,245,0.95)', text: 'rgba(245,245,245,0.95)' };
-      }
+      if(!Number.isFinite(bb) || bb === 0) return 'rgba(245,245,245,0.95)';
       const hex = _bandColorForB(bb);
-      const c = _rgba(hex, 0.92);
-      return { stroke: c, fill: c, text: c };
+      return _rgba(hex, 0.92);
     }
 
     function legendYForKey(k){
