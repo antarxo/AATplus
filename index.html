@@ -868,6 +868,8 @@ const drvPin       = document.getElementById('drvPin');
 
 const spotlight    = document.getElementById('spotlight');
 const rulerEl      = document.getElementById('ruler');
+const marbleTrack  = document.getElementById('marbleTrack');
+const marbleGhost  = document.getElementById('marbleTrackGhost');
 let rulerZeroX = 0; // px (stage coords): το 0 της μετροταινίας (μέσα στη σκηνή)
 const markerEl     = document.getElementById('marker');
 const markerGhostEl= document.getElementById('markerGhost');
@@ -1418,7 +1420,7 @@ function _marbleBg(colorHex){
 }
 
 function updateMarbleTrack(force=false){
-  if(!marbleTrack || !marbleGhost || !stageEl) return;
+  if(!marbleTrack || !marbleGhost || !stage) return;
 
   const actNow = (typeof currentAct === 'string' && currentAct) ? currentAct : 'act1';
 
@@ -1437,12 +1439,12 @@ function updateMarbleTrack(force=false){
   marbleTrack.style.background = _marbleBg(color);
 
   // position: from ruler x=0 to the right edge of the stage
-  const stageW = stageEl.clientWidth || 0;
-  const stageH = stageEl.clientHeight || 0;
+  const stageW = stage.clientWidth || 0;
+  const stageH = stage.clientHeight || 0;
   const r0 = (typeof rulerZeroX === 'number' && isFinite(rulerZeroX)) ? rulerZeroX : 0;
 
   // vertical placement: sit right on top of the floor
-  const floorEl = stageEl.querySelector('.floor');
+  const floorEl = stage.querySelector('.floor');
   const floorTop = floorEl ? floorEl.offsetTop : Math.round(stageH*0.82);
   const trackH = 22;
   const trackY = Math.max(0, floorTop - trackH);
@@ -1452,8 +1454,8 @@ function updateMarbleTrack(force=false){
   marbleTrack.style.height = `${trackH}px`;
 
   // grow animation ONLY when b changes (user request)
-  if(force || bNow !== _marbleLastB){
-    _marbleLastB = bNow;
+  if(force || bNow !== _lastMarbleB){
+    _lastMarbleB = bNow;
     _marbleGrowT0 = performance.now();
   }
 
