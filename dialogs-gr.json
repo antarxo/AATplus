@@ -684,7 +684,7 @@
       "signLineD": ""
     }
   },
- "act3": [
+  "act3": [
     {
       "viewer": 1,
       "xShift": 0,
@@ -903,7 +903,7 @@
         }
       ]
     },
-   {
+      {
       "viewer": 1,
       "xShift": 0,
       "yOffset": 0,
@@ -944,7 +944,6 @@
         {
           "type": "setB",
           "value": 6
-
         },
         {
           "type": "awaitAFRecord"
@@ -963,7 +962,7 @@
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 0.60
+          "ratio": 0.6
         },
         {
           "type": "awaitAFRecord"
@@ -1001,7 +1000,7 @@
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 0.90
+          "ratio": 0.9
         },
         {
           "type": "awaitAFRecord"
@@ -1039,7 +1038,7 @@
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 1.07
+          "ratio": 1.05
         },
         {
           "type": "awaitAFRecord"
@@ -1077,7 +1076,7 @@
       "actions": [
         {
           "type": "setRatio",
-          "ratio": 1.30
+          "ratio": 1.3
         },
         {
           "type": "awaitAFRecord"
@@ -1120,5 +1119,4 @@
       "actionsWhen": "afterType"
     }
   ]
-
 }
