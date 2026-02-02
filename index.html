@@ -1508,8 +1508,8 @@ const act = (typeof phase === 'string') ? phase : 'act1';
 
   if(rulerEl){
     const rr = rulerEl.getBoundingClientRect();
-    // Use the TOP edge of the ruler as the visible scale line
-    const scaleY = Math.round(rr.top - stageRect.top);
+    // Use the BOTTOM edge of the ruler as the visible scale line (tick baseline)
+    const scaleY = Math.round(rr.bottom - stageRect.top);
     track.style.top = scaleY + 'px';
     track.style.bottom = '';
     ghost.style.top = (scaleY + 2) + 'px';
@@ -2688,20 +2688,6 @@ function xtOverlayDraw(dt){
 
 
 // Stability LEDs (green=stable, red=unstable) — στο αριστερό περιθώριο του x–t
-(function(){
-  const xLed = pxL - 14;
-  const yLed = pyT + 12;
-  const rLed = 4.2;
-
-  ctx.save();
-  // πράσινο (stable)
-  ctx.fillStyle = 'rgba(0,255,80,' + (xtStabilityStable ? '0.95' : '0.25') + ')';
-  ctx.beginPath(); ctx.arc(xLed, yLed, rLed, 0, Math.PI*2); ctx.fill();
-  // κόκκινο (unstable)
-  ctx.fillStyle = 'rgba(255,50,50,' + (xtStabilityStable ? '0.25' : '0.95') + ')';
-  ctx.beginPath(); ctx.arc(xLed, yLed + 14, rLed, 0, Math.PI*2); ctx.fill();
-  ctx.restore();
-})();
 
   // plot
   ctx.save();
