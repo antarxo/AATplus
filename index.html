@@ -1483,6 +1483,29 @@ function isPureUndampedMode(){
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
   const trackGhost = document.getElementById('marbleTrackGhost');
+
+  // Ensure marble is just above the driver table (assets/table.png)
+  (function(){
+    const tbl = document.getElementById('drvTable');
+    const getZ = (el) => {
+      let cur = el;
+      while (cur && cur !== document.documentElement) {
+        const z = window.getComputedStyle(cur).zIndex;
+        if (z && z !== 'auto') {
+          const zi = parseInt(z, 10);
+          if (Number.isFinite(zi)) return zi;
+        }
+        cur = cur.parentElement;
+      }
+      return null;
+    };
+    const zBase = tbl ? getZ(tbl) : null;
+    if (zBase != null) {
+      track.style.zIndex = String(zBase + 1);
+      if (trackGhost) trackGhost.style.zIndex = String(Math.max(0, zBase));
+    }
+  })();
+
   const actorImg = document.querySelector('#actor img');
 
   if(!track || !actorImg || !stage) return;
