@@ -1470,62 +1470,95 @@ let _lastMarbleB = null;
 let _marbleGrowT0 = 0;
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
-  const ghost = document.getElementById('marbleTrackGhost');
-  const stageEl = document.getElementById('stage') || stage;
-  if(!track || !ghost || !stageEl) return;
+  const trackGhost = document.getElementById('marbleTrackGhost');
+  const actorImg = document.querySelector('#actor img');
 
-// Show in all acts
-track.style.display = 'block';
-ghost.style.display = 'block';
+  if(!track || !actorImg || !stage) return;
 
-const act = (typeof phase === 'string') ? phase : 'act1';
-  // Pick damping value for coloring (free: driveB, forced: driveB)
-  const bVal = (act === 'act3') ? Number(driveB) : Number(driveB);
+  // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
+  const inActs = (phase==='act1' || phase==='act2');
+  if(!inActs){
+    track.style.display = 'none';
+    if(trackGhost) trackGhost.style.display = 'none';
+    return;
+  }
 
-  // Band coloring: b=0 -> white, (0,10) -> yellow, [10,20) -> blue, >=20 -> red
-  const bandCls = (!Number.isFinite(bVal) || Math.abs(bVal) < 1e-9) ? ''
-                : (bVal < 10 ? 'marble-b6' : (bVal < 20 ? 'marble-b12' : 'marble-b24'));
+  // IMPORTANT: η σκηνή πλέον κλιμακώνεται με CSS transform.
+  // Άρα ό,τι μετράμε με getBoundingClientRect() είναι SCALED.
+  // Εδώ δουλεύουμε σε *design px* (unscaled), οπότε διαιρούμε με scale.
+  const s = (()=>{
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
+    return (isFinite(v) && v>0) ? v : 1;
+  })();
 
-  track.classList.remove('marble-b6','marble-b12','marble-b24','marble-bOther');
-  ghost.classList.remove('marble-b6','marble-b12','marble-b24','marble-bOther');
-  if(bandCls){ track.classList.add(bandCls); ghost.classList.add(bandCls); }
+  const stageRect = stage.getBoundingClientRect();
+  const aRect = actorImg.getBoundingClientRect();
 
-  const stageRect = stageEl.getBoundingClientRect();
+  const stageH = stage.clientHeight || 0;
+  const actorBottomLocal = (aRect.bottom - stageRect.top) / s;
 
-  // Start from ruler's 0 and extend to the right edge of the stage
-  const leftPx = Math.max(stageRect.left, Number(rulerZeroX || stageRect.left));
-  const rightPx = stageRect.right;
+  // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
+  const curtainBottomClosedLocal = (0.70 * stageH) + 8;
 
-  track.style.left  = (leftPx - stageRect.left) + 'px';
-  track.style.width = Math.max(0, rightPx - leftPx) + 'px';
+  // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
+  const h = Math.max(0, curtainBottomClosedLocal - actorBottomLocal);
+  // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
+  const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
 
-  ghost.style.left  = track.style.left;
-  ghost.style.width = track.style.width;
-  // Vertical placement: align track TOP with the ruler scale line
-  const rulerEl = document.getElementById('ruler');
-  const trackH = track.offsetHeight || parseFloat(getComputedStyle(track).height) || 0;
-  const ghostH = ghost.offsetHeight || parseFloat(getComputedStyle(ghost).height) || 0;
+  // Οριζόντια έκταση μαρμάρου:
+  // - Ελεύθερη αμείωτη (b=0, f=OFF): κλασικό μήκος 6 m (±3 m γύρω από το 10 m)
+  // - Όλες οι άλλες περιπτώσεις: στρώνεται σε όλο το άνοιγμα της σκηνής (μεταξύ κουρτινών) + χρωματική μετατόπιση ανά b
+  const pure = isPureUndampedMode();
+  const cx = centerX();
 
-  if(rulerEl){
-    const rr = rulerEl.getBoundingClientRect();
-    // Use the BOTTOM edge of the ruler as the visible scale line (tick baseline)
-    const scaleY = Math.round(rr.bottom - stageRect.top);
-    track.style.top = scaleY + 'px';
-    track.style.bottom = '';
-    ghost.style.top = (scaleY + 2) + 'px';
-    ghost.style.bottom = '';
+  let leftPx, rightPx;
+  if(pure){
+    leftPx  = cx - 3*pxPerMeter;
+    rightPx = cx + 3*pxPerMeter;
+    track.style.filter = '';
   }else{
-    // Fallback: align with actor bottom edge
-    const actorEl = document.getElementById('actor');
-    let baseBottom = 0;
-    if(actorEl){
-      const bb = parseFloat(getComputedStyle(actorEl).bottom);
-      baseBottom = isFinite(bb) ? bb : 0;
+    const csL = document.querySelector('.curtain-side.left');
+    const csR = document.querySelector('.curtain-side.right');
+    const lRect = csL ? csL.getBoundingClientRect() : null;
+    const rRect = csR ? csR.getBoundingClientRect() : null;
+
+    const openLeft  = lRect ? ((lRect.right - stageRect.left) / s) : 0;
+    const openRight = rRect ? ((rRect.left  - stageRect.left) / s) : stage.clientWidth;
+
+    leftPx  = Math.max(0, Math.min(stage.clientWidth, openLeft));
+    rightPx = Math.max(0, Math.min(stage.clientWidth, openRight));
+    if(rightPx < leftPx){ const tmp=leftPx; leftPx=rightPx; rightPx=tmp; }
+
+    const hue = Math.round(Math.max(0, Math.min(80, (Math.abs(driveB)/30)*80)));
+    track.style.filter = `hue-rotate(${hue}deg) saturate(1.15) brightness(1.02)`;
+  }
+
+  track.style.left   = leftPx + 'px';
+  track.style.width  = Math.max(0, rightPx - leftPx) + 'px';
+  track.style.bottom = bottomPx + 'px';
+  track.style.height = h + 'px';
+  track.style.display = (h>0) ? 'block' : 'none';
+
+  // Ghost “δοκός”/μάρμαρο: από -5 έως +5, μόνο όταν ο ghost είναι ορατός.
+  // (το κρατάμε μόνο στην αμείωτη για να μη μπερδεύει οπτικά στις άλλες περιπτώσεις)
+  if(trackGhost){
+    if(!isPureUndampedMode()){
+      trackGhost.style.display = 'none';
+    }else{
+    const gVis = (typeof ghostVisibility==='number') ? ghostVisibility : 0;
+    if(phase==='act2' && gVis>0.02 && h>0){
+      const gLeft  = cx - 5*pxPerMeter;
+      const gRight = cx + 5*pxPerMeter;
+      trackGhost.style.left   = gLeft + 'px';
+      trackGhost.style.width  = Math.max(0, gRight - gLeft) + 'px';
+      trackGhost.style.bottom = bottomPx + 'px';
+      trackGhost.style.height = h + 'px';
+      trackGhost.style.display = 'block';
+      trackGhost.style.opacity = Math.min(0.65, 0.15 + 0.5*gVis).toString();
+    }else{
+      trackGhost.style.display = 'none';
     }
-    track.style.bottom = Math.max(0, baseBottom - trackH) + 'px';
-    track.style.top = '';
-    ghost.style.bottom = Math.max(0, baseBottom - ghostH - 2) + 'px';
-    ghost.style.top = '';
+    }
   }
 }
 
