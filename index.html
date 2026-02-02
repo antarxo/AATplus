@@ -1481,13 +1481,7 @@ function updateMarbleTrack(){
 
   if(!track || !actorImg || !stage) return;
 
-  // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
-  const inActs = (phase==='act1' || phase==='act2');
-  if(!inActs){
-    track.style.display = 'none';
-    if(trackGhost) trackGhost.style.display = 'none';
-    return;
-  }
+  // Το “μάρμαρο” εμφανίζεται σε όλες τις πράξεις/μεταβάσεις.
 
   // IMPORTANT: η σκηνή πλέον κλιμακώνεται με CSS transform.
   // Άρα ό,τι μετράμε με getBoundingClientRect() είναι SCALED.
