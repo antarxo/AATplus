@@ -1508,8 +1508,8 @@ const act = (typeof phase === 'string') ? phase : 'act1';
 
   if(rulerEl){
     const rr = rulerEl.getBoundingClientRect();
-    // Use the bottom edge of the ruler as the "scale line"
-    const scaleY = Math.round(rr.bottom - stageRect.top);
+    // Use the TOP edge of the ruler as the visible scale line
+    const scaleY = Math.round(rr.top - stageRect.top);
     track.style.top = scaleY + 'px';
     track.style.bottom = '';
     ghost.style.top = (scaleY + 2) + 'px';
@@ -2449,34 +2449,42 @@ function ensureXTOverlay(){
   c.style.display = 'none';
   
   // --- XT stability LEDs (green/red) ---
-  let leds = document.getElementById('xtStabilityLEDs');
-  if(!leds){
-    leds = document.createElement('div');
-    leds.id = 'xtStabilityLEDs';
-    leds.setAttribute('aria-hidden','true');
+// --- XT stability LEDs (green/red) ---
+  // Clean up any previous/legacy LED nodes to avoid leftovers
+  const oldLeds = document.querySelectorAll('#xtStabilityLEDs, .xtStabilityLEDsLegacy');
+  oldLeds.forEach(n => { try{ n.remove(); }catch(e){} });
 
-    const g = document.createElement('div');
-    g.id = 'xtLedStable';
-    g.className = 'xtLed';
+  let leds = document.createElement('div');
+  leds.id = 'xtStabilityLEDs';
+  leds.setAttribute('aria-hidden','true');
 
-    const r = document.createElement('div');
-    r.id = 'xtLedUnstable';
-    r.className = 'xtLed';
+  const g = document.createElement('div');
+  g.id = 'xtLedStable';
+  g.className = 'xtLed';
 
-    leds.appendChild(g);
-    leds.appendChild(r);
-    stage.appendChild(leds);
-  }
+  const r = document.createElement('div');
+  r.id = 'xtLedUnstable';
+  r.className = 'xtLed';
+
+  leds.appendChild(g);
+  leds.appendChild(r);
+  stage.appendChild(leds);
+
 stage.appendChild(c);
   xtOverlayCan = c;
 }
 
 function setXTStability(isStable){
+  // In Act 1 (undamped free oscillation), keep green ON continuously (constant amplitude baseline)
+  const act = (typeof phase === 'string') ? phase : 'act1';
+  const stable = (act === 'act1') ? true : !!isStable;
+
   const g = document.getElementById('xtLedStable');
   const r = document.getElementById('xtLedUnstable');
   if(!g || !r) return;
-  g.classList.toggle('on', !!isStable);
-  r.classList.toggle('on', !isStable);
+
+  g.classList.toggle('on', stable);
+  r.classList.toggle('on', !stable);
 }
 
 
