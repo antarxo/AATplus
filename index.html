@@ -385,12 +385,18 @@ body.intro-open #driveCtrl{display:none !important; visibility:hidden !important
   /* Disable mini x(t) widget near navigation (not used) */
   #btnXTmini, #xtMiniCanvas{ display:none !important; }
 
-/* Marble track styling (b-dependent) */
-#marbleTrack{ background: #e9e9e9; transition: width 900ms ease, left 900ms ease, background 300ms linear; }
-#marbleTrack.marble-b6{ background:#F9A825; }
-#marbleTrack.marble-b12{ background:#1565C0; }
-#marbleTrack.marble-b24{ background:#C62828; }
-#marbleTrack.marble-bOther{ background:#C62828; }
+/* Marble track styling (match resonance curves colors; exclude white for b=0) */
+#marbleTrack{ background:#9E9E9E; transition: width 900ms ease, left 900ms ease, background 300ms linear; }
+#marbleTrack.marble-low{  background:#F9A825; } /* yellow  (0 < b < 10) */
+#marbleTrack.marble-mid{  background:#1565C0; } /* blue    (10 ≤ b < 20) */
+#marbleTrack.marble-high{ background:#C62828; } /* red     (b ≥ 20) */
+#marbleTrack.marble-zero{ background:#9E9E9E; } /* grey    (b = 0) */
+
+#marbleTrackGhost{ background:rgba(158,158,158,0.55); }
+#marbleTrackGhost.marble-low{  background:rgba(249,168,37,0.35); }
+#marbleTrackGhost.marble-mid{  background:rgba(21,101,192,0.35); }
+#marbleTrackGhost.marble-high{ background:rgba(198,40,40,0.35); }
+#marbleTrackGhost.marble-zero{ background:rgba(158,158,158,0.55); }
 
 
 /* --- PATCH: hide old Measurement HUD (xmin/xmax/etc) --- */
@@ -1511,11 +1517,26 @@ function updateMarbleTrack(){
   const pure = isPureUndampedMode();
   const cx = centerX();
 
+  // Color bands must match AF resonance curves (excluding white for b=0)
+  function marbleBandFromB(b){
+    const v = Number(b);
+    if(!Number.isFinite(v) || Math.abs(v) < 1e-9) return 'zero';
+    if(v < 10) return 'low';
+    if(v < 20) return 'mid';
+    return 'high';
+  }
+  const band = marbleBandFromB(driveB);
+  track.classList.remove('marble-low','marble-mid','marble-high','marble-zero');
+  track.classList.add('marble-' + band);
+  if(trackGhost){
+    trackGhost.classList.remove('marble-low','marble-mid','marble-high','marble-zero');
+    trackGhost.classList.add('marble-' + band);
+  }
+
   let leftPx, rightPx;
   if(pure){
     leftPx  = cx - 3*pxPerMeter;
     rightPx = cx + 3*pxPerMeter;
-    track.style.filter = '';
   }else{
     const csL = document.querySelector('.curtain-side.left');
     const csR = document.querySelector('.curtain-side.right');
@@ -1528,9 +1549,6 @@ function updateMarbleTrack(){
     leftPx  = Math.max(0, Math.min(stage.clientWidth, openLeft));
     rightPx = Math.max(0, Math.min(stage.clientWidth, openRight));
     if(rightPx < leftPx){ const tmp=leftPx; leftPx=rightPx; rightPx=tmp; }
-
-    const hue = Math.round(Math.max(0, Math.min(80, (Math.abs(driveB)/30)*80)));
-    track.style.filter = `hue-rotate(${hue}deg) saturate(1.15) brightness(1.02)`;
   }
 
   track.style.left   = leftPx + 'px';
