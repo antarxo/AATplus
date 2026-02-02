@@ -1468,6 +1468,12 @@ function setFoyerTitles(){
 
 let _lastMarbleB = null;
 let _marbleGrowT0 = 0;
+
+// Pure undamped (Act 1) mode helper for marble sizing
+function isPureUndampedMode(){
+  return (typeof phase !== 'undefined' && phase === 'act1');
+}
+
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
   const trackGhost = document.getElementById('marbleTrackGhost');
