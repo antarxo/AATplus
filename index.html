@@ -1436,6 +1436,18 @@ function applySignPatch(patch){
 function applySignboardForPhase(p=phase){
   const key=getTitleKeyForPhase(p);
 
+  // Show resonance (A–f) graph ONLY in Act 3
+  const _af = document.getElementById('afCanvas');
+  if(_af){
+    const show = (key === 'act3');
+    _af.style.display = show ? 'block' : 'none';
+    _af.style.opacity = show ? '1' : '0';
+    if(show){
+      try{ fitAFCanvasToCurtain(); }catch(e){}
+      try{ if(typeof AFRecorder !== 'undefined' && AFRecorder) AFRecorder.onBChange(); }catch(e){}
+    }
+  }
+
   const hasTitles = UI_TITLES && (UI_TITLES.act1 || UI_TITLES.act2 || UI_TITLES.foyer || UI_TITLES.act3);
   if(hasTitles && UI_TITLES[key]){
     applySignPatch(UI_TITLES[key]);
@@ -3583,15 +3595,6 @@ async function strobeExitWalk(){
     }
 
     phase='act3';
-    // Ensure resonance (A–f) graph remains visible in Act 3
-    const _afCvs = document.getElementById('afCanvas');
-    if(_afCvs){
-      _afCvs.style.display = 'block';
-      _afCvs.style.opacity = '1';
-    }
-    try{ fitAFCanvasToCurtain(); }catch(e){}
-    try{ if(typeof AFRecorder !== 'undefined' && AFRecorder) AFRecorder.onBChange(); }catch(e){}
-
     applySignboardForPhase('act3');
   };
 
@@ -5870,7 +5873,7 @@ stable = nowStable;
     </div>
     <div class="mh-note">Ορισμός: A = (xmax − xmin)/2. Καταγραφή όταν το peak-to-peak σταθεροποιείται.</div>
   </div>
-  <canvas id="afCanvas" width="260" height="330" aria-hidden="true"></canvas>
+  <canvas id="afCanvas" width="260" height="330" aria-hidden="true" style="display:none;opacity:0;"></canvas>
 
 </body>
 </html>
